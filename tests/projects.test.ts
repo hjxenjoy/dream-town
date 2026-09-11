@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { PROJECT_IDS, PROJECTS, freshProjects, projectMetrics } from '../src/sim/projects.ts';
+import { ACHIEVEMENT_IDS } from '../src/sim/achievements.ts';
 import { BUILDINGS, TECHNOLOGY_KEYS, emptyResources, type BuildingKind } from '../src/sim/data.ts';
 
 function established(){
@@ -16,6 +17,9 @@ function established(){
   const kinds:BuildingKind[]=['lumber','sawmill','kiln','smelter','smithy','farm','farm','farm','windmill','bakery','feedmill','pasture','weaver','tailor','fishpond','firestation'];
   kinds.forEach((kind,i)=>add(kind,37+i%5,40+Math.floor(i/5)));
   w.state.stats.caravansCompleted=20;w.state.happiness=100;
+  // This fixture measures project-stage rewards exactly. Mark every achievement as already
+  // earned so a milestone cannot pay prestige into the middle of an assertion.
+  w.state.achievements=[...ACHIEVEMENT_IDS];
   return w;
 }
 

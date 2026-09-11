@@ -11,6 +11,7 @@ import { DISASTERS, REPAIR_SECONDS, type DisasterKind } from '../sim/disasters';
 import { SEASONAL_ACTIVITIES } from '../sim/seasonal';
 import { PETS, PET_KINDS } from '../sim/pets';
 import { NEIGHBOURS, neighbourGreeting, residentRoster } from '../sim/residents';
+import { ACHIEVEMENT_CATEGORY_NAMES } from '../sim/achievements';
 import { GENERATED_ATLASES, atlasFrames, atlasSize, generatedSprite, housingLevelFrame } from '../sim/atlases';
 export const esc = (s: unknown) => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 export const fmt = (n:number)=>Math.floor(n).toLocaleString('zh-CN');
@@ -18,7 +19,7 @@ const duration=(n:number)=>`${Math.floor(Math.max(0,n)/60).toString().padStart(2
 type Panel='farming'|'layout'|'build'|'warehouse'|'orders'|'caravan'|'residents'|'quests'|'settings'|'building'|'help'|'mayor'|'technology'|'supply'|'map'|'roads'|null;
 export interface UICallbacks { action: (fn:()=>ActionResult,id?:string,effect?:string)=>void; build:(kind:BuildingKind|null)=>void; road:(kind:RoadKind|'remove'|null)=>void; focus:(id:string)=>void; zoom:(delta:number)=>void; home:()=>void; district:(id:MapDestination)=>void; move:(id:string)=>void; speed:(value:number)=>void; sound:()=>void; save:(slot?:string)=>Promise<void>; load:(slot:string)=>Promise<void>; export:()=>void; import:(file:File)=>Promise<void>; fullscreen:()=>void; }
 export class GameUI {
-  panel:Panel=null; selected:string|null=null; speed=1; buildKind:BuildingKind|null=null; category='all'; moveId:string|null=null; supplyResource:Resource='wood'; journeyTab:'growth'|'projects'|'quests'='growth'; farmId:string|null=null; gardenAlbum=false;
+  panel:Panel=null; selected:string|null=null; speed=1; buildKind:BuildingKind|null=null; category='all'; moveId:string|null=null; supplyResource:Resource='wood'; journeyTab:'growth'|'achievements'|'projects'|'quests'='growth'; farmId:string|null=null; gardenAlbum=false;
   roadMode:RoadKind|'remove'|null=null;
   private toastTimer=0; private root:HTMLElement; private frames:Record<string,{x:number;y:number;w:number;h:number}>={};
   private lastPanelRender=0; private saveLabel='已启用自动存档'; private offlineStatus='正在准备离线游玩…'; private offlineReport:OfflineReport|null=null;
@@ -158,7 +159,7 @@ export class GameUI {
       case 'sell-surplus':this.cb.action(()=>this.world.sellSurplus((value||undefined) as Resource|undefined));break;
       case 'recipe':{const [id,recipe]=value!.split(':');this.cb.action(()=>this.world.setProductionFocus(id,recipe),id);break;}
       case 'sell':this.cb.action(()=>this.world.sell(value as Resource,5));break;
-      case 'journey-tab':this.journeyTab=value as 'growth'|'projects'|'quests';this.renderPanel();return;
+      case 'journey-tab':this.journeyTab=value as 'growth'|'achievements'|'projects'|'quests';this.renderPanel();return;
       case 'project-select':this.cb.action(()=>this.world.chooseProject(value as ProjectId));break;
       case 'project-complete':this.cb.action(()=>this.world.completeProject(value as ProjectId),undefined,'project');break;
       case 'project-build':this.category=value!;this.open('build');return;
@@ -337,7 +338,7 @@ export class GameUI {
     } else if(this.panel==='residents'){
       content=`<div class="residents-summary"><span class="happiness-face">${icon('smile',54)}</span><div><strong>${Math.round(s.happiness)}<small>%</small></strong><span>${s.happiness>=70?'这里是安心的家':'邻居们需要更多照顾'}</span></div></div><div class="people-count"><span>${icon('people',21)} 常住居民 <b>${s.population}</b></span><span>${icon('home',21)} 总床位 <b>${this.world.housingCapacity()}</b></span></div><div class="population-plan"><b>当前可住 ${Math.min(this.world.housingCapacity(),this.world.communityCapacity())} 人</b><span>社区人口名额 ${this.world.communityCapacity()} · 床位 ${this.world.housingCapacity()}</span><p>学校、诊所与剧院增加人口名额；住宅增加床位。幸福度达到 70%、备足三天口粮时，每个游戏日可迎来一位新邻居。</p>${this.button('open','build','建造住宅与市政设施',false,'secondary-button wide')}</div><div class="needs-list">${[['food','食物','bread'],['water','饮水','water'],['services','社区生活','home'],['environment','环境','leaf']].map(([key,label,ico])=>`<div class="need-row"><span>${icon(ico,20)} ${label}</span><div><i style="width:${s.needs[key as keyof typeof s.needs]}%"></i></div><b>${Math.round(s.needs[key as keyof typeof s.needs])}%</b></div>`).join('')}</div>${this.neighbourCard()}${this.activityCard()}${this.petCard()}<div class="section-label">税收政策 <small>多一点关照，多一份长久</small></div><div class="tax-options">${TAX_RATES.map((rate,i)=>this.button('tax',String(i),`<b>${rate}%</b><span>${TAX_NAMES[i]}</span>`,false,`tax-option ${s.taxRate===i?'active':''}`)).join('')}</div><p class="muted">较高的税率会减少幸福度；食物、清水与花园让更多新邻居愿意留下。</p><div class="festival-card"><span>${icon('spark',28)}</span><div><b>今夜，办一场小镇庆典</b><small>短时提升幸福感 · 180 金币</small></div>${this.button('festival','','举办',s.coins<180,'small-button')}</div>`;
     } else if(this.panel==='quests'){
-      content=`<div class="journey-tabs">${this.button('journey-tab','growth','田园成长',false,this.journeyTab==='growth'?'active':'')}${this.button('journey-tab','projects','建设收藏',false,this.journeyTab==='projects'?'active':'')}${this.button('journey-tab','quests','旧日手记',false,this.journeyTab==='quests'?'active':'')}</div>`+(this.journeyTab==='growth'?growthContent(this.world):this.journeyTab==='projects'?this.projectsContent():`<div class="journey-heading"><span>${icon('book',38)}</span><div><h3>把日子，过成喜欢的样子</h3><p>每一个小小的进步，都值得被记住。</p></div></div><div class="journey-list">${s.quests.map((q,i)=>`<article class="journey-item ${q.claimed?'completed':''}"><span class="journey-number">${q.claimed?icon('check',18):String(i+1).padStart(2,'0')}</span><div><h3>${esc(q.title)}</h3><p>${esc(q.description)}</p><div class="quest-progress"><i style="width:${Math.min(100,q.progress/q.target*100)}%"></i></div><span class="reward">${icon('coin',15)} ${q.rewardCoins} ${icon('star',13)} ${q.rewardPrestige} 声望</span></div>${this.button('quest',q.id,q.claimed?'已完成':q.progress>=q.target?'领取':`${Math.min(q.progress,q.target)}/${q.target}`,q.claimed||q.progress<q.target,'small-button quiet')}</article>`).join('')}</div>`);
+      content=`<div class="journey-tabs">${this.button('journey-tab','growth','田园成长',false,this.journeyTab==='growth'?'active':'')}${this.button('journey-tab','achievements','成就',false,this.journeyTab==='achievements'?'active':'')}${this.button('journey-tab','projects','建设收藏',false,this.journeyTab==='projects'?'active':'')}${this.button('journey-tab','quests','旧日手记',false,this.journeyTab==='quests'?'active':'')}</div>`+(this.journeyTab==='growth'?growthContent(this.world):this.journeyTab==='achievements'?this.achievementsContent():this.journeyTab==='projects'?this.projectsContent():`<div class="journey-heading"><span>${icon('book',38)}</span><div><h3>把日子，过成喜欢的样子</h3><p>每一个小小的进步，都值得被记住。</p></div></div><div class="journey-list">${s.quests.map((q,i)=>`<article class="journey-item ${q.claimed?'completed':''}"><span class="journey-number">${q.claimed?icon('check',18):String(i+1).padStart(2,'0')}</span><div><h3>${esc(q.title)}</h3><p>${esc(q.description)}</p><div class="quest-progress"><i style="width:${Math.min(100,q.progress/q.target*100)}%"></i></div><span class="reward">${icon('coin',15)} ${q.rewardCoins} ${icon('star',13)} ${q.rewardPrestige} 声望</span></div>${this.button('quest',q.id,q.claimed?'已完成':q.progress>=q.target?'领取':`${Math.min(q.progress,q.target)}/${q.target}`,q.claimed||q.progress<q.target,'small-button quiet')}</article>`).join('')}</div>`);
     } else if(this.panel==='settings'){
       content=`<div class="setting-row"><div><b>小镇音效</b><small>轻快的点击、收获与奖励声音</small></div><button role="switch" aria-checked="${s.settings.sound}" aria-label="小镇音效" class="toggle ${s.settings.sound?'on':''}" data-action="sound"><i></i></button></div><div class="setting-row"><div><b>自然挑战</b><small>随季节出现火情、水患、旱情、雹灾与虫害，考验小镇的布局与防护</small></div><button role="switch" aria-checked="${s.settings.disasters}" aria-label="自然挑战" class="toggle ${s.settings.disasters?'on':''}" data-action="disasters"><i></i></button></div><div class="setting-row"><div><b>小镇副官</b><small>离线规则助手 · 自动收获、交单、调税</small></div><button role="switch" aria-checked="${s.settings.autoMayor}" aria-label="小镇副官" class="toggle ${s.settings.autoMayor?'on':''}" data-action="mayor"><i></i></button></div>${this.button('open','mayor',`${icon('book',17)} 看看副官的工作手记`,false,'text-button')}<div class="setting-row"><div><b>离线游玩</b><small>${esc(this.offlineStatus)}</small></div>${icon('leaf',21)}</div><div class="section-label">把今天好好保存 <small>${esc(this.saveLabel)}</small></div><div class="save-slots">${[1,2,3].map(i=>`<div class="save-slot"><span>${icon('save',20)} 手动存档 ${i}</span>${this.button('save',`slot-${i}`,'保存',false,'small-button')}${this.button('load',`slot-${i}`,'读取',false,'small-button quiet')}</div>`).join('')}</div><div class="button-row">${this.button('export','',`${icon('download',17)} 导出备份`,false,'secondary-button')}${this.button('import','',`${icon('upload',17)} 导入存档`,false,'secondary-button')}</div><p class="muted">每 30 秒自动保存。读取或导入会切换当前小镇，可先存入其他槽位。离开后，小镇最多为你积攒 8 小时的收获。存档留在这台设备上，可导出带走。</p><div class="settings-footer">DREAM TOWN <span>田园与成长 · 2.8</span></div>`;
           content+=`<div class="setting-row"><div><b>轻量动画</b><small>减少飘动、粒子与镜头移动，保留操作提示</small></div>${this.button('motion','',(s.settings.reducedMotion??window.matchMedia('(prefers-reduced-motion: reduce)').matches)?'已开启':'未开启',false,'small-button')}</div>`;
@@ -361,6 +362,24 @@ export class GameUI {
   updateMapViewport(x:number,y:number){
     const point={x:x/116+y/58,y:y/58-x/116};
     this.html(this.root.querySelector('#mini-map')!,valleyMap(this.world.state.buildings,point));
+  }
+  /** Earned achievements first, then the ones still in progress, grouped by theme. */
+  private achievementsContent(){
+    const rows=this.world.observe().achievements;
+    const earned=rows.filter(row=>row.unlocked).length;
+    const byCategory=(category:string)=>rows.filter(row=>row.category===category);
+    const card=(row:typeof rows[number])=>{
+      const done=row.unlocked;
+      return `<article class="achievement ${done?'earned':''}"><span class="achievement-badge">${icon(done?'check':row.icon,20)}</span><div><h4>${esc(row.name)}</h4><p>${esc(row.description)}</p>${done?'':`<div class="quest-progress"><i style="width:${Math.round(row.progress/row.target*100)}%"></i></div><small>${row.progress} / ${row.target}</small>`}</div>${done?`<span class="achievement-mark">${icon('star',14)} 已达成</span>`:''}</article>`;
+    };
+    return `<div class="journey-heading"><span>${icon('trophy',38)}</span><div><h3>走过的每一步，都算数</h3><p>成就自动达成，不用领取；奖励是声望，用来研究新的手艺。</p></div></div>
+      <div class="research-ledger"><span>已达成 <b>${earned} / ${rows.length}</b> 项成就</span></div>
+      ${(Object.keys(ACHIEVEMENT_CATEGORY_NAMES) as (keyof typeof ACHIEVEMENT_CATEGORY_NAMES)[]).map(category=>{
+        const group=byCategory(category);
+        if(!group.length)return '';
+        const done=group.filter(row=>row.unlocked).length;
+        return `<h3 class="inventory-group">${ACHIEVEMENT_CATEGORY_NAMES[category]} · ${done} / ${group.length}</h3><div class="achievement-list">${group.map(card).join('')}</div>`;
+      }).join('')}`;
   }
   private projectsContent(){
     const s=this.world.state,active=s.projects?.active,allDone=PROJECT_IDS.every(id=>s.projects?.stages[id]===3);

@@ -7,6 +7,7 @@ import { BUILDINGS, BUILDING_KEYS, CARAVAN_CARGO, CARAVAN_DURATION, emptyResourc
 import { DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, REPAIR_SECONDS, canStrike, disasterOf, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
+import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
 export type { BuildingKind, Resource, ResourceMap } from './data.ts';
 
 export interface Building {
@@ -92,7 +93,10 @@ export interface SimState {
   season: keyof typeof import('./data.ts').SEASON_NAMES;
   needs: { food: number; water: number; services: number; environment: number };
   settings: { sound: boolean; disasters: boolean; autoMayor: boolean; reducedMotion?: boolean };
-  stats: { collected: number; ordersCompleted: number; buildingsBuilt: number; caravansCompleted: number; coinsEarned: number; festivals: number; repairs: number; toolsProduced: number; clothingProduced: number };
+  /** `activities` counts seasonal activities and is absent from saves written before it existed. */
+  stats: { collected: number; ordersCompleted: number; buildingsBuilt: number; caravansCompleted: number; coinsEarned: number; festivals: number; repairs: number; toolsProduced: number; clothingProduced: number; activities?: number };
+  /** Unlocked achievement ids, in the order they were earned. */
+  achievements?: AchievementId[];
   logs: TownLog[];
   nextId: number;
   festivalUntil: number;
@@ -276,8 +280,15 @@ export function validateSave(value: unknown): value is SimState {
   }
   if (!isRecord(value.settings) || ['sound', 'disasters', 'autoMayor'].some(key => typeof (value.settings as Record<string, unknown>)[key] !== 'boolean')) return false;
   if (value.settings.reducedMotion !== undefined && typeof value.settings.reducedMotion !== 'boolean') return false;
+  if (value.achievements !== undefined) {
+    if (!Array.isArray(value.achievements) || value.achievements.length > ACHIEVEMENT_IDS.length) return false;
+    if (new Set(value.achievements).size !== value.achievements.length) return false;
+    if (value.achievements.some(id => !ACHIEVEMENT_IDS.includes(id as AchievementId))) return false;
+  }
   if (!isRecord(value.needs) || ['food', 'water', 'services', 'environment'].some(key => !nonnegative((value.needs as Record<string, unknown>)[key]) || Number((value.needs as Record<string, unknown>)[key]) > 100)) return false;
   if (!isRecord(value.stats) || ['collected', 'ordersCompleted', 'buildingsBuilt', 'caravansCompleted', 'coinsEarned', 'festivals', 'repairs', 'toolsProduced', 'clothingProduced'].some(key => !whole((value.stats as Record<string, unknown>)[key]))) return false;
+  // Absent on saves written before seasonal activities were counted, so only its type is checked.
+  if (value.stats.activities !== undefined && !whole(value.stats.activities)) return false;
   for (const log of value.logs) if (!isRecord(log) || typeof log.id !== 'string' || typeof log.message !== 'string' || !nonnegative(log.time) || !['success', 'warning', 'info', 'mayor'].includes(log.type as string)) return false;
   return true;
 }
@@ -290,6 +301,8 @@ export class SimWorld {
     this.state = restored;
     this.state.projects ??= freshProjects();
     this.state.farming ??= freshFarming();
+    this.state.achievements ??= [];
+    this.state.stats.activities ??= 0;
     for (const building of this.state.buildings) building.workers ??= BUILDINGS[building.kind].workers ?? 0;
     this.syncQuests();
     if(state===undefined){this.arrangeDistricts();delete this.state.layoutUndo;}
@@ -302,7 +315,7 @@ export class SimWorld {
     this.state.logs.unshift({ id: this.id('log'), time: this.state.gameTime, message, type });
     this.state.logs = this.state.logs.slice(0, 60);
   }
-  private success(message: string, extra: Omit<ActionResult, 'ok' | 'message'> = {}): ActionResult { this.log(message, 'success'); this.syncQuests(); return { ok: true, message, ...extra }; }
+  private success(message: string, extra: Omit<ActionResult, 'ok' | 'message'> = {}): ActionResult { this.log(message, 'success'); this.syncProgress(); return { ok: true, message, ...extra }; }
   private has(items: Partial<ResourceMap>): boolean { return RESOURCE_KEYS.every(key => this.state.resources[key] >= (items[key] ?? 0)); }
   private deduct(items: Partial<ResourceMap>): void { for (const key of RESOURCE_KEYS) this.state.resources[key] -= items[key] ?? 0; }
   private add(items: Partial<ResourceMap>): void { for (const key of RESOURCE_KEYS) this.state.resources[key] += items[key] ?? 0; }
@@ -312,6 +325,64 @@ export class SimWorld {
     let threshold = this.state.level * 140;
     while (this.state.xp >= threshold) { this.state.xp -= threshold; this.state.level++; this.state.prestige++; this.log(`小镇升至 ${this.state.level} 级，获得 1 点声望。`, 'success'); threshold = this.state.level * 140; }
   }
+  /** Everything the achievement table can read, computed from state on demand. */
+  private achievementMetrics(): AchievementMetrics {
+    const s = this.state;
+    const kinds = new Set(s.buildings.map(b => b.kind));
+    const decor = [...kinds].filter(kind => BUILDINGS[kind].category === 'decoration').length;
+    const industry = [...kinds].filter(kind => BUILDINGS[kind].cycle !== undefined && kind !== 'farm').length;
+    const soil = Math.max(1, ...s.buildings.filter(b => b.kind === 'farm').map(b => soilLevel(b.tended).level));
+    return {
+      collected: s.stats.collected,
+      crops: s.farming?.harvested ?? 0,
+      rareCrops: Object.values(s.farming?.rare ?? {}).reduce((n, v) => n + v, 0),
+      cropVarieties: Object.values(s.farming?.album ?? {}).filter(n => n > 0).length,
+      gardenLevel: gardenLevel(s.farming?.xp ?? 0).level,
+      soilLevel: soil,
+      orders: s.stats.ordersCompleted,
+      caravans: s.stats.caravansCompleted,
+      built: s.stats.buildingsBuilt,
+      repairs: s.stats.repairs,
+      festivals: s.stats.festivals,
+      activities: s.stats.activities ?? 0,
+      coinsEarned: s.stats.coinsEarned,
+      population: s.population,
+      level: s.level,
+      technologies: s.researched.length,
+      tools: s.stats.toolsProduced,
+      clothing: s.stats.clothingProduced,
+      pets: (s.pets ?? []).length,
+      decorKinds: decor,
+      industryKinds: industry,
+      projectStages: Object.values(s.projects?.stages ?? {}).reduce((n, v) => n + v, 0),
+    };
+  }
+
+  /**
+   * Grants every achievement the town now qualifies for. Unlocking first and rewarding
+   * second means a reward that raises another metric (coins earned, say) is picked up by
+   * the next pass of the same loop, and no achievement can pay out twice.
+   */
+  private syncAchievements(): void {
+    this.state.achievements ??= [];
+    for (let pass = 0; pass < ACHIEVEMENTS.length; pass++) {
+      const newly = unlockedBy(this.achievementMetrics(), this.state.achievements);
+      if (!newly.length) return;
+      for (const id of newly) {
+        const entry = achievementById(id)!;
+        this.state.achievements.push(id);
+        this.state.prestige += entry.prestige;
+        this.log(`成就达成「${entry.name}」：${entry.description} 获得 ${entry.prestige} 点声望。`, 'success');
+      }
+    }
+  }
+
+  /** Quest progress and achievements always move together, so neither can be forgotten. */
+  private syncProgress(): void {
+    this.syncQuests();
+    this.syncAchievements();
+  }
+
   private syncQuests(): void {
     const progress: Record<string, number> = { harvest: this.state.stats.collected, orders: this.state.stats.ordersCompleted, builder: this.state.stats.buildingsBuilt, caravan: this.state.stats.caravansCompleted, population: this.state.population, festival: this.state.stats.festivals, research: this.state.researched.length, tools: this.state.stats.toolsProduced, clothing: this.state.stats.clothingProduced };
     for (const quest of this.state.quests) quest.progress = Math.min(quest.target, Math.max(quest.progress, progress[quest.id] ?? 0));
@@ -704,6 +775,7 @@ export class SimWorld {
       return this.fail(`还差 ${missing}；活动只取富余物资，不动建造木材与三日口粮。`, 'INSUFFICIENT_RESOURCES');
     }
     this.state.coins -= activity.coins; this.deduct(activity.items);
+    this.state.stats.activities = (this.state.stats.activities ?? 0) + 1;
     this.state.activity = { season: this.state.season, endsAt: this.state.gameTime + activity.duration };
     this.state.happiness = Math.min(100, this.state.happiness + activity.happiness);
     return this.success(`${activity.name}开始了！幸福度 +${activity.happiness}，好心情会持续一季中的这一小段。`, { coins: -activity.coins });
@@ -974,7 +1046,7 @@ export class SimWorld {
     if (this.state.settings.disasters && this.state.gameTime - this.state.lastDisasterAt >= DISASTER_INTERVAL) this.triggerDisaster();
     this.completeRepairs();this.completeActivities();
     if (this.state.settings.autoMayor && this.state.gameTime - this.state.lastMayorAt >= 5) this.runMayor();
-    this.syncQuests();
+    this.syncProgress();
   }
 
   private settleDay(): void {
@@ -1049,7 +1121,7 @@ export class SimWorld {
     }
     report.happinessChange = this.state.happiness - happiness;
     this.state.lastDisasterAt = this.state.gameTime; this.state.lastMayorAt = this.state.gameTime;
-    this.state.savedAt = Date.now(); this.syncQuests();
+    this.state.savedAt = Date.now(); this.syncProgress();
     this.log(`离开期间，工坊按需补货，累计获得 ${report.tax} 金币税收。`, 'info');
     return report;
   }
@@ -1146,7 +1218,7 @@ export class SimWorld {
   }
 
   observe() {
-    this.updateNeeds(); this.syncQuests();
+    this.updateNeeds(); this.syncProgress();
     return {
       gameTime: this.state.gameTime, season: this.state.season, level: this.state.level,
       researched: [...this.state.researched], technologies: TECHNOLOGY_KEYS.map(id => ({ id, ...TECHNOLOGIES[id], ...this.researchStatus(id) })),
@@ -1161,6 +1233,7 @@ export class SimWorld {
       resources: { ...this.state.resources }, orders: clone(this.state.orders), caravan: clone(this.state.caravan),
       readyBuildings: this.state.buildings.filter(building => building.ready).map(building => building.id),
       activity: this.activityActive() ? { ...this.state.activity } : null,
+      achievements: achievementProgress(this.achievementMetrics(), this.state.achievements ?? []),
       pets: (this.state.pets ?? []).map(pet => ({ ...pet, name: PETS[pet.kind].name })),
       petLimit: petCapacity(this.state.population),
       alerts: this.state.buildings.filter(building => building.damaged || building.repairingUntil !== undefined).map(building => ({
