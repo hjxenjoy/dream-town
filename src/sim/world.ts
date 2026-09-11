@@ -6,6 +6,7 @@ import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, typ
 import { BUILDINGS, BUILDING_KEYS, CARAVAN_CARGO, CARAVAN_DURATION, emptyResources, GAME_DAY_SECONDS, MAP_SIZE, MAX_OFFLINE_SECONDS, RESOURCE_KEYS, RESOURCES, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TECHNOLOGY_KEYS, PRODUCTION_SEQUENCE, type TechnologyId, type BuildingKind, type Resource, type ResourceMap } from './data.ts';
 import { DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, REPAIR_SECONDS, canStrike, disasterOf, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
+import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
 export type { BuildingKind, Resource, ResourceMap } from './data.ts';
 
 export interface Building {
@@ -97,6 +98,8 @@ export interface SimState {
   festivalUntil: number;
   /** The voluntary seasonal activity in progress, if the player started one. */
   activity?: ActivityState;
+  /** Adopted pets. Each trails one resident on the map. */
+  pets?: PetState[];
   lastMayorAt: number;
   lastDisasterAt: number;
 }
@@ -259,6 +262,15 @@ export function validateSave(value: unknown): value is SimState {
   for (const order of value.orders) if (!isRecord(order) || typeof order.id !== 'string' || typeof order.npc !== 'string' || typeof order.title !== 'string' || !validItems(order.items) || !whole(order.rewardCoins) || !whole(order.rewardXp) || (order.cooldownUntil !== undefined && !nonnegative(order.cooldownUntil))) return false;
   for (const quest of value.quests) if (!isRecord(quest) || typeof quest.id !== 'string' || typeof quest.title !== 'string' || typeof quest.description !== 'string' || !whole(quest.target) || !whole(quest.progress) || !whole(quest.rewardCoins) || !whole(quest.rewardXp) || !whole(quest.rewardPrestige) || typeof quest.claimed !== 'boolean') return false;
   if (!isRecord(value.caravan) || !['idle', 'traveling', 'returned'].includes(value.caravan.status as string) || !validItems(value.caravan.cargo) || ['returnAt', 'duration', 'rewardCoins', 'rewardMaterials', 'trips'].some(key => !nonnegative((value.caravan as Record<string, unknown>)[key]))) return false;
+  if (value.pets !== undefined) {
+    if (!Array.isArray(value.pets) || value.pets.length > 6) return false;
+    const petIds = new Set<string>();
+    for (const pet of value.pets) {
+      if (!isRecord(pet) || typeof pet.id !== 'string' || petIds.has(pet.id) || !PET_KINDS.includes(pet.kind as PetKind) || !whole(pet.follows) || pet.follows < 0) return false;
+      petIds.add(pet.id);
+    }
+    if (value.pets.length > petCapacity(value.population as number)) return false;
+  }
   if (value.activity !== undefined) {
     if (!isRecord(value.activity) || !['spring', 'summer', 'autumn', 'winter'].includes(value.activity.season as string) || !nonnegative(value.activity.endsAt)) return false;
   }
@@ -615,6 +627,39 @@ export class SimWorld {
     this.state.coins -= cost; this.state.happiness = Math.min(100, this.state.happiness + 12);
     this.state.festivalUntil = this.state.gameTime + 150; this.state.stats.festivals++;
     return this.success('邻里庆典开始了！幸福度 +12，欢快的气氛将持续一段时间。', { coins: -cost });
+  }
+
+  /** How many pets the town will take in at its current population. */
+  petLimit(): number {
+    return petCapacity(this.state.population);
+  }
+
+  /** How many more pets the town will take in, and why not when it is full. */
+  petAdoptionIssue(): string | null {
+    return adoptionIssue(this.state.pets ?? [], this.state.population);
+  }
+
+  /** Adoption is voluntary and permanent; the pet then trails a resident on the map. */
+  adoptPet(kind: PetKind): ActionResult {
+    if (!PET_KINDS.includes(kind)) return this.fail('没有这种小动物。', 'INVALID_PET');
+    const definition = PETS[kind];
+    const issue = this.petAdoptionIssue();
+    if (issue) return this.fail(issue, 'PET_LIMIT');
+    if (this.state.coins < definition.coins) return this.fail(`领养${definition.name}需要 ${definition.coins} 金币。`, 'INSUFFICIENT_GOLD');
+    if (!this.has(definition.materials)) return this.fail(`还需要${Object.keys(definition.materials).length} 份${RESOURCES.materials.name}布置小屋。`, 'INSUFFICIENT_RESOURCES');
+    this.state.coins -= definition.coins; this.deduct(definition.materials);
+    this.state.pets ??= [];
+    this.state.pets.push({ id: this.id('pet'), kind, follows: this.state.pets.length });
+    this.state.happiness = Math.min(100, this.state.happiness + 2);
+    return this.success(`${definition.name}住进了小镇，它会跟着邻居们一起散步。`);
+  }
+
+  /** Releases the most recently adopted pet. */
+  releasePet(): ActionResult {
+    const pets = this.state.pets ?? [];
+    if (!pets.length) return this.fail('小镇还没有小动物。', 'NO_PETS');
+    const [gone] = pets.splice(-1);
+    return this.success(`${PETS[gone!.kind].name}去别处安家了。`);
   }
 
   /** A seasonal activity runs only while its own season lasts and the timer has not run out. */
@@ -1116,6 +1161,8 @@ export class SimWorld {
       resources: { ...this.state.resources }, orders: clone(this.state.orders), caravan: clone(this.state.caravan),
       readyBuildings: this.state.buildings.filter(building => building.ready).map(building => building.id),
       activity: this.activityActive() ? { ...this.state.activity } : null,
+      pets: (this.state.pets ?? []).map(pet => ({ ...pet, name: PETS[pet.kind].name })),
+      petLimit: petCapacity(this.state.population),
       alerts: this.state.buildings.filter(building => building.damaged || building.repairingUntil !== undefined).map(building => ({
         buildingId: building.id,
         type: building.damaged ? (building.damageKind ?? 'fire') : 'repairing',

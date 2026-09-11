@@ -44,6 +44,10 @@ export const GAME_TOOLS: ToolDefinition[] = [
   tool('get_production_flow', '查询生产配方、速度、暂停与缺料/满仓状态。'),
   tool('get_pending_orders', '查询当前订单的物资要求、奖励和冷却。'),
   tool('get_disaster_alerts', '查询当前受损建筑及位置。'),
+  tool('adopt_pet', '领养一只小动物，它会跟着邻居在小镇里散步。', { kind: { type: 'string', enum: ['cat', 'dog'] } }, ['kind']),
+  tool('release_pet', '送走最近领养的小动物。'),
+  tool('start_seasonal_activity', '举办当前季节的自愿活动，只动用富余物资。'),
+  tool('get_town_life', '查询季节活动、小动物与幸福度相关的生活状态。'),
 ];
 
 export type GameToolResult = ActionResult | { ok: true; data: unknown };
@@ -91,6 +95,13 @@ export function executeGameTool(world: SimWorld, name: string, args: unknown = {
     case 'get_production_flow': return { ok: true, data: world.observe().production };
     case 'get_pending_orders': return { ok: true, data: world.observe().orders };
     case 'get_disaster_alerts': return { ok: true, data: world.observe().alerts };
+    case 'adopt_pet': return world.adoptPet(values.kind as 'cat' | 'dog');
+    case 'release_pet': return world.releasePet();
+    case 'start_seasonal_activity': return world.startActivity();
+    case 'get_town_life': {
+      const seen = world.observe();
+      return { ok: true, data: { activity: seen.activity, pets: seen.pets, petLimit: seen.petLimit, happiness: seen.happiness, alerts: seen.alerts } };
+    }
     default: return { ok: false, code: 'UNKNOWN_TOOL', message: '没有这个游戏工具。' };
   }
 }
