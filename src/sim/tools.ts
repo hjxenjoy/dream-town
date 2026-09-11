@@ -51,6 +51,8 @@ export const GAME_TOOLS: ToolDefinition[] = [
   tool('start_seasonal_activity', '举办当前季节的自愿活动，只动用富余物资。'),
   tool('get_town_life', '查询季节活动、小动物与幸福度相关的生活状态。'),
   tool('get_achievements', '查询成就进度与已达成项。'),
+  tool('get_honours', '查询小镇荣誉各条线的等级、当前效果与下一级价格。'),
+  tool('deepen_honour', '花费声望把一条小镇荣誉再提升一级，效果永久保留。', { track: { type: 'string', enum: ['granary', 'craft', 'welcome'] } }, ['track']),
   tool('get_street_styles', '查询三种街区风格各自的进度、已达成的阶段与下一步要求。'),
   tool('get_town_clock', '查询小镇的当前时刻、第几天与所处时段。'),
   tool('get_neighbour_stories', '查询邻居们的关系故事：当前待说的一段、可选做法与已经说过的段落。'),
@@ -104,6 +106,8 @@ export function executeGameTool(world: SimWorld, name: string, args: unknown = {
     case 'get_pending_orders': return { ok: true, data: world.observe().orders };
     case 'get_caravan_routes': return { ok: true, data: world.observe().caravanRoutes };
     case 'get_achievements': return { ok: true, data: world.observe().achievements };
+    case 'get_honours': return { ok: true, data: { tracks: world.observe().honours, bonus: world.observe().honourBonus } };
+    case 'deepen_honour': return world.deepenHonour(String(values.track) as 'granary' | 'craft' | 'welcome');
     case 'get_street_styles': return { ok: true, data: world.observe().collections };
     case 'get_town_clock': return { ok: true, data: world.observe().clock };
     case 'get_neighbour_stories': return { ok: true, data: world.observe().stories };

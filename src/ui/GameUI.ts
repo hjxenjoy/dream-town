@@ -15,6 +15,7 @@ import { neighbourNews } from '../sim/stories';
 import { ACHIEVEMENT_CATEGORY_NAMES } from '../sim/achievements';
 import { DESTINATIONS, DESTINATION_IDS as destinationIds, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from '../sim/destinations';
 import { COLLECTIONS } from '../sim/collections';
+import type { HonourTrackId } from '../sim/honours';
 import { GENERATED_ATLASES, atlasFrames, atlasSize, generatedSprite, housingLevelFrame } from '../sim/atlases';
 export const esc = (s: unknown) => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 export const fmt = (n:number)=>Math.floor(n).toLocaleString('zh-CN');
@@ -156,6 +157,7 @@ export class GameUI {
       case 'caravan':this.cb.action(()=>this.world.dispatchCaravan(),undefined,'caravan');break;
       case 'choose-route':this.cb.action(()=>this.world.chooseCaravanDestination(value as DestinationId));break;
       case 'story-choice':{const [portrait,choice]=value!.split('|');this.cb.action(()=>this.world.chooseStoryOption(portrait!,choice!));break;}
+      case 'deepen-honour':this.cb.action(()=>this.world.deepenHonour(value as HonourTrackId));break;
       case 'tax':this.cb.action(()=>this.world.setTax(Number(value)));break;
       case 'festival':this.cb.action(()=>this.world.festival(),undefined,'festival');break;
       case 'activity':this.cb.action(()=>this.world.startActivity(),undefined,'festival');break;
@@ -482,7 +484,32 @@ export class GameUI {
       const ids=TECHNOLOGY_KEYS.filter(id=>TECHNOLOGIES[id].branch===branch).sort((a,b)=>TECHNOLOGIES[a].level-TECHNOLOGIES[b].level);
       const keys=CHAINS[branch]??[];
       return `<section class="research-branch ${branch}-branch"><h3>${icon(branchIcon,20)} ${title} <small>${subtitle}</small></h3>${keys.length?chain(keys):''}${ids.map((id,i)=>`${i?`<div class="branch-thread">${icon('chevron',15)}</div>`:''}${node(id)}`).join('')}</section>`;
-    }).join('')}</div>`;
+    }).join('')}</div>${this.honoursSection()}`;
+  }
+
+  /**
+   * Town honours: what standing buys once it has nowhere else to go. Each track states its
+   * own price and effect, so the exchange is legible without a separate tutorial.
+   */
+  private honoursSection(){
+    const rows=this.world.observe().honours;
+    const spent=rows.reduce((total,row)=>total+row.level,0);
+    const card=(row:typeof rows[number])=>{
+      const next=row.next;
+      const affordable=next?this.world.state.prestige>=next.cost:false;
+      const state=!row.unlocked?`达 ${row.unlockLevel} 级开放`:!next?'已做到头':`第 ${row.level} / ${row.max} 级`;
+      const effect=row.earned?`当前 +${row.earned} ${row.unit}`:'还没有投入';
+      return `<article class="honour-card ${row.unlocked?'':'locked'} ${next?'':'complete'}">
+        <span class="honour-seal">${icon(row.icon,22)}</span>
+        <div><h4>${esc(row.name)} <small>${esc(state)}</small></h4><p>${esc(row.description)}</p>
+        <small class="honour-effect">${esc(effect)}${next?` · 下一级 +${next.value} ${row.unit}（${next.cost} 声望）`:' · 已满级'}</small></div>
+        ${next&&row.unlocked?this.button('deepen-honour',row.id,`${next.note} · ${next.cost}`,!affordable,'small-button'):''}
+      </article>`;
+    };
+    return `<section class="honour-section"><h3>${icon('star',20)} 小镇荣誉 <small>把攒下的声望，变成留得下的东西</small></h3>
+      <p class="muted">声望不只是研究的手续费。每一条荣誉都能再做几级，一级比一级贵，效果永久保留。</p>
+      <div class="honour-list">${rows.map(card).join('')}</div>
+      <div class="research-ledger"><span>已投入 <b>${spent}</b> 级荣誉</span></div></section>`;
   }
 
   private supplyContent(){

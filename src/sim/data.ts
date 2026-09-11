@@ -151,14 +151,14 @@ export interface TechnologyDefinition {
   unlocks: BuildingKind[];
 }
 export const TECHNOLOGIES: Record<TechnologyId, TechnologyDefinition> = {
-  mining: { name: '山岩的馈赠', description: '发现矿脉，掌握烧炭手艺。', branch: 'industry', icon: 'ore', level: 3, prestige: 2, coins: 240, items: { materials: 2 }, requires: [], unlocks: ['mine', 'kiln', 'sawmill', 'brickworks'] },
-  metallurgy: { name: '炉火与铁器', description: '将矿石变成金属与工具，接下更有价值的邻里委托。', branch: 'industry', icon: 'tools', level: 4, prestige: 3, coins: 480, items: { materials: 4 }, requires: ['mining'], unlocks: ['smelter', 'smithy', 'firestation'] },
-  husbandry: { name: '牧野的新朋友', description: '用麦穗养育小羊，把农田延伸成牧场。', branch: 'pastoral', icon: 'wool', level: 3, prestige: 2, coins: 240, items: { materials: 2 }, requires: [], unlocks: ['feedmill', 'pasture', 'fishpond'] },
-  viniculture: { name: '葡萄与酒', description: '顺着南坡种下葡萄，学会酿酒，再把好年份存进酒窖。', branch: 'pastoral', icon: 'wine', level: 5, prestige: 4, coins: 520, items: { materials: 4, plank: 6 }, requires: ['husbandry'], unlocks: ['vineyard', 'winery', 'cellar'] },
-  tailoring: { name: '一针一线', description: '织出布料，缝制暖衣，发展小镇的纺织手艺。', branch: 'pastoral', icon: 'clothing', level: 4, prestige: 3, coins: 480, items: { materials: 4 }, requires: ['husbandry'], unlocks: ['weaver', 'tailor'] },
-  efficiency: { name: '精工巧作', description: '所有生产建筑每轮所需时间减少 10%，离线生产同样生效。', branch: 'town', icon: 'clock', level: 5, prestige: 4, coins: 600, items: { tools: 2, materials: 5 }, requires: ['metallurgy'], unlocks: [] },
-  logistics: { name: '井然有序', description: '现有仓储和今后每次扩建容量增加 20%。', branch: 'town', icon: 'box', level: 5, prestige: 4, coins: 600, items: { cloth: 2, materials: 5 }, requires: ['tailoring'], unlocks: [] },
-  civics: { name: '体恤民生', description: '税收幸福度惩罚减半，并解锁星幕小剧院。', branch: 'town', icon: 'heart', level: 5, prestige: 4, coins: 500, items: { clothing: 2, materials: 4 }, requires: ['tailoring'], unlocks: ['theatre'] },
+  mining: { name: '山岩的馈赠', description: '发现矿脉，掌握烧炭手艺。', branch: 'industry', icon: 'ore', level: 3, prestige: 4, coins: 240, items: { materials: 2 }, requires: [], unlocks: ['mine', 'kiln', 'sawmill', 'brickworks'] },
+  metallurgy: { name: '炉火与铁器', description: '将矿石变成金属与工具，接下更有价值的邻里委托。', branch: 'industry', icon: 'tools', level: 4, prestige: 6, coins: 480, items: { materials: 4 }, requires: ['mining'], unlocks: ['smelter', 'smithy', 'firestation'] },
+  husbandry: { name: '牧野的新朋友', description: '用麦穗养育小羊，把农田延伸成牧场。', branch: 'pastoral', icon: 'wool', level: 3, prestige: 4, coins: 240, items: { materials: 2 }, requires: [], unlocks: ['feedmill', 'pasture', 'fishpond'] },
+  viniculture: { name: '葡萄与酒', description: '顺着南坡种下葡萄，学会酿酒，再把好年份存进酒窖。', branch: 'pastoral', icon: 'wine', level: 5, prestige: 8, coins: 520, items: { materials: 4, plank: 6 }, requires: ['husbandry'], unlocks: ['vineyard', 'winery', 'cellar'] },
+  tailoring: { name: '一针一线', description: '织出布料，缝制暖衣，发展小镇的纺织手艺。', branch: 'pastoral', icon: 'clothing', level: 4, prestige: 6, coins: 480, items: { materials: 4 }, requires: ['husbandry'], unlocks: ['weaver', 'tailor'] },
+  efficiency: { name: '精工巧作', description: '所有生产建筑每轮所需时间减少 10%，离线生产同样生效。', branch: 'town', icon: 'clock', level: 5, prestige: 8, coins: 600, items: { tools: 2, materials: 5 }, requires: ['metallurgy'], unlocks: [] },
+  logistics: { name: '井然有序', description: '现有仓储和今后每次扩建容量增加 20%。', branch: 'town', icon: 'box', level: 5, prestige: 8, coins: 600, items: { cloth: 2, materials: 5 }, requires: ['tailoring'], unlocks: [] },
+  civics: { name: '体恤民生', description: '税收幸福度惩罚减半，并解锁星幕小剧院。', branch: 'town', icon: 'heart', level: 5, prestige: 8, coins: 500, items: { clothing: 2, materials: 4 }, requires: ['tailoring'], unlocks: ['theatre'] },
 };
 export const TECHNOLOGY_KEYS = Object.keys(TECHNOLOGIES) as TechnologyId[];
 export const INDUSTRY_KINDS: BuildingKind[] = ['mine', 'kiln', 'smelter', 'smithy', 'feedmill', 'pasture', 'weaver', 'tailor'];

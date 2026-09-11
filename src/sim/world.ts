@@ -10,6 +10,7 @@ import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetStat
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
 import { DESTINATION_IDS, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from './destinations.ts';
 import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, ornamentRequirement, type CollectionId } from './collections.ts';
+import { HONOURS, HONOUR_TRACK_IDS, honourCapacity, honourCommunity, honourCycleFactor, honourLevel, honourSummary, nextHonourLevel, type HonourTrackId } from './honours.ts';
 import { STORY_PORTRAITS, STORY_STAGES, nextStoryStage, storyChoiceIds, storyEffect, storyEnvironment, storyHistory, type StoryProgress } from './stories.ts';
 import { residentRoster } from './residents.ts';
 import { DAY_START_HOUR, clockLabel, dayOf, gameTimeAtHour, partOfDay, PARTS, secondsUntilNextPart } from './clock.ts';
@@ -113,6 +114,8 @@ export interface SimState {
   collections?: Partial<Record<CollectionId, number>>;
   /** Which story choice each neighbour made, stage by stage. */
   stories?: StoryProgress;
+  /** How far each town honour has been deepened with standing. */
+  honours?: Partial<Record<HonourTrackId, number>>;
   logs: TownLog[];
   nextId: number;
   festivalUntil: number;
@@ -345,6 +348,15 @@ export function validateSave(value: unknown): value is SimState {
   }
   // Absent on saves written before street styles existed. Tier counts must be in range,
   // so a corrupt number cannot unlock an ornament that was never earned.
+  // Absent on saves written before standing could be spent. A track id that does not exist,
+  // or a level beyond what the track offers, is corruption rather than an older save.
+  if (value.honours !== undefined) {
+    if (!isRecord(value.honours)) return false;
+    for (const [id, level] of Object.entries(value.honours)) {
+      if (!HONOUR_TRACK_IDS.includes(id as HonourTrackId)) return false;
+      if (!whole(level) || (level as number) < 0 || (level as number) > HONOURS[id as HonourTrackId].levels.length) return false;
+    }
+  }
   if (value.collections !== undefined) {
     if (!isRecord(value.collections)) return false;
     for (const [id, tier] of Object.entries(value.collections)) {
@@ -373,6 +385,7 @@ export class SimWorld {
     this.state.caravan.destination ??= 'valley';
     this.state.collections ??= {};
     this.state.stories ??= {};
+    this.state.honours ??= {};
     for (const building of this.state.buildings) building.workers ??= BUILDINGS[building.kind].workers ?? 0;
     this.syncQuests();
     if(state===undefined){this.arrangeDistricts();delete this.state.layoutUndo;}
@@ -543,6 +556,27 @@ export class SimWorld {
     if (effect.prestige) this.state.prestige += effect.prestige;
     this.log(`${record.name}：${choice.reply}`, 'success');
     return this.success(choice.reply, { items: effect.items, coins: effect.coins, prestige: effect.prestige });
+  }
+
+  /**
+   * Deepens a town honour by one level. Standing is the only price, and it is spent at once;
+   * a refusal leaves the town exactly as it was.
+   */
+  deepenHonour(id: HonourTrackId): ActionResult {
+    const track = HONOURS[id];
+    if (!track) return this.fail('没有这项荣誉。', 'UNKNOWN_HONOUR');
+    if (this.state.level < track.unlockLevel) return this.fail(`小镇达到 ${track.unlockLevel} 级之后，邻居才会认这份荣誉。`, 'HONOUR_LOCKED');
+    const level = nextHonourLevel(this.state.honours ?? {}, id);
+    if (!level) return this.fail(`「${track.name}」已经做到头了。`, 'HONOUR_COMPLETE');
+    if (this.state.prestige < level.cost) return this.fail(`还需要 ${level.cost - this.state.prestige} 点声望。`, 'INSUFFICIENT_PRESTIGE');
+
+    this.state.prestige -= level.cost;
+    const honours = this.state.honours ?? (this.state.honours = {});
+    honours[id] = honourLevel(honours, id) + 1;
+    // Capacity is a stored figure, so the one effect that changes it is applied on purchase.
+    if (id === 'granary') this.state.capacity += level.value;
+    this.updateNeeds();
+    return this.success(`${track.name}第 ${honours[id]} 级：${level.note}。`);
   }
 
   isUnlocked(kind: BuildingKind): boolean {
@@ -1065,7 +1099,7 @@ export class SimWorld {
     return this.state.buildings.filter(b => b.id !== excludeId && !b.damaged).reduce((total, b) => total + (BUILDINGS[b.kind].housing ?? 0) * b.level, 0);
   }
   communityCapacity(excludeId?: string): number {
-    return 12 + (gardenLevel(this.state.farming?.xp??0).level-1)*2 + (hasProjectTitle(this.state,'garden')?12:0) + this.state.buildings.filter(b => b.id !== excludeId && !b.damaged).reduce((total, b) => total + (BUILDINGS[b.kind].populationCap ?? 0) * b.level, 0);
+    return 12 + honourCommunity(this.state.honours ?? {}) + (gardenLevel(this.state.farming?.xp??0).level-1)*2 + (hasProjectTitle(this.state,'garden')?12:0) + this.state.buildings.filter(b => b.id !== excludeId && !b.damaged).reduce((total, b) => total + (BUILDINGS[b.kind].populationCap ?? 0) * b.level, 0);
   }
   demolitionCapacityIssue(building: Building): { code: string; message: string } | null {
     const def = BUILDINGS[building.kind];
@@ -1233,7 +1267,7 @@ export class SimWorld {
     const workforce = assigned > this.state.population ? assigned / Math.max(1, this.state.population) : 1;
     const morale = this.state.happiness < 35 ? 1.5 : 1;
     const staffing = definition.workers ? definition.workers / Math.max(1, building.workers ?? definition.workers) : 1;
-    return (building.kind==='farm'?CROPS[building.crop??'wheat'].cycle:(definition.cycle??1)) * (building.kind==='farm'?1-soilLevel(building.tended).bonus*.04:1) * (this.state.researched.includes('efficiency') ? 0.9 : 1) * (hasProjectTitle(this.state,'craft')?0.95:1) * seasonal * workforce * staffing * morale * Math.max(0.6, 1 - (building.level - 1) * 0.15);
+    return (building.kind==='farm'?CROPS[building.crop??'wheat'].cycle:(definition.cycle??1)) * (building.kind==='farm'?1-soilLevel(building.tended).bonus*.04:1) * (this.state.researched.includes('efficiency') ? 0.9 : 1) * honourCycleFactor(this.state.honours ?? {}) * (hasProjectTitle(this.state,'craft')?0.95:1) * seasonal * workforce * staffing * morale * Math.max(0.6, 1 - (building.level - 1) * 0.15);
   }
   private canSupply(resource: Resource, visiting = new Set<Resource>()): boolean {
     if (visiting.has(resource)) return false;
@@ -1494,6 +1528,13 @@ export class SimWorld {
       activity: this.activityActive() ? { ...this.state.activity } : null,
       achievements: achievementProgress(this.achievementMetrics(), this.state.achievements ?? []),
       collections: collectionProgress(this.state.buildings, this.state.collections ?? {}),
+      honours: honourSummary(this.state.honours ?? {}).map(entry => ({
+        ...entry,
+        name: HONOURS[entry.id].name, icon: HONOURS[entry.id].icon, description: HONOURS[entry.id].description,
+        unit: HONOURS[entry.id].unit, unlockLevel: HONOURS[entry.id].unlockLevel,
+        unlocked: this.state.level >= HONOURS[entry.id].unlockLevel,
+      })),
+      honourBonus: { capacity: honourCapacity(this.state.honours ?? {}), community: honourCommunity(this.state.honours ?? {}), cycle: honourCycleFactor(this.state.honours ?? {}) },
       stories: this.neighbourStories(),
       caravanRoutes: availableDestinations(this.state.researched).map(destination => ({
         ...destination,
