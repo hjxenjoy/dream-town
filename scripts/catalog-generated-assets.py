@@ -44,6 +44,9 @@ names = {
 pivots = {'windmill-rotor': [.53, .53], 'waterwheel': [.42, .55], 'saw-blade': [.59, .53], 'fishing-rod': [.17, .87], 'minecart': [.51, .84], 'hammer': [.52, .83]}
 labels = ['灾害与修缮', '居民搬运与劳作', '商队', '邻居立绘', '街区装饰', '季节摆件', '乳品与酿酒产业', '住宅成长', '宠物', '机械分层']
 REPAIR = {'citizens-actions', 'disasters'}
+# Atlases wired into the running game: every one is now drawn from source.
+INTEGRATED = {'disasters', 'citizens-actions', 'caravan', 'story-portraits', 'street-decor',
+              'season-props', 'industry2', 'housing-levels', 'pets', 'machine-layers'}
 
 
 def grow(mask, radius):
@@ -388,7 +391,8 @@ for spec, label in zip(json.loads((SOURCE / 'selected-atlases.json').read_text()
             'requested12PercentPaddingMet': (min(margins) >= .12) if margins else False,
             'edgeFrames': touch,
             'exactRequestedCanvas': (width, height) == (spec['width'], spec['height']),
-            'runtimeIntegrated': False,
+            # Set below once the game draws it; the catalog cannot see the renderer.
+            'runtimeIntegrated': name in INTEGRATED,
             'verifyForeignPixelsInFrames': ownership['foreignPixels'],
             'verifyForeignByFrame': ownership['byFrame'],
             'verifyOrphanPixels': ownership['orphanPixels'],

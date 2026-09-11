@@ -204,7 +204,7 @@
     "requested12PercentPaddingMet": false,
     "edgeFrames": [],
     "exactRequestedCanvas": false,
-    "runtimeIntegrated": false,
+    "runtimeIntegrated": true,
     "verifyForeignPixelsInFrames": 0,
     "verifyForeignByFrame": {},
     "verifyOrphanPixels": 42,

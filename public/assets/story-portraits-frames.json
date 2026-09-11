@@ -317,7 +317,7 @@
       }
     ],
     "exactRequestedCanvas": false,
-    "runtimeIntegrated": false,
+    "runtimeIntegrated": true,
     "verifyForeignPixelsInFrames": 124,
     "verifyForeignByFrame": {
       "carpenter": 3,

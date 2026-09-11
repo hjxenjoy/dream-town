@@ -213,7 +213,7 @@
       }
     ],
     "exactRequestedCanvas": false,
-    "runtimeIntegrated": false,
+    "runtimeIntegrated": true,
     "verifyForeignPixelsInFrames": 8,
     "verifyForeignByFrame": {
       "winter-tree": 8

@@ -165,7 +165,7 @@
       }
     ],
     "exactRequestedCanvas": false,
-    "runtimeIntegrated": false,
+    "runtimeIntegrated": true,
     "verifyForeignPixelsInFrames": 51,
     "verifyForeignByFrame": {
       "dairy": 32,

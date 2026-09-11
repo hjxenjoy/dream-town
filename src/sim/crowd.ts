@@ -1,7 +1,13 @@
 import { TownNavigation } from './navigation.ts';
 import { tileKey, type Road, type Tile } from './roads.ts';
 import { PETS, petLeash, type PetState } from './pets.ts';
-export interface Walker { x:number;y:number;route:Tile[];step:number;wait:number;style:number;headingX:number;headingY:number;walking:boolean;relocated:boolean }
+import { BUILDINGS, type BuildingKind } from './data.ts';
+export type WalkerTask = 'walk' | 'carry' | 'work';
+export interface Walker { x:number;y:number;route:Tile[];step:number;wait:number;style:number;headingX:number;headingY:number;walking:boolean;relocated:boolean;
+  /** What the resident is doing: strolling, hauling to a workshop, or working in it. */
+  task:WalkerTask;
+  /** The kind of building this trip is headed for, which decides the task above. */
+  goalKind?:BuildingKind }
 /** A pet trails one resident, re-pathing to that resident's tile instead of wandering. */
 export interface PetWalker extends Walker { kind:PetState['kind']; follows:number }
 /** Decorative citizens share the same blocked cells as construction. No straight-line shortcuts. */
@@ -10,11 +16,21 @@ export class TownCrowd {
   pets:PetWalker[]=[];
   navigation=new TownNavigation([]);
   private signature='';private destinations:Tile[]=[];private trip=0;
-  sync(buildings:Tile[],roads:Road[],population:number){
+  /** The kind of building each destination belongs to, so a resident knows where they are. */
+  private destinationKind:BuildingKind[]=[];
+  /**
+   * `kinds` names the building each entry of `buildings` belongs to, so a resident can
+   * tell a workshop from a house and pick the right pose. Optional for callers that
+   * only care about movement.
+   */
+  sync(buildings:Tile[],roads:Road[],population:number,kinds?:BuildingKind[]){
     const signature=buildings.map(tileKey).join('|')+';'+roads.map(tileKey).join('|');
     if(signature!==this.signature){
       this.signature=signature;this.navigation=new TownNavigation(buildings,roads);
       this.destinations=buildings.flatMap(b=>this.navigation.entrances(b));
+      this.destinationKind=kinds
+        ? buildings.flatMap((b,i)=>this.navigation.entrances(b).map(()=>kinds[i]!))
+        : [];
       for(const w of this.walkers){
         const current={x:Math.round(w.x),y:Math.round(w.y)};
         if(!this.navigation.canWalk(current)||w.route.slice(w.step).some(t=>!this.navigation.canWalk(t))){
@@ -27,7 +43,7 @@ export class TownCrowd {
     while(this.walkers.length>count)this.walkers.pop();
     while(this.walkers.length<count&&this.destinations.length){
       const i=this.walkers.length,p=this.destinations[(i*7)%this.destinations.length];
-      this.walkers.push({...p,route:[],step:0,wait:i*.17,style:i%6,headingX:1,headingY:0,walking:false,relocated:false});
+      this.walkers.push({...p,route:[],step:0,wait:i*.17,style:i%6,headingX:1,headingY:0,walking:false,relocated:false,task:'walk'});
     }
   }
   /** Keeps one walker per adopted pet, each leashed to a resident. */
@@ -35,7 +51,7 @@ export class TownCrowd {
     while(this.pets.length>pets.length)this.pets.pop();
     while(this.pets.length<pets.length){
       const pet=pets[this.pets.length]!,spot=this.destinations.length?this.destinations[this.pets.length%this.destinations.length]:{x:1,y:1};
-      this.pets.push({...spot,route:[],step:0,wait:0,style:this.pets.length%2,headingX:1,headingY:0,walking:false,relocated:false,kind:pet.kind,follows:0});
+      this.pets.push({...spot,route:[],step:0,wait:0,style:this.pets.length%2,headingX:1,headingY:0,walking:false,relocated:false,task:'walk',kind:pet.kind,follows:0});
     }
     for(const [i,pet] of this.pets.entries()) pet.follows=petLeash(pets[i]!,this.walkers.length);
   }
@@ -48,11 +64,14 @@ export class TownCrowd {
       if(!w.route.length){
         const start={x:Math.round(w.x),y:Math.round(w.y)};
         for(let n=0;n<6;n++){
-          const goal=this.destinations[(this.trip++*13+i*7)%this.destinations.length];if(!goal)break;
-          const route=this.navigation.path(start,goal);if(route.length>1){w.route=route;w.step=1;break;}
+          const pick=(this.trip++*13+i*7)%this.destinations.length;
+          const goal=this.destinations[pick];if(!goal)break;
+          const route=this.navigation.path(start,goal);if(route.length>1){w.route=route;w.step=1;w.goalKind=this.destinationKind[pick];break;}
         }
         if(!w.route.length){w.wait=2;continue;}
       }
+      // Hauling to a workshop looks like carrying; waiting there looks like working.
+      w.task=(w.goalKind&&BUILDINGS[w.goalKind].cycle)?'carry':'walk';
       let remaining=seconds*(.57+(i%4)*.045);
       while(remaining>0&&w.step<w.route.length){
         const target=w.route[w.step];
@@ -62,7 +81,7 @@ export class TownCrowd {
         if(remaining>=distance){w.x=target.x;w.y=target.y;remaining-=distance;w.step++;}
         else{w.x+=dx/distance*remaining;w.y+=dy/distance*remaining;remaining=0;}
       }
-      if(w.step>=w.route.length){w.route=[];w.wait=1.5+(i%5)*.6;}
+      if(w.step>=w.route.length){w.route=[];w.wait=1.5+(i%5)*.6;w.task=(w.goalKind&&BUILDINGS[w.goalKind].cycle)?'work':'walk';}
     }
     // Pets re-path toward the resident they follow, so they always trail someone.
     for(const pet of this.pets){

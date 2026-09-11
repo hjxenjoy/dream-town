@@ -7,6 +7,8 @@ import { terrainAt, riverX } from '../src/sim/terrain.ts';
 import { roadLine, tileKey } from '../src/sim/roads.ts';
 import { TownNavigation } from '../src/sim/navigation.ts';
 import { TownCrowd } from '../src/sim/crowd.ts';
+import { BUILDINGS, emptyResources } from '../src/sim/data.ts';
+import { readFileSync } from 'node:fs';
 
 const rich=()=>{const w=new SimWorld();w.state.coins=10000;w.state.resources.stone=50;w.state.capacity=2000;return w;};
 test('roads place contiguous L routes and upgrade by the exact difference, never downgrade',()=>{
@@ -94,4 +96,35 @@ test('agent road and harvest actions use the same validated rules',()=>{
  assert.equal(executeGameTool(w,'pave_road',{x:40,y:41,endX:90,endY:41,surface:'dirt'}).ok,false);assert.equal(JSON.stringify(w.state),before);
  assert.equal(executeGameTool(w,'pave_road',{x:40,y:41,endX:41,endY:41,surface:'gravel'}).ok,true);
  assert.equal(executeGameTool(w,'collect_all').ok,true);
+});
+
+test('the crowd distinguishes strolling, hauling and working, and every pose exists',()=>{
+  // The action atlas is only useful if residents actually switch to it: a resident
+  // bound for a workshop hauls goods there, then works while they wait.
+  const w=new SimWorld();
+  w.state.capacity=20000;
+  w.state.resources={...emptyResources(),wood:600,stone:600,wheat:600,bread:200,fish:200};
+  w.state.settings.disasters=false;w.state.settings.autoMayor=false;
+  const crowd=new TownCrowd();
+  crowd.sync(w.state.buildings,w.state.roads??[],w.state.population,w.state.buildings.map(b=>b.kind));
+  for(let frame=0;frame<600;frame++) crowd.tick(1/30);
+  const tasks=new Set(crowd.walkers.map(walker=>walker.task));
+  assert.ok(tasks.has('walk'),'residents also stroll');
+  assert.ok(tasks.has('carry')||tasks.has('work'),'and they haul and work at workshops');
+
+  // Only workshops ever produce a work pose.
+  for(const walker of crowd.walkers){
+    if(walker.task==='walk') continue;
+    assert.ok(walker.goalKind,`task ${walker.task} remembers its destination`);
+    assert.ok(BUILDINGS[walker.goalKind!].cycle,`${walker.goalKind} is a workshop`);
+  }
+
+  // Every pose the renderer asks for must exist in the atlas.
+  const catalog=JSON.parse(readFileSync(new URL('../public/assets/citizens-actions-frames.json',import.meta.url),'utf8'));
+  const available=new Set<string>(Object.keys(catalog.frames));
+  for(const persona of ['gardener','carpenter','herbalist','farmer','merchant','fisher']){
+    for(const task of ['carry','work']) for(const facing of ['front','back']) for(const step of [0,1]){
+      assert.ok(available.has(`${persona}-${task}-${facing}-${step}`),`${persona} ${task} ${facing} ${step} exists`);
+    }
+  }
 });

@@ -1,8 +1,12 @@
 import Phaser from 'phaser';
 import { TownCrowd } from '../sim/crowd';
 import { PETS } from '../sim/pets';
+import { atlasFrames } from '../sim/atlases';
 import { iso } from '../sim/terrain';
 import type { SimWorld } from '../sim/world';
+/** Which of the six action rows each walking style uses, in the original citizens order. */
+const NEIGHBOUR_STYLE=['gardener','carpenter','herbalist','farmer','merchant','fisher'];
+
 export class Residents {
   crowd=new TownCrowd();
   private sprites:Phaser.GameObjects.Image[]=[];
@@ -12,9 +16,12 @@ export class Residents {
   constructor(private scene:Phaser.Scene){
     const texture=scene.textures.get('citizens');
     for(let row=0;row<6;row++)for(let col=0;col<4;col++)texture.add(`${row}-${col}`,0,col*256,row*256,256,256);
+    // The carrying/working atlas registers from its catalog like every other generated one.
+    const actions=scene.textures.get('citizens-actions');
+    Object.entries(atlasFrames('citizens-actions')).forEach(([name,frame])=>actions.add(name,0,frame.x,frame.y,frame.w,frame.h));
   }
   sync(world:SimWorld){
-    this.crowd.sync(world.state.buildings,world.state.roads??[],world.state.population);
+    this.crowd.sync(world.state.buildings,world.state.roads??[],world.state.population,world.state.buildings.map(b=>b.kind));
     this.crowd.syncPets(world.state.pets??[]);
   }
   update(time:number,delta:number){
@@ -24,8 +31,18 @@ export class Residents {
       let sprite=this.sprites[i];
       if(!sprite){this.shadows.push(this.scene.add.ellipse(0,0,14,6,0x425138,.23));sprite=this.scene.add.image(0,0,'citizens',`${w.style}-0`).setOrigin(.5,.95).setDisplaySize(42+(i%3)*2,42+(i%3)*2);this.sprites.push(sprite);}
       const p=iso(w.x,w.y),screenX=w.headingX-w.headingY,screenY=w.headingX+w.headingY;
-      const pose=screenY<0?2:0,step=w.walking&&delta>0?Math.floor(time/280+i)%2:0;
-      sprite.setFrame(`${w.style}-${pose+step}`).setFlipX(screenX<0).setPosition(p.x,p.y+(w.walking&&delta>0?Math.sin(time/140+i)*.6:0)).setDepth(p.y+6);
+      const step=w.walking&&delta>0?Math.floor(time/280+i)%2:0;
+      if(w.task!=='walk'){
+        // Hauling and working come from the action atlas: eight columns per resident,
+        // front then back, two frames each.
+        const persona=NEIGHBOUR_STYLE[w.style]??'gardener';
+        const facing=screenY<0?'back':'front';
+        sprite.setTexture('citizens-actions',`${persona}-${w.task}-${facing}-${step}`).setDisplaySize(44,44);
+      }else{
+        const pose=screenY<0?2:0;
+        sprite.setTexture('citizens',`${w.style}-${pose+step}`).setDisplaySize(42+(i%3)*2,42+(i%3)*2);
+      }
+      sprite.setFlipX(screenX<0).setPosition(p.x,p.y+(w.walking&&delta>0?Math.sin(time/140+i)*.6:0)).setDepth(p.y+6);
       if(w.relocated){w.relocated=false;sprite.setAlpha(0);this.scene.tweens.add({targets:sprite,alpha:1,duration:300});}
       this.shadows[i].setPosition(p.x,p.y).setDepth(p.y-1);
     });
