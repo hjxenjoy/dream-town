@@ -1,6 +1,7 @@
 import { CROP_FRAMES, soilLevel } from '../sim/farming';
 import { TownAtmosphere } from './TownAtmosphere';
 import { DisasterLayer } from './DisasterLayer';
+import { CaravanCart } from './CaravanCart';
 import { valleyCameraCenter } from './cameraBounds';
 import { Residents } from './Residents';
 import { RoadLayer } from './RoadLayer';
@@ -8,11 +9,13 @@ import { roadLine, roadQuote, ROAD_TYPES, type RoadKind, type Tile } from '../si
 import Phaser from 'phaser';
 import { SimWorld, type Building, type BuildingKind } from '../sim/world';
 import { BUILDINGS, EXPANSION_SPRITES, EXPANSION_FRAMES, INDUSTRY_KINDS, INDUSTRY_FRAMES, DECORATION_SPRITES, DECORATION_FRAMES } from '../sim/data';
-import { atlasFrames, generatedSprite, housingLevelFrame } from '../sim/atlases';
+import { GENERATED_ATLASES, atlasFrames, generatedSprite, housingLevelFrame } from '../sim/atlases';
 import { MAP_SIZE, TILE_W, TILE_H, iso, terrainAt, terrainReason, DISTRICTS, type District } from '../sim/terrain';
 import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
+/** Generated atlases the scene draws. Preloading and frame registration both read this. */
+const SCENE_ATLASES = ['disasters','street-decor','housing-levels','caravan'] as const;
 const deiso = (x: number, y: number) => ({ x: Math.round(x / TILE_W + y / TILE_H), y: Math.round(y / TILE_H - x / TILE_W) });
 type BuildingVisual = { sprite: Phaser.GameObjects.Image; badge: Phaser.GameObjects.Container; progress: Phaser.GameObjects.Graphics; ready: boolean };
 export class TownScene extends Phaser.Scene {
@@ -46,6 +49,7 @@ export class TownScene extends Phaser.Scene {
   private pinchDistance = 0;
   private atmosphere!:TownAtmosphere;
   private disasterLayer!:DisasterLayer;
+  private caravanCart!:CaravanCart;
   private running=new Set<string>();
   private progressSnapshot=new Map<string,number>();
   private lastSeason = '';
@@ -61,9 +65,9 @@ export class TownScene extends Phaser.Scene {
     this.load.image('scenery', '/assets/valley-scenery.png');
     this.load.image('industry', '/assets/industry.png');
     this.load.image('buildings', '/assets/buildings.png');
-    this.load.image('disasters', '/assets/disasters.webp');
-    this.load.image('street-decor', '/assets/street-decor.webp');
-    this.load.image('housing-levels', '/assets/housing-levels.webp');
+    // Every generated atlas is loaded and registered from its own catalog, so a new
+    // atlas needs one entry here rather than a matching pair of edits.
+    for(const atlas of SCENE_ATLASES) this.load.image(atlas, GENERATED_ATLASES[atlas].image);
     this.load.json('frames', '/assets/frames.json');
   }
   create() {
@@ -87,11 +91,12 @@ export class TownScene extends Phaser.Scene {
     Object.entries(DECORATION_FRAMES).forEach(([name,f])=>decor.add(name,0,f.x,f.y,f.w,f.h));
     // Every generated atlas registers its frames from the same catalog the asset
     // preview page reads, so a sprite's location is never restated in source.
-    for(const [atlas,key] of [['disasters','disasters'],['street-decor','street-decor'],['housing-levels','housing-levels']] as const){
-      const texture=this.textures.get(key);
+    for(const atlas of SCENE_ATLASES){
+      const texture=this.textures.get(atlas);
       Object.entries(atlasFrames(atlas)).forEach(([name,f])=>texture.add(name,0,f.x,f.y,f.w,f.h));
     }
     this.disasterLayer=new DisasterLayer(this);
+    this.caravanCart=new CaravanCart(this);
     this.ground=drawValley(this);
     this.atmosphere=new TownAtmosphere(this);
     this.cameras.main.setBackgroundColor('#98a96b');
@@ -310,6 +315,7 @@ export class TownScene extends Phaser.Scene {
     this.residents.update(time,this.game.loop.delta/1000*this.simulationSpeed);
     const reduced=this.reducedMotion();
     this.disasterLayer.sync(this.world.state.buildings,time,reduced);
+    this.caravanCart.sync(this.world,time,reduced);
     this.atmosphere.update(this.game.loop.delta*(this.simulationSpeed>0?1:0),this.world.state.buildings,this.running,this.world.state.festivalUntil>this.world.state.gameTime,reduced);
     if(!reduced&&this.simulationSpeed>0)this.visuals.forEach((v,id)=>{if(v.ready){const b=this.world.state.buildings.find(b=>b.id===id)!;const p=iso(b.x,b.y);v.badge.y=p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)+Math.sin(time/430)*3;}});
     if(this.lastSeason!==this.world.state.season){this.lastSeason=this.world.state.season;this.ground.setAlpha(this.lastSeason==='winter'?.78:1);}
