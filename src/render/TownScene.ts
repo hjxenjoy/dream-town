@@ -1,5 +1,6 @@
 import { CROP_FRAMES, soilLevel } from '../sim/farming';
 import { TownAtmosphere } from './TownAtmosphere';
+import { DisasterLayer } from './DisasterLayer';
 import { valleyCameraCenter } from './cameraBounds';
 import { Residents } from './Residents';
 import { RoadLayer } from './RoadLayer';
@@ -43,6 +44,7 @@ export class TownScene extends Phaser.Scene {
   private syncAt = 0;
   private pinchDistance = 0;
   private atmosphere!:TownAtmosphere;
+  private disasterLayer!:DisasterLayer;
   private running=new Set<string>();
   private progressSnapshot=new Map<string,number>();
   private lastSeason = '';
@@ -58,7 +60,9 @@ export class TownScene extends Phaser.Scene {
     this.load.image('scenery', '/assets/valley-scenery.png');
     this.load.image('industry', '/assets/industry.png');
     this.load.image('buildings', '/assets/buildings.png');
+    this.load.image('disasters', '/assets/disasters.webp');
     this.load.json('frames', '/assets/frames.json');
+    this.load.json('disasterFrames', '/assets/disasters-frames.json');
   }
   create() {
     const crops=this.textures.get('crops');
@@ -79,6 +83,11 @@ export class TownScene extends Phaser.Scene {
     });
     const decor=this.textures.get('decorations');
     Object.entries(DECORATION_FRAMES).forEach(([name,f])=>decor.add(name,0,f.x,f.y,f.w,f.h));
+    // Hazard and repair frames come from the generated catalog rather than a copy in source.
+    const disasters=this.textures.get('disasters');
+    Object.entries(this.cache.json.get('disasterFrames').frames as Record<string,{x:number;y:number;w:number;h:number}>)
+      .forEach(([name,f])=>disasters.add(name,0,f.x,f.y,f.w,f.h));
+    this.disasterLayer=new DisasterLayer(this);
     this.ground=drawValley(this);
     this.atmosphere=new TownAtmosphere(this);
     this.cameras.main.setBackgroundColor('#98a96b');
@@ -274,6 +283,7 @@ export class TownScene extends Phaser.Scene {
     if(this.buildKind)this.updateGhost(this.input.activePointer);
     this.residents.update(time,this.game.loop.delta/1000*this.simulationSpeed);
     const reduced=this.reducedMotion();
+    this.disasterLayer.sync(this.world.state.buildings,time,reduced);
     this.atmosphere.update(this.game.loop.delta*(this.simulationSpeed>0?1:0),this.world.state.buildings,this.running,this.world.state.festivalUntil>this.world.state.gameTime,reduced);
     if(!reduced&&this.simulationSpeed>0)this.visuals.forEach((v,id)=>{if(v.ready){const b=this.world.state.buildings.find(b=>b.id===id)!;const p=iso(b.x,b.y);v.badge.y=p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)+Math.sin(time/430)*3;}});
     if(this.lastSeason!==this.world.state.season){this.lastSeason=this.world.state.season;this.ground.setAlpha(this.lastSeason==='winter'?.78:1);}

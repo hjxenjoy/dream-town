@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, EXPANSION_SPRITES, RESOURCE_KEYS, TECHNOLOGY_KEYS, emptyResources, type BuildingKind } from '../src/sim/data.ts';
+import { DISASTER_INTERVAL, DISASTER_KINDS, REPAIR_SECONDS } from '../src/sim/disasters.ts';
 import { executeGameTool } from '../src/sim/tools.ts';
 
 function prepared(){
@@ -59,7 +60,9 @@ test('water towers supply new homes, expand after upgrade and stop supplying whe
   assert.equal(w.moveBuilding(home.id,44,41).ok,true);assert.equal(w.observe().needs.water,0);
   w.upgrade(tower.id);assert.equal(w.observe().needs.water,100);
   tower.damaged=true;w.tick(.1);assert.equal(w.observe().needs.water,0);
-  w.repair(tower.id);w.tick(.1);assert.equal(w.observe().needs.water,100);
+  // Repairs are a timed job: the tower only supplies again once the scaffolding comes down.
+  assert.equal(w.repair(tower.id).ok,true);w.tick(REPAIR_SECONDS-1);assert.equal(w.observe().needs.water,0);
+  w.tick(2);assert.equal(w.observe().needs.water,100);
 });
 
 test('new recipes consume and produce exact resources online and offline with stock conservation',()=>{
@@ -94,8 +97,17 @@ test('foresters and building-material workshops stop at targets and resume after
 test('fire stations protect factories beyond old watchtower range and upgrade coverage',()=>{
   const w=prepared();w.state.buildings=[];w.state.roads=[];w.state.settings.disasters=true;
   const station=add(w,'firestation',37,40),factory=add(w,'forester',44,41);
-  w.upgrade(station.id);w.tick(420);assert.equal(factory.damaged,undefined);
-  station.level=1;w.tick(420);assert.equal(factory.damaged,true);
+  // Drive the strike clock directly: hazards rotate per slot and several are seasonal.
+  const FIRE_SLOT=DISASTER_INTERVAL*DISASTER_KINDS.length;
+  const strikeFire=()=>{w.state.gameTime=FIRE_SLOT-1;w.state.lastDisasterAt=0;w.tick(1);};
+  w.upgrade(station.id);strikeFire();assert.equal(factory.damaged,undefined);
+  station.level=1;strikeFire();assert.equal(factory.damaged,true);
+  assert.equal(factory.damageKind,'fire');
+  // A damaged factory reports a named hazard and can be repaired back into service.
+  const alert=w.observe().alerts.find(a=>a.buildingId===factory.id)!;
+  assert.equal(alert.name,'火情');assert.ok(alert.advice.length>0);
+  w.repair(factory.id);assert.equal(w.repair(factory.id).code,'REPAIR_IN_PROGRESS');
+  w.tick(REPAIR_SECONDS);assert.equal(factory.damaged,false);assert.equal(factory.damageKind,undefined);
 });
 
 test('research gates and road collision apply to every new building',()=>{

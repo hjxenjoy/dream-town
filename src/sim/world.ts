@@ -4,6 +4,7 @@ import { stockTargets, woodReserve } from './economy.ts';
 import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type RoadKind, type Tile } from './roads.ts';
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
 import { BUILDINGS, BUILDING_KEYS, CARAVAN_CARGO, CARAVAN_DURATION, emptyResources, GAME_DAY_SECONDS, MAP_SIZE, MAX_OFFLINE_SECONDS, RESOURCE_KEYS, RESOURCES, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TECHNOLOGY_KEYS, PRODUCTION_SEQUENCE, type TechnologyId, type BuildingKind, type Resource, type ResourceMap } from './data.ts';
+import { DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, REPAIR_SECONDS, canStrike, disasterOf, type DisasterKind, type SeasonKey } from './disasters.ts';
 export type { BuildingKind, Resource, ResourceMap } from './data.ts';
 
 export interface Building {
@@ -17,6 +18,9 @@ export interface Building {
   paused: boolean;
   stock: Partial<ResourceMap>;
   damaged?: boolean;
+  /** Which hazard struck this building, and when its repair finishes. */
+  damageKind?: DisasterKind;
+  repairingUntil?: number;
   workers?: number;
   crop?: CropId;
   nextCrop?: CropId;
@@ -219,6 +223,10 @@ export function validateSave(value: unknown): value is SimState {
     if(building.kind==='farm'&&building.crop&&building.crop!=='wheat'&&building.ready&&building.cropHarvest===undefined)return false;
     if (building.productionFocus !== undefined && (building.kind !== 'lumber' || !['balanced', 'wood', 'plank'].includes(building.productionFocus as string))) return false;
     if (building.damaged !== undefined && typeof building.damaged !== 'boolean') return false;
+    if (building.damageKind !== undefined && !DISASTER_KINDS.includes(building.damageKind as DisasterKind)) return false;
+    // A hazard kind and a repair timer only make sense on a building that is out of action.
+    if (building.damageKind !== undefined && building.damaged !== true) return false;
+    if (building.repairingUntil !== undefined && (building.damaged !== true || !nonnegative(building.repairingUntil))) return false;
     const technology = BUILDINGS[building.kind as BuildingKind].technology;
     if (technology && !researched.includes(technology)) return false;
     const maximumWorkers = BUILDINGS[building.kind as BuildingKind].workers ?? 0;
@@ -652,14 +660,30 @@ export class SimWorld {
     return this.success(`目标「${quest.title}」达成！获得 ${quest.rewardCoins} 金币与 ${quest.rewardPrestige} 声望。`, { coins: quest.rewardCoins, xp: quest.rewardXp });
   }
 
+  /** Repairing takes time and shows scaffolding; the building stays out of production until done. */
   repair(id: string): ActionResult {
     const building = this.state.buildings.find(candidate => candidate.id === id);
     if (!building) return this.fail('没有找到这座建筑。', 'BUILDING_NOT_FOUND');
     if (!building.damaged) return this.fail('这座建筑目前不需要修缮。', 'NOT_DAMAGED');
-    if (this.state.coins < 80 || !this.has({ wood: 3, stone: 2 })) return this.fail('修缮需要 80 金币、3 木材和 2 石料。', 'INSUFFICIENT_RESOURCES');
-    this.state.coins -= 80; this.deduct({ wood: 3, stone: 2 }); building.damaged = false;
-    this.state.stats.repairs++; this.state.happiness = Math.min(100, this.state.happiness + 3);
-    return this.success(`${BUILDINGS[building.kind].name}已经修好，可以继续使用了。`, { buildingId: id, coins: -80 });
+    if (building.repairingUntil !== undefined) return this.fail('工匠已经在修缮这座建筑了。', 'REPAIR_IN_PROGRESS');
+    const cost = disasterOf(building.damageKind).repair;
+    if (this.state.coins < cost.coins || !this.has({ wood: cost.wood, stone: cost.stone })) {
+      return this.fail(`修缮需要 ${cost.coins} 金币、${cost.wood} 木材和 ${cost.stone} 石料。`, 'INSUFFICIENT_RESOURCES');
+    }
+    this.state.coins -= cost.coins; this.deduct({ wood: cost.wood, stone: cost.stone });
+    building.repairingUntil = this.state.gameTime + REPAIR_SECONDS;
+    this.state.stats.repairs++;
+    return this.success(`工匠开始修缮${BUILDINGS[building.kind].name}，稍后就恢复生产。`, { buildingId: id, coins: -cost.coins });
+  }
+
+  /** Finishes any repair whose scaffolding time is up. Shared by online and offline time. */
+  private completeRepairs(): void {
+    for (const building of this.state.buildings) {
+      if (building.repairingUntil === undefined || building.repairingUntil > this.state.gameTime) continue;
+      building.damaged = false; delete building.damageKind; delete building.repairingUntil;
+      this.state.happiness = Math.min(100, this.state.happiness + 3);
+      this.log(`${BUILDINGS[building.kind].name}已经修好，可以继续使用了。`, 'success');
+    }
   }
 
   housingCapacity(excludeId?: string): number {
@@ -841,7 +865,8 @@ export class SimWorld {
     this.state.happiness = clamp(this.state.happiness + (this.targetHappiness() - this.state.happiness) * Math.min(1, elapsed / 90), 0, 100);
     const newDays = Math.floor(this.state.gameTime / GAME_DAY_SECONDS) - Math.floor(previousTime / GAME_DAY_SECONDS);
     for (let day = 0; day < newDays; day++) this.settleDay();
-    if (this.state.settings.disasters && this.state.gameTime - this.state.lastDisasterAt >= 420) this.triggerDisaster();
+    if (this.state.settings.disasters && this.state.gameTime - this.state.lastDisasterAt >= DISASTER_INTERVAL) this.triggerDisaster();
+    this.completeRepairs();
     if (this.state.settings.autoMayor && this.state.gameTime - this.state.lastMayorAt >= 5) this.runMayor();
     this.syncQuests();
   }
@@ -862,14 +887,24 @@ export class SimWorld {
     }
   }
 
+  /** Hazards are seasonal, and the player's defence is placement plus protective cover. */
   private triggerDisaster(): void {
     this.state.lastDisasterAt = this.state.gameTime;
-    const towers = this.state.buildings.filter(building => BUILDINGS[building.kind].fireRadius && !building.damaged);
-    const candidates = this.state.buildings.filter(building => !building.damaged && BUILDINGS[building.kind].category !== 'decoration' && !['townhall', 'farm'].includes(building.kind) && !BUILDINGS[building.kind].waterRadius && !BUILDINGS[building.kind].fireRadius && !towers.some(tower => Math.hypot(building.x - tower.x, building.y - tower.y) <= BUILDINGS[tower.kind].fireRadius! + tower.level - 1));
-    if (candidates.length === 0) { this.log('消防巡查结束，小镇平安无事。', 'info'); return; }
-    const building = candidates[Math.floor(this.state.gameTime / 420) % candidates.length];
-    building.damaged = true; this.state.happiness = Math.max(10, this.state.happiness - 5);
-    this.log(`${BUILDINGS[building.kind].name}发生了小火情，生产已暂停，请及时修缮。`, 'warning');
+    const season = this.state.season as SeasonKey;
+    const guards = this.state.buildings.filter(building => !building.damaged && (building.kind === 'firetower' || building.kind === 'firestation'));
+    const guarded = (building: Building): boolean => guards.some(tower =>
+      Math.hypot(building.x - tower.x, building.y - tower.y) <= (tower.kind === 'firestation' ? 7 : 4) + tower.level - 1);
+
+    const kind = DISASTER_KINDS[Math.floor(this.state.gameTime / DISASTER_INTERVAL) % DISASTER_KINDS.length];
+    const candidates = this.state.buildings.filter(building => canStrike(kind, building, season, guarded(building)));
+    if (candidates.length === 0) {
+      this.log(`巡查结束：${disasterOf(kind).name}没有威胁到小镇，一切平安。`, 'info');
+      return;
+    }
+    const building = candidates[Math.floor(this.state.gameTime / DISASTER_INTERVAL) % candidates.length];
+    building.damaged = true; building.damageKind = kind;
+    this.state.happiness = Math.max(10, this.state.happiness - (kind === 'fire' ? 5 : 3));
+    this.log(disasterOf(kind).log.replace('%s', BUILDINGS[building.kind].name), 'warning');
   }
 
   private runMayor(): void {
@@ -979,6 +1014,7 @@ export class SimWorld {
       const fuel = Math.min(this.state.resources.wood, Math.ceil(this.state.population / 8) * days);
       this.state.resources.wood -= fuel; report.consumed.wood += fuel;
     }
+    this.completeRepairs();
     this.updateNeeds();
     const shortagePenalty = demand > 0 ? Math.min(18, demand) : 0;
     this.state.happiness = clamp(originalHappiness - shortagePenalty + (this.state.taxRate === 0 ? Math.min(5, days) : 0), 25, 100);
@@ -1018,7 +1054,14 @@ export class SimWorld {
       projects: PROJECT_IDS.map(id=>({id,name:PROJECTS[id].name,title:PROJECTS[id].title,perk:PROJECTS[id].perk,...this.projectStatus(id)})),
       resources: { ...this.state.resources }, orders: clone(this.state.orders), caravan: clone(this.state.caravan),
       readyBuildings: this.state.buildings.filter(building => building.ready).map(building => building.id),
-      alerts: this.state.buildings.filter(building => building.damaged).map(building => ({ buildingId: building.id, type: 'fire', x: building.x, y: building.y })),
+      alerts: this.state.buildings.filter(building => building.damaged || building.repairingUntil !== undefined).map(building => ({
+        buildingId: building.id,
+        type: building.damaged ? (building.damageKind ?? 'fire') : 'repairing',
+        name: building.damaged ? disasterOf(building.damageKind).name : '修缮中',
+        advice: building.damaged ? disasterOf(building.damageKind).advice : '',
+        repairingUntil: building.repairingUntil,
+        x: building.x, y: building.y,
+      })),
       production: this.state.buildings.filter(building => BUILDINGS[building.kind].cycle).map(building => ({ buildingId: building.id, kind: building.kind, paused: building.paused, ready: building.ready, input: BUILDINGS[building.kind].input ?? {}, output: this.productionOutput(building, this.stockTargets(), false), cycle: this.cycleTime(building), focus: building.productionFocus ?? 'balanced', blocked: this.productionBlock(building) })),
     };
   }

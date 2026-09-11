@@ -1,11 +1,12 @@
 export type Resource = 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing';
 export type ResourceMap = Record<Resource, number>;
+export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
 export type BuildingKind = 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation';
 
 export interface BuildingDefinition {
   name: string;
   description: string;
-  category: 'homes' | 'production' | 'services' | 'decoration';
+  category: BuildingCategory;
   cost: number;
   wood: number;
   stone: number;
