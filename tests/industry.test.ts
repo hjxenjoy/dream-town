@@ -18,13 +18,24 @@ function construct(world: SimWorld, kind: BuildingKind, x: number) {
   return world.state.buildings.find(b => b.id === result.buildingId)!;
 }
 function legacySave() {
-  const state: any = createInitialState(1_000_000);
-  state.version = 1; delete state.researched; delete state.stats.toolsProduced; delete state.stats.clothingProduced;
-  for (const key of ['ore','charcoal','ingot','tools','feed','wool','cloth','clothing']) delete state.resources[key];
-  state.quests = state.quests.filter((q: any) => !['research','tools','clothing'].includes(q.id));
-  state.quests[0].claimed = true; state.quests[0].progress = 12;
+  const state = createInitialState(1_000_000);
+  // Reshape a current save into the v1 format. Casting through unknown is deliberate:
+  // the whole point is to remove fields the SimState type requires.
+  const legacy = state as unknown as Record<string, unknown>;
+  legacy.version = 1;
+  delete legacy.researched;
+  const stats = state.stats as unknown as Record<string, unknown>;
+  delete stats.toolsProduced; delete stats.clothingProduced;
+  // v1 knew only eight resources, so drop every key added since. Deriving this from
+  // the current roster keeps the fixture describing v1 as the game grows.
+  const resources = state.resources as unknown as Record<string, unknown>;
+  const v1Resources = ['wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials'];
+  for (const key of Object.keys(resources)) if (!v1Resources.includes(key)) delete resources[key];
+  state.quests = state.quests.filter(quest => !['research', 'tools', 'clothing'].includes(quest.id));
+  state.quests[0]!.claimed = true; state.quests[0]!.progress = 12;
   return state;
 }
+
 function envelope(data: unknown) {
   let crc = 0xffffffff;
   for (const byte of new TextEncoder().encode(JSON.stringify(data))) {
@@ -48,10 +59,11 @@ test('v1 migration preserves town progress and adds only new schema fields, with
 });
 
 test('migration never repairs malformed legacy data or incomplete modern saves', () => {
-  const missingWood = legacySave(); delete missingWood.resources.wood;
-  const negative = legacySave(); negative.resources.fish = -1;
-  const extra = legacySave(); extra.resources.ore = 3;
-  const modern: any = createInitialState(); delete modern.resources.ore;
+  const asResources = (state: ReturnType<typeof legacySave>) => state.resources as unknown as Record<string, unknown>;
+  const missingWood = legacySave(); delete asResources(missingWood).wood;
+  const negative = legacySave(); asResources(negative).fish = -1;
+  const extra = legacySave(); asResources(extra).ore = 3;
+  const modern = createInitialState(); delete asResources(modern).ore;
   for (const save of [missingWood, negative, extra, modern, {...legacySave(), version: 99}]) assert.equal(migrateSave(save), null);
 });
 

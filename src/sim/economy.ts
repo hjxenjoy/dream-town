@@ -6,6 +6,8 @@ import type { SimState } from './world.ts';
 const WEIGHTS: ResourceMap = {
   wood: 20, stone: 10, wheat: 8, flour: 5, bread: 8, fish: 8, plank: 10,
   materials: 6, ore: 5, charcoal: 3, ingot: 3, tools: 4, feed: 3, wool: 3, cloth: 3, clothing: 4,
+  // Dairy, honey and wine keep smaller working buffers than construction or staple food.
+  milk: 3, cheese: 3, honey: 2, grape: 3, wine: 3, vintage: 2,
 };
 
 export function stockTargets(state: SimState): ResourceMap {

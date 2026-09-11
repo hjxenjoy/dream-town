@@ -17,7 +17,7 @@ import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
 /** Generated atlases the scene draws. Preloading and frame registration both read this. */
-const SCENE_ATLASES = ['disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers'] as const;
+const SCENE_ATLASES = ['disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2'] as const;
 const deiso = (x: number, y: number) => ({ x: Math.round(x / TILE_W + y / TILE_H), y: Math.round(y / TILE_H - x / TILE_W) });
 type BuildingVisual = { sprite: Phaser.GameObjects.Image; badge: Phaser.GameObjects.Container; progress: Phaser.GameObjects.Graphics; ready: boolean };
 export class TownScene extends Phaser.Scene {

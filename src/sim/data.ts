@@ -1,7 +1,7 @@
-export type Resource = 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing';
+export type Resource = 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage';
 export type ResourceMap = Record<Resource, number>;
 export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
-export type BuildingKind = 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation';
+export type BuildingKind = 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation';
 
 export interface BuildingDefinition {
   name: string;
@@ -80,6 +80,12 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
   barrels: { name: '橡木酒桶', description: '两只旧木桶，摆在酒坊和市集旁正合适。环境 +4。', category: 'decoration', cost: 75, wood: 5, stone: 1, frame: null, environment: 4 },
   anvil: { name: '旧铁砧', description: '退役的铁砧与木墩，铁匠铺门口的老伙计。环境 +5。', category: 'decoration', cost: 90, wood: 2, stone: 3, frame: null, environment: 5 },
   signflags: { name: '彩旗招牌', description: '挂着彩旗的木招牌，让街口一眼就认得出。环境 +6。', category: 'decoration', cost: 105, wood: 5, stone: 1, frame: null, environment: 6 },
+  cowbarn: { name: '青草牛舍', description: '用 2 袋饲料养出一桶鲜奶，乳品手艺从这里开始。', category: 'production', cost: 520, wood: 16, stone: 8, frame: null, technology: 'husbandry', cycle: 34, input: { feed: 2 }, output: { milk: 4 }, workers: 1 },
+  dairy: { name: '山泉奶坊', description: '把 4 桶鲜奶做成 2 块奶酪，存放越久越值钱。', category: 'production', cost: 780, wood: 18, stone: 14, materials: { materials: 2 }, technology: 'husbandry', frame: null, cycle: 42, input: { milk: 4 }, output: { cheese: 2 }, workers: 2 },
+  apiary: { name: '百花蜂场', description: '沿着花田放蜂箱，每轮自然采集 3 罐蜂蜜，不需要原料。', category: 'production', cost: 360, wood: 12, stone: 4, frame: null, technology: 'husbandry', cycle: 30, output: { honey: 3 }, workers: 1 },
+  vineyard: { name: '南坡葡萄园', description: '向阳的坡地适合种葡萄，每轮自然结出 6 串。', category: 'production', cost: 460, wood: 14, stone: 6, frame: null, technology: 'viniculture', cycle: 38, output: { grape: 6 }, workers: 1 },
+  winery: { name: '木桶酿酒坊', description: '把 6 串葡萄酿成 3 桶葡萄酒，是小镇最能卖出价钱的手艺。', category: 'production', cost: 860, wood: 20, stone: 16, materials: { materials: 3 }, technology: 'viniculture', frame: null, cycle: 56, input: { grape: 6 }, output: { wine: 3 }, workers: 2 },
+  cellar: { name: '石阶酒窖', description: '把 3 桶葡萄酒再存成 2 瓶陈年佳酿，慢慢来的味道更好，也更值得上远方的订单。', category: 'production', cost: 980, wood: 16, stone: 26, materials: { materials: 4 }, technology: 'viniculture', frame: null, cycle: 70, input: { wine: 3 }, output: { vintage: 2 }, workers: 1 },
   farm: { name: '田园农田', description: '免费选种，收获后自动续种。园艺成长解锁果蔬，土地越种越肥沃；小麦留仓，果蔬自动送农摊。', category: 'production', cost: 90, wood: 3, stone: 0, frame: null, cycle: 30, output: { wheat: 4 }, workers: 0 },
 };
 
@@ -100,9 +106,15 @@ export const RESOURCES: Record<Resource, { name: string; icon: string; sellPrice
   fish: { name: '鲜鱼', icon: 'fish', sellPrice: 4 },
   plank: { name: '木板', icon: 'plank', sellPrice: 8 },
   materials: { name: '建材包', icon: 'materials', sellPrice: 12 },
+  milk: { name: '鲜奶', icon: 'milk', sellPrice: 5 },
+  cheese: { name: '奶酪', icon: 'cheese', sellPrice: 18 },
+  honey: { name: '蜂蜜', icon: 'honey', sellPrice: 12 },
+  grape: { name: '葡萄', icon: 'grape', sellPrice: 6 },
+  wine: { name: '葡萄酒', icon: 'wine', sellPrice: 26 },
+  vintage: { name: '陈年佳酿', icon: 'vintage', sellPrice: 60 },
 };
 
-export const RESOURCE_KEYS = ['wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing'] as Resource[];
+export const RESOURCE_KEYS = ['wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage'] as Resource[];
 export const BUILDING_KEYS = Object.keys(BUILDINGS) as BuildingKind[];
 export { MAP_SIZE } from './terrain.ts';
 export const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
@@ -115,11 +127,11 @@ export const TAX_NAMES = ['免税', '轻税', '均衡', '高税', '重税'] as c
 export const SEASON_NAMES = { spring: '春日', summer: '盛夏', autumn: '金秋', winter: '冬日' } as const;
 
 export function emptyResources(): ResourceMap {
-  return { ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0 };
+  return { ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0 };
 }
 
 
-export type TechnologyId = 'mining' | 'metallurgy' | 'husbandry' | 'tailoring' | 'efficiency' | 'logistics' | 'civics';
+export type TechnologyId = 'mining' | 'metallurgy' | 'husbandry' | 'tailoring' | 'viniculture' | 'efficiency' | 'logistics' | 'civics';
 export interface TechnologyDefinition {
   name: string;
   description: string;
@@ -136,6 +148,7 @@ export const TECHNOLOGIES: Record<TechnologyId, TechnologyDefinition> = {
   mining: { name: '山岩的馈赠', description: '发现矿脉，掌握烧炭手艺。', branch: 'industry', icon: 'ore', level: 3, prestige: 2, coins: 240, items: { materials: 2 }, requires: [], unlocks: ['mine', 'kiln', 'sawmill', 'brickworks'] },
   metallurgy: { name: '炉火与铁器', description: '将矿石变成金属与工具，接下更有价值的邻里委托。', branch: 'industry', icon: 'tools', level: 4, prestige: 3, coins: 480, items: { materials: 4 }, requires: ['mining'], unlocks: ['smelter', 'smithy', 'firestation'] },
   husbandry: { name: '牧野的新朋友', description: '用麦穗养育小羊，把农田延伸成牧场。', branch: 'pastoral', icon: 'wool', level: 3, prestige: 2, coins: 240, items: { materials: 2 }, requires: [], unlocks: ['feedmill', 'pasture', 'fishpond'] },
+  viniculture: { name: '葡萄与酒', description: '顺着南坡种下葡萄，学会酿酒，再把好年份存进酒窖。', branch: 'pastoral', icon: 'wine', level: 5, prestige: 4, coins: 520, items: { materials: 4, plank: 6 }, requires: ['husbandry'], unlocks: ['vineyard', 'winery', 'cellar'] },
   tailoring: { name: '一针一线', description: '织出布料，缝制暖衣，发展小镇的纺织手艺。', branch: 'pastoral', icon: 'clothing', level: 4, prestige: 3, coins: 480, items: { materials: 4 }, requires: ['husbandry'], unlocks: ['weaver', 'tailor'] },
   efficiency: { name: '精工巧作', description: '所有生产建筑每轮所需时间减少 10%，离线生产同样生效。', branch: 'town', icon: 'clock', level: 5, prestige: 4, coins: 600, items: { tools: 2, materials: 5 }, requires: ['metallurgy'], unlocks: [] },
   logistics: { name: '井然有序', description: '现有仓储和今后每次扩建容量增加 20%。', branch: 'town', icon: 'box', level: 5, prestige: 4, coins: 600, items: { cloth: 2, materials: 5 }, requires: ['tailoring'], unlocks: [] },
@@ -144,7 +157,7 @@ export const TECHNOLOGIES: Record<TechnologyId, TechnologyDefinition> = {
 export const TECHNOLOGY_KEYS = Object.keys(TECHNOLOGIES) as TechnologyId[];
 export const INDUSTRY_KINDS: BuildingKind[] = ['mine', 'kiln', 'smelter', 'smithy', 'feedmill', 'pasture', 'weaver', 'tailor'];
 // Stable source-to-product order used by offline settlement.
-export const PRODUCTION_SEQUENCE: BuildingKind[] = ['lumber', 'forester', 'quarry', 'farm', 'fishery', 'mine', 'kiln', 'sawmill', 'windmill', 'feedmill', 'fishpond', 'bakery', 'pasture', 'smelter', 'brickworks', 'weaver', 'smithy', 'tailor'];
+export const PRODUCTION_SEQUENCE: BuildingKind[] = ['lumber', 'forester', 'quarry', 'farm', 'fishery', 'apiary', 'vineyard', 'mine', 'kiln', 'sawmill', 'windmill', 'feedmill', 'fishpond', 'bakery', 'pasture', 'cowbarn', 'smelter', 'brickworks', 'dairy', 'weaver', 'winery', 'smithy', 'cellar', 'tailor'];
 export const INDUSTRY_FRAMES = {
   mine: { x: 0, y: 0, w: 440, h: 435 }, kiln: { x: 443, y: 0, w: 440, h: 435 },
   smelter: { x: 888, y: 0, w: 441, h: 439 }, smithy: { x: 1332, y: 0, w: 442, h: 435 },

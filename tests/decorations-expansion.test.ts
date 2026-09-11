@@ -125,5 +125,7 @@ test('the build catalog grows by twelve decorations without disturbing existing 
   // Adding kinds must not rename or reorder what a save already refers to.
   assert.equal(BUILDINGS.cottage.name,'林间小屋');
   assert.equal(BUILDINGS.windmill.cycle,28);
-  assert.equal(Object.keys(BUILDINGS).length,53,'41 existing + 12 street decorations');
+  // 41 base buildings, plus the street decorations and the dairy/wine industries.
+  assert.equal(Object.keys(BUILDINGS).length,59,'41 base + 12 decorations + 6 dairy/wine');
+  assert.equal(Object.keys(BUILDINGS).filter(kind=>BUILDINGS[kind as keyof typeof BUILDINGS].category==='decoration').length,21,'nine trees and garden pieces plus twelve street decorations');
 });

@@ -23,7 +23,7 @@ export function terrainAt(x:number,y:number): 'land'|'water'|'bridge'|'mountain'
 export const districtAt=(x:number,y:number):District=>x<riverX(y)?(y<21?'residential':'agriculture'):(y<21?'mining':'industry');
 export function preferredDistrict(kind:BuildingKind):District {
   if(['mine','quarry'].includes(kind))return 'mining';
-  if(['farm','windmill','feedmill','pasture','fishpond'].includes(kind))return 'agriculture';
+  if(['farm','windmill','feedmill','pasture','fishpond','cowbarn','dairy','apiary','vineyard','winery','cellar'].includes(kind))return 'agriculture';
   if(['lumber','kiln','smelter','smithy','weaver','tailor','forester','sawmill','brickworks'].includes(kind))return 'industry';
   return 'residential';
 }
