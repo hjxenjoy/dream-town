@@ -51,6 +51,7 @@ export const GAME_TOOLS: ToolDefinition[] = [
   tool('start_seasonal_activity', '举办当前季节的自愿活动，只动用富余物资。'),
   tool('get_town_life', '查询季节活动、小动物与幸福度相关的生活状态。'),
   tool('get_achievements', '查询成就进度与已达成项。'),
+  tool('get_street_styles', '查询三种街区风格各自的进度、已达成的阶段与下一步要求。'),
 ];
 
 export type GameToolResult = ActionResult | { ok: true; data: unknown };
@@ -100,6 +101,7 @@ export function executeGameTool(world: SimWorld, name: string, args: unknown = {
     case 'get_pending_orders': return { ok: true, data: world.observe().orders };
     case 'get_caravan_routes': return { ok: true, data: world.observe().caravanRoutes };
     case 'get_achievements': return { ok: true, data: world.observe().achievements };
+    case 'get_street_styles': return { ok: true, data: world.observe().collections };
     case 'get_disaster_alerts': return { ok: true, data: world.observe().alerts };
     case 'adopt_pet': return world.adoptPet(values.kind as 'cat' | 'dog');
     case 'release_pet': return world.releasePet();

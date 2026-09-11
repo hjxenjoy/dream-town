@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, emptyResources, type BuildingKind } from '../src/sim/data.ts';
 import { GENERATED_ATLASES, GENERATED_ATLAS_KEYS, atlasFrames, generatedSprite, housingLevelFrame } from '../src/sim/atlases.ts';
+import { ORNAMENT_REQUIREMENTS as ORNAMENT_MAP } from '../src/sim/collections.ts';
+const ORNAMENT_KINDS = Object.keys(ORNAMENT_MAP) as BuildingKind[];
 import { DISASTER_KINDS, canStrike } from '../src/sim/disasters.ts';
 
 const STREET_DECOR: BuildingKind[] = ['flowerbox', 'trellis', 'archlights', 'boardwalk', 'railing', 'parasol', 'willow', 'dock', 'crates', 'barrels', 'anvil', 'signflags'];
@@ -125,7 +127,10 @@ test('the build catalog grows by twelve decorations without disturbing existing 
   // Adding kinds must not rename or reorder what a save already refers to.
   assert.equal(BUILDINGS.cottage.name,'林间小屋');
   assert.equal(BUILDINGS.windmill.cycle,28);
-  // 41 base buildings, plus the street decorations and the dairy/wine industries.
-  assert.equal(Object.keys(BUILDINGS).length,59,'41 base + 12 decorations + 6 dairy/wine');
-  assert.equal(Object.keys(BUILDINGS).filter(kind=>BUILDINGS[kind as keyof typeof BUILDINGS].category==='decoration').length,21,'nine trees and garden pieces plus twelve street decorations');
+  // 41 base buildings, plus the street decorations, the dairy/wine industries and the
+  // street-style ornaments.
+  assert.equal(Object.keys(BUILDINGS).length,62,'41 base + 12 decorations + 6 dairy/wine + 3 ornaments');
+  assert.equal(Object.keys(BUILDINGS).filter(kind=>BUILDINGS[kind as keyof typeof BUILDINGS].category==='decoration').length,24,'nine trees and garden pieces plus twelve street decorations plus three ornaments');
+  // The ornaments are awarded by collecting a street style, never by research.
+  assert.deepEqual(ORNAMENT_KINDS.filter(kind=>BUILDINGS[kind]).sort(),['flowercart','harvestpile','picniccorner']);
 });

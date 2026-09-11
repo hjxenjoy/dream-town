@@ -1,7 +1,7 @@
 export type Resource = 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage';
 export type ResourceMap = Record<Resource, number>;
 export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
-export type BuildingKind = 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation';
+export type BuildingKind = 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'flowercart' | 'picniccorner' | 'harvestpile';
 
 export interface BuildingDefinition {
   name: string;
@@ -86,6 +86,9 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
   vineyard: { name: '南坡葡萄园', description: '向阳的坡地适合种葡萄，每轮自然结出 6 串。', category: 'production', cost: 460, wood: 14, stone: 6, frame: null, technology: 'viniculture', cycle: 38, output: { grape: 6 }, workers: 1 },
   winery: { name: '木桶酿酒坊', description: '把 6 串葡萄酿成 3 桶葡萄酒，是小镇最能卖出价钱的手艺。', category: 'production', cost: 860, wood: 20, stone: 16, materials: { materials: 3 }, technology: 'viniculture', frame: null, cycle: 56, input: { grape: 6 }, output: { wine: 3 }, workers: 2 },
   cellar: { name: '石阶酒窖', description: '把 3 桶葡萄酒再存成 2 瓶陈年佳酿，慢慢来的味道更好，也更值得上远方的订单。', category: 'production', cost: 980, wood: 16, stone: 26, materials: { materials: 4 }, technology: 'viniculture', frame: null, cycle: 70, input: { wine: 3 }, output: { vintage: 2 }, workers: 1 },
+  flowercart: { name: '花车', description: '花巷成型后立起的纪念花车，四季都装着刚剪下的花。环境 +6。', category: 'decoration', cost: 160, wood: 6, stone: 1, frame: null, environment: 6 },
+  picniccorner: { name: '野餐角', description: '滨河步道连成一线后添的野餐桌，晴天总有人坐着。环境 +6。', category: 'decoration', cost: 160, wood: 7, stone: 1, frame: null, environment: 6 },
+  harvestpile: { name: '丰收堆', description: '工坊广场成气候后堆起的南瓜与谷物，是小镇给手艺人的记功。环境 +6。', category: 'decoration', cost: 160, wood: 2, stone: 2, frame: null, environment: 6 },
   farm: { name: '田园农田', description: '免费选种，收获后自动续种。园艺成长解锁果蔬，土地越种越肥沃；小麦留仓，果蔬自动送农摊。', category: 'production', cost: 90, wood: 3, stone: 0, frame: null, cycle: 30, output: { wheat: 4 }, workers: 0 },
 };
 

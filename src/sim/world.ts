@@ -9,6 +9,7 @@ import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
 import { DESTINATION_IDS, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from './destinations.ts';
+import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, ornamentRequirement, type CollectionId } from './collections.ts';
 export type { BuildingKind, Resource, ResourceMap } from './data.ts';
 
 export interface Building {
@@ -100,6 +101,8 @@ export interface SimState {
   stats: { collected: number; ordersCompleted: number; buildingsBuilt: number; caravansCompleted: number; coinsEarned: number; festivals: number; repairs: number; toolsProduced: number; clothingProduced: number; activities?: number };
   /** Unlocked achievement ids, in the order they were earned. */
   achievements?: AchievementId[];
+  /** Street styles collected, and how many tiers of each were banked. */
+  collections?: Partial<Record<CollectionId, number>>;
   logs: TownLog[];
   nextId: number;
   festivalUntil: number;
@@ -289,6 +292,15 @@ export function validateSave(value: unknown): value is SimState {
     if (new Set(value.achievements).size !== value.achievements.length) return false;
     if (value.achievements.some(id => !ACHIEVEMENT_IDS.includes(id as AchievementId))) return false;
   }
+  // Absent on saves written before street styles existed. Tier counts must be in range,
+  // so a corrupt number cannot unlock an ornament that was never earned.
+  if (value.collections !== undefined) {
+    if (!isRecord(value.collections)) return false;
+    for (const [id, tier] of Object.entries(value.collections)) {
+      if (!COLLECTION_IDS.includes(id as CollectionId)) return false;
+      if (!whole(tier) || (tier as number) < 0 || (tier as number) > COLLECTIONS[id as CollectionId].tiers.length) return false;
+    }
+  }
   if (!isRecord(value.needs) || ['food', 'water', 'services', 'environment'].some(key => !nonnegative((value.needs as Record<string, unknown>)[key]) || Number((value.needs as Record<string, unknown>)[key]) > 100)) return false;
   if (!isRecord(value.stats) || ['collected', 'ordersCompleted', 'buildingsBuilt', 'caravansCompleted', 'coinsEarned', 'festivals', 'repairs', 'toolsProduced', 'clothingProduced'].some(key => !whole((value.stats as Record<string, unknown>)[key]))) return false;
   // Absent on saves written before seasonal activities were counted, so only its type is checked.
@@ -308,6 +320,7 @@ export class SimWorld {
     this.state.achievements ??= [];
     this.state.stats.activities ??= 0;
     this.state.caravan.destination ??= 'valley';
+    this.state.collections ??= {};
     for (const building of this.state.buildings) building.workers ??= BUILDINGS[building.kind].workers ?? 0;
     this.syncQuests();
     if(state===undefined){this.arrangeDistricts();delete this.state.layoutUndo;}
@@ -382,15 +395,43 @@ export class SimWorld {
     }
   }
 
-  /** Quest progress and achievements always move together, so neither can be forgotten. */
+  /** Quest, achievement and street-style progress always move together, so none is forgotten. */
   private syncProgress(): void {
     this.syncQuests();
     this.syncAchievements();
+    this.syncCollections();
+  }
+
+  /**
+   * Records any street style the town has just completed. A tier is banked once and never
+   * revoked, so taking the flowers up again does not take back what was already awarded.
+   */
+  private syncCollections(): void {
+    const banked = this.state.collections ?? (this.state.collections = {});
+    for (const { id, tier } of newlyReached(collectionProgress(this.state.buildings, banked), banked)) {
+      banked[id] = tier;
+      const reached = COLLECTIONS[id].tiers[tier - 1]!;
+      this.state.prestige += 4 * tier;
+      const ornament = reached.unlocks ? ` 解锁纪念摆件「${BUILDINGS[reached.unlocks].name}」。` : '';
+      this.log(`${COLLECTIONS[id].name}成形：${reached.name}。${reached.perk}${ornament} 获得 ${4 * tier} 点声望。`, 'success');
+    }
   }
 
   private syncQuests(): void {
     const progress: Record<string, number> = { harvest: this.state.stats.collected, orders: this.state.stats.ordersCompleted, builder: this.state.stats.buildingsBuilt, caravan: this.state.stats.caravansCompleted, population: this.state.population, festival: this.state.stats.festivals, research: this.state.researched.length, tools: this.state.stats.toolsProduced, clothing: this.state.stats.clothingProduced };
     for (const quest of this.state.quests) quest.progress = Math.min(quest.target, Math.max(quest.progress, progress[quest.id] ?? 0));
+  }
+
+  /**
+   * Why a street-style ornament cannot be built yet, or null when it can. The build panel
+   * asks the same question, so what it shows and what the simulation accepts never differ.
+   */
+  ornamentLock(kind: BuildingKind): string | null {
+    const ornament = ornamentRequirement(kind);
+    if (!ornament || (this.state.collections?.[ornament.id] ?? 0) >= ornament.tier) return null;
+    const style = COLLECTIONS[ornament.id];
+    const tier = style.tiers[ornament.tier - 1]!;
+    return `「${BUILDINGS[kind].name}」是${style.name}的纪念摆件：先让「${tier.name}」成形（一处 ${tier.need} 件、${tier.distinct} 种）。`;
   }
 
   isUnlocked(kind: BuildingKind): boolean {
@@ -437,6 +478,8 @@ export class SimWorld {
   build(kind: BuildingKind, x: number, y: number): ActionResult {
     if (!BUILDING_KEYS.includes(kind)) return this.fail('没有这种建筑。', 'UNKNOWN_BUILDING');
     if (!this.isUnlocked(kind)) return this.fail(`先研究「${TECHNOLOGIES[BUILDINGS[kind].technology!].name}」，获得工坊蓝图。`, 'TECHNOLOGY_REQUIRED');
+    const ornamentReason = this.ornamentLock(kind);
+    if (ornamentReason) return this.fail(ornamentReason, 'ORNAMENT_LOCKED');
     if (!whole(x) || !whole(y) || x < 1 || y < 1 || x >= MAP_SIZE - 1 || y >= MAP_SIZE - 1) return this.fail('请选择小镇范围内的空地。', 'INVALID_TILE');
     const issue=this.placementIssue(x,y);if(issue)return this.fail(issue.message,issue.code);
     if (kind === 'townhall' && this.state.buildings.some(building => building.kind === kind)) return this.fail('小镇已有议事厅，可以升级现有建筑。', 'UNIQUE_BUILDING');
@@ -918,7 +961,7 @@ export class SimWorld {
     this.state.needs.food = clamp(food / Math.max(1, Math.ceil(this.state.population / 4) * 3) * 100, 0, 100);
     this.state.needs.water = homes.length ? watered.reduce((n, b) => n + BUILDINGS[b.kind].housing! * b.level, 0) / this.housingCapacity() * 100 : 0;
     this.state.needs.services = clamp(this.state.buildings.filter(building => BUILDINGS[building.kind].services && !building.damaged).reduce((total, building) => total + building.level * BUILDINGS[building.kind].services!, 10), 0, 100);
-    this.state.needs.environment = clamp(60 + this.state.buildings.filter(building => !building.damaged).reduce((total, building) => total + building.level * (BUILDINGS[building.kind].environment ?? 0), 0), 0, 100);
+    this.state.needs.environment = clamp(60 + this.state.buildings.filter(building => !building.damaged).reduce((total, building) => total + building.level * (BUILDINGS[building.kind].environment ?? 0), 0) + collectionEnvironment(this.state.collections ?? {}), 0, 100);
   }
   private targetHappiness(): number {
     const needs = this.state.needs;
@@ -1257,6 +1300,7 @@ export class SimWorld {
       readyBuildings: this.state.buildings.filter(building => building.ready).map(building => building.id),
       activity: this.activityActive() ? { ...this.state.activity } : null,
       achievements: achievementProgress(this.achievementMetrics(), this.state.achievements ?? []),
+      collections: collectionProgress(this.state.buildings, this.state.collections ?? {}),
       caravanRoutes: availableDestinations(this.state.researched).map(destination => ({
         ...destination,
         chosen: (this.state.caravan.destination ?? 'valley') === destination.id,

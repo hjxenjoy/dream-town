@@ -49,6 +49,8 @@ const CATALOG_BY_KIND: Partial<Record<BuildingKind, GeneratedAtlas>> = {
   boardwalk: 'street-decor', railing: 'street-decor', parasol: 'street-decor',
   willow: 'street-decor', dock: 'street-decor', crates: 'street-decor',
   barrels: 'street-decor', anvil: 'street-decor', signflags: 'street-decor',
+  // Street-style ornaments, awarded by collecting a neighbourhood look.
+  flowercart: 'season-props', picniccorner: 'season-props', harvestpile: 'season-props',
   // Dairy, honey and wine industries.
   cowbarn: 'industry2', dairy: 'industry2', apiary: 'industry2',
   vineyard: 'industry2', winery: 'industry2', cellar: 'industry2',
@@ -58,6 +60,7 @@ const FRAME_BY_KIND: Partial<Record<BuildingKind, string>> = {
   flowerbox: 'flower-box', trellis: 'flower-trellis', archlights: 'flower-arch-lights',
   boardwalk: 'boardwalk', railing: 'railing', parasol: 'parasol', willow: 'willow',
   dock: 'floating-dock', crates: 'crates', barrels: 'barrels', anvil: 'anvil', signflags: 'sign-flags',
+  flowercart: 'spring-flower-cart', picniccorner: 'spring-picnic', harvestpile: 'autumn-harvest',
   cowbarn: 'cow-barn', dairy: 'dairy', apiary: 'apiary',
   vineyard: 'vineyard', winery: 'winery', cellar: 'wine-cellar',
 };
