@@ -32,23 +32,53 @@ export interface CartPose {
  * The outbound road: market entrance -> nearest bridge -> the far bank, so the
  * cart is seen crossing the river rather than teleporting off the map edge.
  */
-export function caravanRoute(buildings: Building[], roads: { x: number; y: number; kind: string }[]): Tile[] {
+export function caravanRoute(
+  buildings: Building[],
+  roads: { x: number; y: number; kind: string }[],
+  /** The bridge this route must cross, so each destination takes a visibly different way. */
+  bridgeRow?: number,
+): Tile[] {
   const market = buildings.find(building => building.kind === 'market');
   if (!market) return [];
   const navigation = new TownNavigation(buildings, roads as never);
   const gate = navigation.entrances({ x: market.x, y: market.y })[0];
   if (!gate) return [];
-  const bridge = BRIDGES.map(row => ({ x: 23, y: row })).sort((a, b) => Math.abs(a.y - market.y) - Math.abs(b.y - market.y))[0]!;
-  // The far bank is partly mountain, so walk outward until a walkable tile turns up.
-  let far: Tile | null = null;
-  for (let x = MAP_SIZE - 3; x > 25 && !far; x--) if (terrainAt(x, bridge.y) === 'land') far = { x, y: bridge.y };
-  if (far) {
-    const toFar = navigation.path(gate, far);
-    if (toFar.length > 1) return toFar;
+
+  const usable = BRIDGES.includes(bridgeRow as never) ? [bridgeRow!] : [...BRIDGES];
+  const crossings = usable
+    .map(row => bridgeSpan(row))
+    .filter((span): span is { deck: Tile[] } => span !== null)
+    .sort((a, b) => Math.abs(a.deck[0]!.y - market.y) - Math.abs(b.deck[0]!.y - market.y));
+
+  for (const crossing of crossings) {
+    // Three parts: to the near bank, across the deck, then on to the far bank. Asking A*
+    // for a point on the far bank alone is not enough: it takes whichever bridge is
+    // cheapest, so a route told to use the southern bridge would cross the northern one
+    // and merely walk south afterwards.
+    const west = crossing.deck[0]!;
+    const east = crossing.deck[crossing.deck.length - 1]!;
+    const toBridge = navigation.path(gate, west);
+    if (toBridge.length < 2) continue;
+    const onward = navigation.path(east, farBank(west.y));
+    if (onward.length < 2) continue;
+    return [...toBridge, ...crossing.deck.slice(1), ...onward.slice(1)];
   }
-  // Without a crossing, the cart still sets out along whatever road it can reach.
+  // No crossing is reachable: the cart still sets out along whatever road it can find.
   const fallback = navigation.path(gate, { x: Math.max(1, market.x + 12), y: market.y });
   return fallback.length > 1 ? fallback : [];
+}
+
+/** The contiguous deck tiles of a bridge, west to east. */
+function bridgeSpan(row: number): { deck: Tile[] } | null {
+  const deck: Tile[] = [];
+  for (let x = 1; x < MAP_SIZE; x++) if (terrainAt(x, row) === 'bridge') deck.push({ x, y: row });
+  return deck.length > 1 ? { deck } : null;
+}
+
+/** A walkable tile on the far bank, at the same latitude as the crossing. */
+function farBank(row: number): Tile {
+  for (let x = MAP_SIZE - 3; x > 25; x--) if (terrainAt(x, row) === 'land') return { x, y: row };
+  return { x: MAP_SIZE - 3, y: row };
 }
 
 /**

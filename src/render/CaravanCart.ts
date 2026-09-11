@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { iso } from '../sim/terrain';
 import { CART_PARK_FRAMES, CART_TRAVEL_FRAMES, caravanPose, caravanRoute } from '../sim/caravan';
+import { destinationOf } from '../sim/destinations';
 import { tileKey } from '../sim/roads';
 import type { SimWorld } from '../sim/world';
 import { drawFrameWidth } from './atlasSprite';
@@ -21,11 +22,13 @@ export class CaravanCart {
 
   sync(world: SimWorld, time: number, reduced: boolean): void {
     const { buildings, roads, caravan } = world.state;
-    const signature = buildings.map(tileKey).join('|') + ';' + (roads ?? []).map(tileKey).join('|');
+    // The destination is part of the route's identity: each one crosses its own bridge.
+    const destination = destinationOf(caravan.destination);
+    const signature = buildings.map(tileKey).join('|') + ';' + (roads ?? []).map(tileKey).join('|') + ';' + destination.id;
     if (signature !== this.signature) {
       this.signature = signature;
-      // The route follows real roads, so it must be rebuilt when the town changes.
-      this.route = caravanRoute(buildings, roads ?? []);
+      // The route follows real roads, so it must be rebuilt when the town or the route changes.
+      this.route = caravanRoute(buildings, roads ?? [], destination.bridge);
     }
     const pose = caravanPose(caravan, this.route as never, world.state.gameTime);
     const point = iso(pose.x, pose.y);

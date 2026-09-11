@@ -34,7 +34,8 @@ export const GAME_TOOLS: ToolDefinition[] = [
   tool('upgrade_building', '消耗金币和商队建材升级建筑，最高三级。', { x: coordinate, y: coordinate }, ['x', 'y']),
   tool('set_tax_rate', '调整税率，在收入与幸福度间取得平衡。', { level: { type: 'string', enum: ['very_low', 'low', 'medium', 'high', 'extortion'] } }, ['level']),
   tool('fulfill_order', '从仓库交付物资，获得金币与经验。', { orderId: string }, ['orderId']),
-  tool('dispatch_caravan', '派出前往溪谷集落的固定补给商队；返回后同一工具领取货物。', { destination: { type: 'string', enum: ['溪谷集落', 'river-valley'] } }),
+  tool('dispatch_caravan', '派出补给商队前往已选定的目的地；返回后同一工具领取货物。'),
+  tool('choose_caravan_route', '选择下一趟商队的目的地。不同路线货物、时长与回报不同，并走不同的桥。', { destination: { type: 'string', enum: ['valley', 'hilltown', 'rivermouth'] } }, ['destination']),
   tool('collect_production', '收取成熟农田或已完工工坊的产物。', { buildingId: string }, ['buildingId']),
   tool('set_production_focus', '木工坊可选择 balanced 均衡、wood 木材优先、plank 木板优先；其他工坊恢复默认配方。', { buildingId: string, recipeId: { type: 'string', enum: ['default', 'balanced', 'wood', 'plank', ...BUILDING_KEYS] } }, ['buildingId', 'recipeId']),
   tool('adjust_workforce', '在现有居民范围内安排工坊工人。', { buildingId: string, workerCount: { type: 'integer', minimum: 0, maximum: 2 } }, ['buildingId', 'workerCount']),
@@ -43,11 +44,13 @@ export const GAME_TOOLS: ToolDefinition[] = [
   tool('get_town_status', '查询人口、幸福度、资源、仓库、季节、税收和预警。'),
   tool('get_production_flow', '查询生产配方、速度、暂停与缺料/满仓状态。'),
   tool('get_pending_orders', '查询当前订单的物资要求、奖励和冷却。'),
+  tool('get_caravan_routes', '查询已解锁的商队路线、各自货物与是否备齐。'),
   tool('get_disaster_alerts', '查询当前受损建筑及位置。'),
   tool('adopt_pet', '领养一只小动物，它会跟着邻居在小镇里散步。', { kind: { type: 'string', enum: ['cat', 'dog'] } }, ['kind']),
   tool('release_pet', '送走最近领养的小动物。'),
   tool('start_seasonal_activity', '举办当前季节的自愿活动，只动用富余物资。'),
   tool('get_town_life', '查询季节活动、小动物与幸福度相关的生活状态。'),
+  tool('get_achievements', '查询成就进度与已达成项。'),
 ];
 
 export type GameToolResult = ActionResult | { ok: true; data: unknown };
@@ -86,6 +89,7 @@ export function executeGameTool(world: SimWorld, name: string, args: unknown = {
     case 'set_tax_rate': return world.setTax(['very_low', 'low', 'medium', 'high', 'extortion'].indexOf(values.level as string));
     case 'fulfill_order': return world.fulfillOrder(values.orderId as string);
     case 'dispatch_caravan': return world.dispatchCaravan();
+    case 'choose_caravan_route': return world.chooseCaravanDestination(values.destination as 'valley' | 'hilltown' | 'rivermouth');
     case 'collect_production': return world.collect(values.buildingId as string);
     case 'set_production_focus': return world.setProductionFocus(values.buildingId as string, values.recipeId as string);
     case 'adjust_workforce': return world.adjustWorkforce(values.buildingId as string, values.workerCount as number);
@@ -94,6 +98,8 @@ export function executeGameTool(world: SimWorld, name: string, args: unknown = {
     case 'get_town_status': return { ok: true, data: world.observe() };
     case 'get_production_flow': return { ok: true, data: world.observe().production };
     case 'get_pending_orders': return { ok: true, data: world.observe().orders };
+    case 'get_caravan_routes': return { ok: true, data: world.observe().caravanRoutes };
+    case 'get_achievements': return { ok: true, data: world.observe().achievements };
     case 'get_disaster_alerts': return { ok: true, data: world.observe().alerts };
     case 'adopt_pet': return world.adoptPet(values.kind as 'cat' | 'dog');
     case 'release_pet': return world.releasePet();

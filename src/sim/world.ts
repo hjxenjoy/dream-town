@@ -8,6 +8,7 @@ import { DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, REPAIR_SECONDS, canStrike
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
+import { DESTINATION_IDS, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from './destinations.ts';
 export type { BuildingKind, Resource, ResourceMap } from './data.ts';
 
 export interface Building {
@@ -49,6 +50,8 @@ export interface Caravan {
   rewardCoins: number;
   rewardMaterials: number;
   trips: number;
+  /** Chosen destination. Absent on saves written before routes were selectable. */
+  destination?: DestinationId;
 }
 export interface Quest {
   id: string;
@@ -266,6 +269,7 @@ export function validateSave(value: unknown): value is SimState {
   for (const order of value.orders) if (!isRecord(order) || typeof order.id !== 'string' || typeof order.npc !== 'string' || typeof order.title !== 'string' || !validItems(order.items) || !whole(order.rewardCoins) || !whole(order.rewardXp) || (order.cooldownUntil !== undefined && !nonnegative(order.cooldownUntil))) return false;
   for (const quest of value.quests) if (!isRecord(quest) || typeof quest.id !== 'string' || typeof quest.title !== 'string' || typeof quest.description !== 'string' || !whole(quest.target) || !whole(quest.progress) || !whole(quest.rewardCoins) || !whole(quest.rewardXp) || !whole(quest.rewardPrestige) || typeof quest.claimed !== 'boolean') return false;
   if (!isRecord(value.caravan) || !['idle', 'traveling', 'returned'].includes(value.caravan.status as string) || !validItems(value.caravan.cargo) || ['returnAt', 'duration', 'rewardCoins', 'rewardMaterials', 'trips'].some(key => !nonnegative((value.caravan as Record<string, unknown>)[key]))) return false;
+  if (value.caravan.destination !== undefined && !DESTINATION_IDS.includes(value.caravan.destination as DestinationId)) return false;
   if (value.pets !== undefined) {
     if (!Array.isArray(value.pets) || value.pets.length > 6) return false;
     const petIds = new Set<string>();
@@ -303,6 +307,7 @@ export class SimWorld {
     this.state.farming ??= freshFarming();
     this.state.achievements ??= [];
     this.state.stats.activities ??= 0;
+    this.state.caravan.destination ??= 'valley';
     for (const building of this.state.buildings) building.workers ??= BUILDINGS[building.kind].workers ?? 0;
     this.syncQuests();
     if(state===undefined){this.arrangeDistricts();delete this.state.layoutUndo;}
@@ -665,6 +670,17 @@ export class SimWorld {
     return this.success('订单已取消，1 分钟后会收到新的委托。');
   }
 
+  /** Picks where the next caravan goes. Only possible between trips, and only if unlocked. */
+  chooseCaravanDestination(id: DestinationId): ActionResult {
+    const options = availableDestinations(this.state.researched);
+    const chosen = options.find(destination => destination.id === id);
+    if (!chosen) return this.fail('这条路线还没有打听到，先研究对应的手艺吧。', 'DESTINATION_LOCKED');
+    if (this.state.caravan.status === 'traveling') return this.fail('商队还在路上，等它回来再定下一趟。', 'CARAVAN_BUSY');
+    if (this.state.caravan.destination === id) return this.success(`下一趟仍然前往${chosen.name}。`);
+    this.state.caravan.destination = id;
+    return this.success(`下一趟商队将前往${chosen.name}：${chosen.description}`);
+  }
+
   dispatchCaravan(): ActionResult {
     const caravan = this.state.caravan;
     if (caravan.status === 'traveling') return this.fail('商队正在旅途中，回来后会带给你消息。', 'CARAVAN_BUSY');
@@ -676,12 +692,19 @@ export class SimWorld {
       return this.success(`商队平安归来！获得 ${coins} 金币与 ${items.materials} 份建材。`, { coins, xp: 60, items });
     }
     if (!this.state.buildings.some(building => building.kind === 'market' && !building.damaged)) return this.fail('需要一座可用的集市来组织商队。', 'MARKET_REQUIRED');
-    if (!this.has(caravan.cargo)) return this.fail(`出发需要${resourceLabel(caravan.cargo)}。`, 'INSUFFICIENT_RESOURCES');
+    const destination = destinationOf(caravan.destination);
+    // Everything is decided locally first: a refused departure must leave the caravan
+    // exactly as it was, so the manifest is only written once the cargo is confirmed.
+    const cargo = { ...destination.cargo };
+    if (!this.has(cargo)) return this.fail(`前往${destination.name}需要${resourceLabel(cargo)}。`, 'INSUFFICIENT_RESOURCES');
+    caravan.cargo = cargo;
+    caravan.rewardCoins = destination.rewardCoins;
+    caravan.rewardMaterials = destination.rewardMaterials;
     this.deduct(caravan.cargo); caravan.status = 'traveling';
     const marketLevel = Math.max(1, ...this.state.buildings.filter(building => building.kind === 'market').map(building => building.level));
-    caravan.duration = Math.max(CARAVAN_DURATION * 0.5, CARAVAN_DURATION * (1 - (marketLevel - 1) * 0.2)) * (hasProjectTitle(this.state,'harbor')?0.9:1);
+    caravan.duration = caravanDuration(destination, marketLevel, hasProjectTitle(this.state, 'harbor'));
     caravan.returnAt = this.state.gameTime + caravan.duration;
-    return this.success('商队出发了，正沿河前往溪谷集落。');
+    return this.success(`商队出发了，正前往${destination.name}。`);
   }
 
   setTax(rate: number): ActionResult {
@@ -1234,6 +1257,11 @@ export class SimWorld {
       readyBuildings: this.state.buildings.filter(building => building.ready).map(building => building.id),
       activity: this.activityActive() ? { ...this.state.activity } : null,
       achievements: achievementProgress(this.achievementMetrics(), this.state.achievements ?? []),
+      caravanRoutes: availableDestinations(this.state.researched).map(destination => ({
+        ...destination,
+        chosen: (this.state.caravan.destination ?? 'valley') === destination.id,
+        missing: missingCargo(destination, this.state.resources),
+      })),
       pets: (this.state.pets ?? []).map(pet => ({ ...pet, name: PETS[pet.kind].name })),
       petLimit: petCapacity(this.state.population),
       alerts: this.state.buildings.filter(building => building.damaged || building.repairingUntil !== undefined).map(building => ({
