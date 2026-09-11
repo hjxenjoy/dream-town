@@ -19,6 +19,13 @@ export const DAY_LENGTH = GAME_DAY_SECONDS;
 export const WORK_START = 6;
 export const WORK_END = 20;
 
+/**
+ * The hour a town's day begins. A new town opens at the start of its working day rather than
+ * at midnight: the first thing a player sees is the street waking up and people heading to
+ * their workshops, instead of a sleeping town with nothing to look at.
+ */
+export const DAY_START_HOUR = 6;
+
 export type PartOfDay = 'night' | 'morning' | 'work' | 'evening';
 
 export interface PartDefinition {
@@ -31,7 +38,7 @@ export interface PartDefinition {
 export const PARTS: Record<PartOfDay, PartDefinition> = {
   night: { name: '夜里', note: '灯火稀疏，大家都歇下了。' },
   morning: { name: '清晨', note: '街上刚醒，作坊陆续生火。' },
-  work: { name: '白天', note: '作坊开着，工匠们都在工位上。' },
+  work: { name: '白天', note: '作坊开着，工匠们各自忙活。' },
   evening: { name: '傍晚', note: '下手了，人们顺着路回家。' },
 };
 
@@ -39,6 +46,11 @@ export const PARTS: Record<PartOfDay, PartDefinition> = {
 export function hourOf(gameTime: number): number {
   const at = ((gameTime % DAY_LENGTH) + DAY_LENGTH) % DAY_LENGTH;
   return at / DAY_LENGTH * 24;
+}
+
+/** The game time at which a given hour of the day falls. */
+export function gameTimeAtHour(hour: number): number {
+  return hour / 24 * DAY_LENGTH;
 }
 
 /** Which day the town is on, counting from one. */

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { TownCrowd, type Walker } from '../src/sim/crowd.ts';
 import { BUILDINGS } from '../src/sim/data.ts';
-import { DAY_LENGTH, PARTS, WORK_END, WORK_START, clockLabel, dayOf, hourOf, isWorkHour, partOfDay, secondsUntilNextPart } from '../src/sim/clock.ts';
+import { DAY_LENGTH, DAY_START_HOUR, PARTS, WORK_END, WORK_START, clockLabel, dayOf, gameTimeAtHour, hourOf, isWorkHour, partOfDay, secondsUntilNextPart } from '../src/sim/clock.ts';
 
 /** A town with homes and workshops, so commuting has somewhere to happen. */
 function town(population=24){
@@ -78,6 +78,26 @@ test('the interface is told the hour, and it changes with the clock',()=>{
   assert.equal(w.observe().clock.day,4,'the day counter advances');
   for(const clock of [night,noon,evening]) assert.ok(clock.note.length>0,'the part explains itself');
   assert.notEqual(night.note,noon.note);
+});
+
+test('a new town opens on its first morning, with somewhere to be',()=>{
+  // Opening at midnight would greet a first-time player with a sleeping town. A new town
+  // starts at the beginning of its working day, so the street is busy the moment it loads.
+  const w=new SimWorld();
+  const clock=w.observe().clock;
+  assert.equal(clock.day,1,'it is still the first day');
+  assert.equal(clock.label,'06:00','the town opens at the start of the working day');
+  assert.equal(isWorkHour(w.state.gameTime),true,'which is when workshops are open');
+  assert.equal(partOfDay(w.state.gameTime),'work');
+  assert.equal(w.state.gameTime,gameTimeAtHour(DAY_START_HOUR),'the opening time is the one the clock names');
+  // And the same is true of the save it writes straight away.
+  const restored=new SimWorld(structuredClone(w.state) as never);
+  assert.equal(restored.observe().clock.label,'06:00');
+  assert.equal(restored.observe().clock.day,1);
+  // Midnight is still midnight: the day simply begins earlier.
+  assert.equal(clockLabel(0),'00:00');
+  assert.equal(partOfDay(0),'night');
+  assert.ok(DAY_START_HOUR>0&&DAY_START_HOUR<24,'the opening hour is a real hour');
 });
 
 test('residents go to their workshops by day and home at night',()=>{

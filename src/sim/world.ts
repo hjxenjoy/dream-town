@@ -12,7 +12,7 @@ import { DESTINATION_IDS, availableDestinations, caravanDuration, destinationOf,
 import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, ornamentRequirement, type CollectionId } from './collections.ts';
 import { STORY_PORTRAITS, STORY_STAGES, nextStoryStage, storyChoiceIds, storyEffect, storyEnvironment, storyHistory, type StoryProgress } from './stories.ts';
 import { residentRoster } from './residents.ts';
-import { clockLabel, dayOf, partOfDay, PARTS, secondsUntilNextPart } from './clock.ts';
+import { DAY_START_HOUR, clockLabel, dayOf, gameTimeAtHour, partOfDay, PARTS, secondsUntilNextPart } from './clock.ts';
 export type { BuildingKind, Resource, ResourceMap } from './data.ts';
 
 export interface Building {
@@ -181,7 +181,7 @@ export function createInitialState(now = Date.now()): SimState {
     return { id: `building-${index + 1}`, kind, x, y, level: 1, progress: ready ? 1 : ((index * 17) % 70) / 100, ready, paused: false, stock: ready ? { ...BUILDINGS[kind].output } : {}, workers: BUILDINGS[kind].workers ?? 0 };
   });
   return {
-    version: 2, researched: [], createdAt: now, savedAt: now, gameTime: 0, coins: 2800, xp: 80, level: 3, prestige: 6,
+    version: 2, researched: [], createdAt: now, savedAt: now, gameTime: gameTimeAtHour(DAY_START_HOUR), coins: 2800, xp: 80, level: 3, prestige: 6,
     taxRate: 1, population: 12, happiness: 86, capacity: 240,
     resources: { ...emptyResources(), wood: 42, stone: 25, wheat: 24, flour: 12, bread: 10, fish: 20, plank: 12, materials: 10 },
     buildings, orders: clone(INITIAL_ORDERS),

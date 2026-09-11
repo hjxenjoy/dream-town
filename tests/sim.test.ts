@@ -167,9 +167,11 @@ test('offline simulation is capped, returns caravans, preserves residents and st
   world.state.settings.disasters = true;
   world.dispatchCaravan();
   const population = world.state.population;
+  const startedAt = world.state.gameTime;
   const report = world.offline(100 * 60 * 60);
   assert.equal(report.elapsed, MAX_OFFLINE_SECONDS); assert.equal(report.capped, true);
-  assert.equal(world.state.gameTime, MAX_OFFLINE_SECONDS);
+  // The cap is on how much time is credited, so it is measured from wherever the clock was.
+  assert.equal(world.state.gameTime, startedAt + MAX_OFFLINE_SECONDS);
   assert.equal(report.caravanReturned, true); assert.equal(world.state.caravan.status, 'returned');
   assert.equal(world.state.population, population);
   assert.equal(world.state.buildings.some(building => building.damaged), false);
