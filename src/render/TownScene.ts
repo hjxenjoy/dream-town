@@ -3,6 +3,7 @@ import { TownAtmosphere } from './TownAtmosphere';
 import { DisasterLayer } from './DisasterLayer';
 import { CaravanCart } from './CaravanCart';
 import { SeasonalProps } from './SeasonalProps';
+import { MachineLayer } from './MachineLayer';
 import { valleyCameraCenter } from './cameraBounds';
 import { Residents } from './Residents';
 import { RoadLayer } from './RoadLayer';
@@ -16,7 +17,7 @@ import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
 /** Generated atlases the scene draws. Preloading and frame registration both read this. */
-const SCENE_ATLASES = ['disasters','street-decor','housing-levels','caravan','season-props','pets'] as const;
+const SCENE_ATLASES = ['disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers'] as const;
 const deiso = (x: number, y: number) => ({ x: Math.round(x / TILE_W + y / TILE_H), y: Math.round(y / TILE_H - x / TILE_W) });
 type BuildingVisual = { sprite: Phaser.GameObjects.Image; badge: Phaser.GameObjects.Container; progress: Phaser.GameObjects.Graphics; ready: boolean };
 export class TownScene extends Phaser.Scene {
@@ -52,6 +53,7 @@ export class TownScene extends Phaser.Scene {
   private disasterLayer!:DisasterLayer;
   private caravanCart!:CaravanCart;
   private seasonalProps!:SeasonalProps;
+  private machineLayer!:MachineLayer;
   private running=new Set<string>();
   private progressSnapshot=new Map<string,number>();
   private lastSeason = '';
@@ -100,6 +102,7 @@ export class TownScene extends Phaser.Scene {
     this.disasterLayer=new DisasterLayer(this);
     this.caravanCart=new CaravanCart(this);
     this.seasonalProps=new SeasonalProps(this);
+    this.machineLayer=new MachineLayer(this);
     this.ground=drawValley(this);
     this.atmosphere=new TownAtmosphere(this);
     this.cameras.main.setBackgroundColor('#98a96b');
@@ -320,6 +323,7 @@ export class TownScene extends Phaser.Scene {
     this.disasterLayer.sync(this.world.state.buildings,time,reduced);
     this.caravanCart.sync(this.world,time,reduced);
     this.seasonalProps.sync(this.world);
+    this.machineLayer.sync(this.world.state.buildings,this.running,this.game.loop.delta*(this.simulationSpeed>0?1:0),reduced);
     this.atmosphere.update(this.game.loop.delta*(this.simulationSpeed>0?1:0),this.world.state.buildings,this.running,this.world.state.festivalUntil>this.world.state.gameTime,reduced);
     if(!reduced&&this.simulationSpeed>0)this.visuals.forEach((v,id)=>{if(v.ready){const b=this.world.state.buildings.find(b=>b.id===id)!;const p=iso(b.x,b.y);v.badge.y=p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)+Math.sin(time/430)*3;}});
     if(this.lastSeason!==this.world.state.season){this.lastSeason=this.world.state.season;this.ground.setAlpha(this.lastSeason==='winter'?.78:1);}
