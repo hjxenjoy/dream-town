@@ -1,5 +1,8 @@
-import { GENERATED_ATLASES } from './atlases.ts';
+import { GENERATED_ATLASES, atlasFrames } from './atlases.ts';
 import type { BuildingKind } from './data.ts';
+
+/** How wide a part is drawn, in world pixels, regardless of its atlas cell size. */
+export const PART_WIDTH = 96;
 
 export interface MachinePart {
   /** Frame in the `machine-layers` atlas. */
@@ -34,6 +37,24 @@ export function machinePivot(frame: string): { x: number; y: number } | null {
   const meta = GENERATED_ATLASES['machine-layers'].frames as Record<string, { pivot?: number[] }>;
   const found = meta[frame]?.pivot;
   return found ? { x: found[0]!, y: found[1]! } : null;
+}
+
+/**
+ * Where a part sits relative to its building's base point, and the scale that brings it
+ * to its intended on-screen size. Extracted so the renderer and its tests share one
+ * definition: the scale must never depend on the atlas cell size, or a part drawn from a
+ * large cell would render several times its intended size.
+ */
+export function partLayout(
+  frame: { w: number; h: number },
+  attach: { x: number; y: number },
+  targetWidth = PART_WIDTH,
+): { scale: number; width: number; height: number; offsetX: number; offsetY: number } {
+  const scale = targetWidth / frame.w;
+  const width = frame.w * scale;
+  const height = frame.h * scale;
+  // The building sprite is bottom-anchored, so its box top is one box height above the base.
+  return { scale, width, height, offsetX: (attach.x - .5) * width, offsetY: attach.y * height - height };
 }
 
 /**

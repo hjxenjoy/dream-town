@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { MACHINE_PARTS, machinePivot, partAngle } from '../src/sim/machines.ts';
+import { MACHINE_PARTS, PART_WIDTH, machinePivot, partAngle, partLayout } from '../src/sim/machines.ts';
+import { atlasFrames } from '../src/sim/atlases.ts';
 import { BUILDINGS, TECHNOLOGY_KEYS, emptyResources } from '../src/sim/data.ts';
 import { SimWorld } from '../src/sim/world.ts';
 
@@ -73,4 +74,42 @@ test('a workshop only reports as running while it is actually producing',()=>{
   const held=mill!.progress;
   w.tick(BUILDINGS.windmill.cycle);
   assert.equal(mill!.progress,held,'a paused mill makes no progress, so its sails hold still');
+});
+
+test('a part is drawn at its intended size no matter how large its atlas cell is',()=>{
+  // Regression: the renderer positioned parts assuming a scaled size but never applied
+  // the scale, so a part from a 444px cell drew at 444px — a fishing rod spanning the map.
+  const frames=atlasFrames('machine-layers');
+  const widths=new Set<number>();
+  for(const part of Object.values(MACHINE_PARTS)){
+    const frame=frames[part.frame]!;
+    const layout=partLayout(frame,part.attach);
+    assert.equal(layout.width,PART_WIDTH,`${part.frame} is drawn ${PART_WIDTH}px wide`);
+    assert.equal(layout.scale,PART_WIDTH/frame.w,`${part.frame} scale divides out its cell width`);
+    widths.add(Math.round(layout.width));
+  }
+  assert.equal(widths.size,1,'every part renders at the same width regardless of cell size');
+
+  // And the drawn box stays in proportion to a building, rather than dwarfing the map.
+  const tallest=Math.max(...Object.values(frames).map(f=>f.h));
+  const worst=Math.max(...Object.values(MACHINE_PARTS).map(part=>partLayout(frames[part.frame]!,part.attach).height));
+  assert.ok(worst<PART_WIDTH*2,`the tallest part is ${worst.toFixed(0)}px, still under twice its width`);
+  assert.ok(tallest>worst,'no part is drawn at its raw atlas size');
+});
+
+test('the drawn size and the position agree, so a part never drifts off its building',()=>{
+  // The offset must come from the same scale the sprite is drawn at. If they disagree,
+  // a part hangs off its building instead of sitting on it.
+  for(const part of Object.values(MACHINE_PARTS)){
+    const frame=atlasFrames('machine-layers')[part.frame]!;
+    const layout=partLayout(frame,part.attach);
+    assert.ok(Math.abs(layout.offsetX/layout.width-(part.attach.x-.5))<1e-9,`${part.frame} horizontal offset uses its own width`);
+    assert.ok(Math.abs(layout.offsetY/layout.height-(part.attach.y-1))<1e-9,`${part.frame} vertical offset uses its own height`);
+    // The pivot is the origin, so the box extends around a point one attachment
+    // fraction above the building base: the whole part stays near its building.
+    const pivot=machinePivot(part.frame)!;
+    const boxTop=layout.offsetY-pivot.y*layout.scale;
+    const boxBottom=boxTop+layout.height;
+    assert.ok(boxTop>-PART_WIDTH*2.5&&boxBottom<PART_WIDTH*1.5,`${part.frame} box spans ${boxTop.toFixed(0)}..${boxBottom.toFixed(0)} relative to its base`);
+  }
 });

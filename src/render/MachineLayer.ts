@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { iso } from '../sim/terrain';
-import { MACHINE_PARTS, machinePivot, partAngle } from '../sim/machines';
+import { atlasFrames } from '../sim/atlases';
+import { MACHINE_PARTS, machinePivot, partAngle, partLayout } from '../sim/machines';
 import type { Building } from '../sim/world';
 
 interface Part {
@@ -13,8 +14,6 @@ interface Part {
   /** Accumulated running time, so pausing holds the current angle instead of resetting. */
   seconds: number;
 }
-
-const PART_WIDTH = 96;
 
 /**
  * Turning parts over working workshops. A part is placed at the attachment fraction of
@@ -34,15 +33,13 @@ export class MachineLayer {
       if (!attachment || building.damaged) continue;
       live.add(building.id);
       const part = this.parts.get(building.id) ?? this.create(building.id, attachment.frame, attachment.spin, attachment.swing);
-      const slice = this.scene.textures.get('machine-layers').get(part.frame);
-      const scale = PART_WIDTH / slice.width;
+      const frame = atlasFrames('machine-layers')[part.frame]!;
+      const layout = partLayout(frame, attachment.attach);
       const point = iso(building.x, building.y);
-      // The building sprite is bottom-anchored, so its box top sits one box height above.
-      const boxTop = point.y - slice.height * scale;
-      part.image.setPosition(
-        point.x + (attachment.attach.x - .5) * slice.width * scale,
-        boxTop + attachment.attach.y * slice.height * scale,
-      );
+      // Both the scale and the offset come from the same layout, so the part's drawn
+      // size and the size its position assumes can never disagree.
+      part.image.setScale(layout.scale);
+      part.image.setPosition(point.x + layout.offsetX, point.y + layout.offsetY);
       if (running.has(building.id) && !reduced) part.seconds += deltaMs / 1000;
       part.angle = partAngle(part.seconds, part.spin, part.swing);
       part.image.setRotation(Phaser.Math.DegToRad(part.angle)).setDepth(point.y + 6);
