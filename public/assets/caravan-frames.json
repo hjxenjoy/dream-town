@@ -1,0 +1,302 @@
+{
+  "name": "caravan",
+  "label": "商队",
+  "image": "/assets/caravan.webp",
+  "width": 1448,
+  "height": 1086,
+  "columns": 4,
+  "rows": 3,
+  "activeFrames": 12,
+  "reservedCells": 0,
+  "requestedCanvas": [
+    1280,
+    960
+  ],
+  "requestedGrid": [
+    4,
+    3
+  ],
+  "frames": {
+    "empty-travel-0": {
+      "x": 0,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 0,
+      "contentBounds": [
+        27,
+        44,
+        344,
+        327
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "empty-travel-1": {
+      "x": 362,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 1,
+      "contentBounds": [
+        27,
+        44,
+        351,
+        330
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "empty-park-0": {
+      "x": 724,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 2,
+      "contentBounds": [
+        28,
+        44,
+        346,
+        316
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "empty-park-1": {
+      "x": 1086,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 3,
+      "contentBounds": [
+        28,
+        44,
+        345,
+        316
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "loaded-travel-0": {
+      "x": 0,
+      "y": 362,
+      "w": 362,
+      "h": 362,
+      "row": 1,
+      "column": 0,
+      "contentBounds": [
+        26,
+        28,
+        349,
+        327
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "loaded-travel-1": {
+      "x": 362,
+      "y": 362,
+      "w": 362,
+      "h": 362,
+      "row": 1,
+      "column": 1,
+      "contentBounds": [
+        27,
+        28,
+        352,
+        331
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "loaded-park-0": {
+      "x": 724,
+      "y": 362,
+      "w": 362,
+      "h": 362,
+      "row": 1,
+      "column": 2,
+      "contentBounds": [
+        27,
+        28,
+        346,
+        317
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "loaded-park-1": {
+      "x": 1086,
+      "y": 362,
+      "w": 362,
+      "h": 362,
+      "row": 1,
+      "column": 3,
+      "contentBounds": [
+        28,
+        28,
+        345,
+        317
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "unloading-travel-0": {
+      "x": 0,
+      "y": 724,
+      "w": 362,
+      "h": 362,
+      "row": 2,
+      "column": 0,
+      "contentBounds": [
+        26,
+        33,
+        343,
+        323
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "unloading-travel-1": {
+      "x": 362,
+      "y": 724,
+      "w": 362,
+      "h": 362,
+      "row": 2,
+      "column": 1,
+      "contentBounds": [
+        27,
+        33,
+        353,
+        327
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "unloading-park-0": {
+      "x": 724,
+      "y": 724,
+      "w": 362,
+      "h": 362,
+      "row": 2,
+      "column": 2,
+      "contentBounds": [
+        27,
+        33,
+        346,
+        313
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "unloading-park-1": {
+      "x": 1086,
+      "y": 724,
+      "w": 362,
+      "h": 362,
+      "row": 2,
+      "column": 3,
+      "contentBounds": [
+        28,
+        32,
+        346,
+        313
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    }
+  },
+  "pivotStatus": "local sprite anchors",
+  "alphaPercent": 57.41,
+  "pngBytes": 1722392,
+  "webpBytes": 468492,
+  "qa": {
+    "alphaPreserved": true,
+    "minOpaqueMargin": 0.0249,
+    "requested12PercentPaddingMet": false,
+    "edgeFrames": [],
+    "exactRequestedCanvas": false,
+    "runtimeIntegrated": false,
+    "verifyForeignPixelsInFrames": 0,
+    "verifyForeignByFrame": {},
+    "verifyOrphanPixels": 749,
+    "minNeighbourGapPixels": 36,
+    "maxVisibleRgbDeviationFromSource": 43
+  }
+}

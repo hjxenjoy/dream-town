@@ -1,0 +1,214 @@
+{
+  "name": "pets",
+  "label": "宠物",
+  "image": "/assets/pets.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "reservedCells": 0,
+  "requestedCanvas": [
+    512,
+    256
+  ],
+  "requestedGrid": [
+    4,
+    2
+  ],
+  "frames": {
+    "cat-front-0": {
+      "x": 0,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 0,
+      "contentBounds": [
+        98,
+        42,
+        374,
+        395
+      ],
+      "pivot": [
+        222.0,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "cat-front-1": {
+      "x": 444,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 1,
+      "contentBounds": [
+        95,
+        41,
+        374,
+        396
+      ],
+      "pivot": [
+        221.5,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "cat-back-0": {
+      "x": 887,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 2,
+      "contentBounds": [
+        90,
+        78,
+        372,
+        396
+      ],
+      "pivot": [
+        221.5,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "cat-back-1": {
+      "x": 1330,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 3,
+      "contentBounds": [
+        89,
+        76,
+        371,
+        396
+      ],
+      "pivot": [
+        222.0,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "dog-front-0": {
+      "x": 0,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 0,
+      "contentBounds": [
+        88,
+        43,
+        385,
+        384
+      ],
+      "pivot": [
+        222.0,
+        389.84
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "dog-front-1": {
+      "x": 444,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 1,
+      "contentBounds": [
+        81,
+        45,
+        383,
+        383
+      ],
+      "pivot": [
+        221.5,
+        389.84
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "dog-back-0": {
+      "x": 887,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 2,
+      "contentBounds": [
+        78,
+        68,
+        371,
+        386
+      ],
+      "pivot": [
+        221.5,
+        389.84
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "dog-back-1": {
+      "x": 1330,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 3,
+      "contentBounds": [
+        81,
+        69,
+        374,
+        386
+      ],
+      "pivot": [
+        222.0,
+        389.84
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    }
+  },
+  "pivotStatus": "local sprite anchors",
+  "alphaPercent": 72.38,
+  "pngBytes": 941339,
+  "webpBytes": 238412,
+  "qa": {
+    "alphaPreserved": true,
+    "minOpaqueMargin": 0.0923,
+    "requested12PercentPaddingMet": false,
+    "edgeFrames": [],
+    "exactRequestedCanvas": false,
+    "runtimeIntegrated": false,
+    "verifyForeignPixelsInFrames": 0,
+    "verifyForeignByFrame": {},
+    "verifyOrphanPixels": 42,
+    "minNeighbourGapPixels": 92,
+    "maxVisibleRgbDeviationFromSource": 49
+  }
+}

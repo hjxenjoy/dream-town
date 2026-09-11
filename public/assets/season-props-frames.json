@@ -1,0 +1,225 @@
+{
+  "name": "season-props",
+  "label": "季节摆件",
+  "image": "/assets/season-props.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "reservedCells": 0,
+  "requestedCanvas": [
+    1280,
+    640
+  ],
+  "requestedGrid": [
+    4,
+    2
+  ],
+  "frames": {
+    "spring-flower-cart": {
+      "x": 0,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 0,
+      "contentBounds": [
+        54,
+        12,
+        416,
+        441
+      ],
+      "pivot": [
+        222.0,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "spring-picnic": {
+      "x": 444,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 1,
+      "contentBounds": [
+        30,
+        68,
+        431,
+        425
+      ],
+      "pivot": [
+        221.5,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "summer-fruit-stall": {
+      "x": 887,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 2,
+      "contentBounds": [
+        43,
+        9,
+        417,
+        431
+      ],
+      "pivot": [
+        221.5,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "summer-ribbons": {
+      "x": 1330,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 3,
+      "contentBounds": [
+        61,
+        8,
+        387,
+        444
+      ],
+      "pivot": [
+        222.0,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "autumn-harvest": {
+      "x": 0,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 0,
+      "contentBounds": [
+        27,
+        15,
+        434,
+        420
+      ],
+      "pivot": [
+        222.0,
+        389.84
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "autumn-pumpkins": {
+      "x": 444,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 1,
+      "contentBounds": [
+        22,
+        11,
+        417,
+        420
+      ],
+      "pivot": [
+        221.5,
+        389.84
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "winter-market": {
+      "x": 887,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 2,
+      "contentBounds": [
+        36,
+        13,
+        426,
+        430
+      ],
+      "pivot": [
+        221.5,
+        389.84
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "winter-tree": {
+      "x": 1330,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 3,
+      "contentBounds": [
+        57,
+        0,
+        421,
+        429
+      ],
+      "pivot": [
+        222.0,
+        389.84
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    }
+  },
+  "pivotStatus": "local sprite anchors",
+  "alphaPercent": 43.27,
+  "pngBytes": 2377845,
+  "webpBytes": 658406,
+  "qa": {
+    "alphaPreserved": true,
+    "minOpaqueMargin": 0.0,
+    "requested12PercentPaddingMet": false,
+    "edgeFrames": [
+      {
+        "frame": "summer-ribbons",
+        "edgePixels": 13
+      },
+      {
+        "frame": "winter-tree",
+        "edgePixels": 2
+      }
+    ],
+    "exactRequestedCanvas": false,
+    "runtimeIntegrated": false,
+    "verifyForeignPixelsInFrames": 8,
+    "verifyForeignByFrame": {
+      "winter-tree": 8
+    },
+    "verifyOrphanPixels": 249,
+    "minNeighbourGapPixels": 0,
+    "maxVisibleRgbDeviationFromSource": 68
+  }
+}

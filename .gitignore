@@ -3,3 +3,8 @@ dist/
 *.local
 .DS_Store
 test-results/
+
+# Asset delivery bundle. The generator output itself is tracked (it is the input
+# the catalog script reads), but its repackaged copies are not.
+output/*.zip
+output/*/runtime/

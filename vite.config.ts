@@ -12,7 +12,7 @@ export default defineConfig({
       display: 'standalone', orientation: 'any',
       icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }]
     },
-    workbox: { globIgnores: ['**/favicon.svg'], globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,webp,svg,woff2,json}'], dontCacheBustURLsMatching: /assets\/.*-[a-zA-Z0-9_-]{8,}\.(?:js|css)$/, maximumFileSizeToCacheInBytes: 20 * 1024 * 1024 }
+    workbox: { navigateFallbackDenylist: [/\/asset-preview\.html$/], globIgnores: ['**/favicon.svg'], globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,webp,svg,woff2,json}'], dontCacheBustURLsMatching: /assets\/.*-[a-zA-Z0-9_-]{8,}\.(?:js|css)$/, maximumFileSizeToCacheInBytes: 20 * 1024 * 1024 }
   })],
   build: { chunkSizeWarningLimit: 1600, rollupOptions: { output: { manualChunks: { phaser: ['phaser'] } } } }
 });

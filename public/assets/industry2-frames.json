@@ -1,0 +1,178 @@
+{
+  "name": "industry2",
+  "label": "乳品与酿酒产业",
+  "image": "/assets/industry2.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 6,
+  "reservedCells": 2,
+  "requestedCanvas": [
+    1536,
+    768
+  ],
+  "requestedGrid": [
+    4,
+    2
+  ],
+  "frames": {
+    "cow-barn": {
+      "x": 0,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 0,
+      "contentBounds": [
+        17,
+        23,
+        438,
+        409
+      ],
+      "pivot": [
+        222.0,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "dairy": {
+      "x": 444,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 1,
+      "contentBounds": [
+        19,
+        26,
+        439,
+        409
+      ],
+      "pivot": [
+        221.5,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "vineyard": {
+      "x": 887,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 2,
+      "contentBounds": [
+        16,
+        19,
+        433,
+        409
+      ],
+      "pivot": [
+        221.5,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "winery": {
+      "x": 1330,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 3,
+      "contentBounds": [
+        12,
+        19,
+        429,
+        418
+      ],
+      "pivot": [
+        222.0,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "wine-cellar": {
+      "x": 0,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 0,
+      "contentBounds": [
+        14,
+        8,
+        443,
+        419
+      ],
+      "pivot": [
+        222.0,
+        389.84
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "apiary": {
+      "x": 444,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 1,
+      "contentBounds": [
+        21,
+        21,
+        443,
+        408
+      ],
+      "pivot": [
+        221.5,
+        389.84
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    }
+  },
+  "pivotStatus": "local sprite anchors",
+  "alphaPercent": 53.88,
+  "pngBytes": 1856078,
+  "webpBytes": 454372,
+  "qa": {
+    "alphaPreserved": true,
+    "minOpaqueMargin": 0.0,
+    "requested12PercentPaddingMet": false,
+    "edgeFrames": [
+      {
+        "frame": "apiary",
+        "edgePixels": 8
+      }
+    ],
+    "exactRequestedCanvas": false,
+    "runtimeIntegrated": false,
+    "verifyForeignPixelsInFrames": 51,
+    "verifyForeignByFrame": {
+      "dairy": 32,
+      "apiary": 19
+    },
+    "verifyOrphanPixels": 60,
+    "minNeighbourGapPixels": 20,
+    "maxVisibleRgbDeviationFromSource": 71
+  }
+}

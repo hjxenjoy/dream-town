@@ -1,0 +1,412 @@
+{
+  "name": "disasters",
+  "label": "灾害与修缮",
+  "image": "/assets/disasters.webp",
+  "width": 1244,
+  "height": 1324,
+  "columns": 4,
+  "rows": 4,
+  "activeFrames": 16,
+  "reservedCells": 0,
+  "requestedCanvas": [
+    1024,
+    1024
+  ],
+  "requestedGrid": [
+    4,
+    4
+  ],
+  "frames": {
+    "fire-0": {
+      "x": 63,
+      "y": 79,
+      "w": 185,
+      "h": 232,
+      "row": 0,
+      "column": 0,
+      "contentBounds": [
+        6,
+        8,
+        179,
+        226
+      ],
+      "pivot": [
+        87,
+        225
+      ],
+      "origin": [
+        0.4703,
+        0.9698
+      ]
+    },
+    "fire-1": {
+      "x": 374,
+      "y": 64,
+      "w": 185,
+      "h": 247,
+      "row": 0,
+      "column": 1,
+      "contentBounds": [
+        3,
+        11,
+        179,
+        241
+      ],
+      "pivot": [
+        57,
+        240
+      ],
+      "origin": [
+        0.3081,
+        0.9717
+      ]
+    },
+    "fire-2": {
+      "x": 685,
+      "y": 76,
+      "w": 185,
+      "h": 235,
+      "row": 0,
+      "column": 2,
+      "contentBounds": [
+        6,
+        13,
+        180,
+        228
+      ],
+      "pivot": [
+        93,
+        227
+      ],
+      "origin": [
+        0.5027,
+        0.966
+      ]
+    },
+    "fire-3": {
+      "x": 996,
+      "y": 73,
+      "w": 184,
+      "h": 238,
+      "row": 0,
+      "column": 3,
+      "contentBounds": [
+        4,
+        10,
+        181,
+        231
+      ],
+      "pivot": [
+        52,
+        230
+      ],
+      "origin": [
+        0.2826,
+        0.9664
+      ]
+    },
+    "flood-0": {
+      "x": 33,
+      "y": 438,
+      "w": 244,
+      "h": 204,
+      "row": 1,
+      "column": 0,
+      "contentBounds": [
+        3,
+        6,
+        236,
+        197
+      ],
+      "pivot": [
+        148,
+        196
+      ],
+      "origin": [
+        0.6066,
+        0.9608
+      ]
+    },
+    "flood-1": {
+      "x": 342,
+      "y": 450,
+      "w": 249,
+      "h": 192,
+      "row": 1,
+      "column": 1,
+      "contentBounds": [
+        6,
+        7,
+        243,
+        186
+      ],
+      "pivot": [
+        194,
+        185
+      ],
+      "origin": [
+        0.7791,
+        0.9635
+      ]
+    },
+    "drought-0": {
+      "x": 649,
+      "y": 460,
+      "w": 257,
+      "h": 182,
+      "row": 1,
+      "column": 2,
+      "contentBounds": [
+        6,
+        7,
+        250,
+        179
+      ],
+      "pivot": [
+        100,
+        178
+      ],
+      "origin": [
+        0.3891,
+        0.978
+      ]
+    },
+    "drought-1": {
+      "x": 961,
+      "y": 463,
+      "w": 254,
+      "h": 179,
+      "row": 1,
+      "column": 3,
+      "contentBounds": [
+        6,
+        5,
+        249,
+        173
+      ],
+      "pivot": [
+        132,
+        172
+      ],
+      "origin": [
+        0.5197,
+        0.9609
+      ]
+    },
+    "hail-0": {
+      "x": 47,
+      "y": 715,
+      "w": 217,
+      "h": 258,
+      "row": 2,
+      "column": 0,
+      "contentBounds": [
+        5,
+        20,
+        212,
+        250
+      ],
+      "pivot": [
+        151,
+        249
+      ],
+      "origin": [
+        0.6959,
+        0.9651
+      ]
+    },
+    "hail-1": {
+      "x": 374,
+      "y": 733,
+      "w": 184,
+      "h": 240,
+      "row": 2,
+      "column": 1,
+      "contentBounds": [
+        10,
+        21,
+        176,
+        234
+      ],
+      "pivot": [
+        114,
+        233
+      ],
+      "origin": [
+        0.6196,
+        0.9708
+      ]
+    },
+    "insects-0": {
+      "x": 642,
+      "y": 742,
+      "w": 271,
+      "h": 231,
+      "row": 2,
+      "column": 2,
+      "contentBounds": [
+        7,
+        5,
+        264,
+        224
+      ],
+      "pivot": [
+        133,
+        223
+      ],
+      "origin": [
+        0.4908,
+        0.9654
+      ]
+    },
+    "insects-1": {
+      "x": 971,
+      "y": 746,
+      "w": 235,
+      "h": 227,
+      "row": 2,
+      "column": 3,
+      "contentBounds": [
+        6,
+        7,
+        227,
+        220
+      ],
+      "pivot": [
+        67,
+        219
+      ],
+      "origin": [
+        0.2851,
+        0.9648
+      ]
+    },
+    "scaffold-0": {
+      "x": 36,
+      "y": 1013,
+      "w": 238,
+      "h": 291,
+      "row": 3,
+      "column": 0,
+      "contentBounds": [
+        7,
+        5,
+        231,
+        284
+      ],
+      "pivot": [
+        96,
+        283
+      ],
+      "origin": [
+        0.4034,
+        0.9725
+      ]
+    },
+    "scaffold-1": {
+      "x": 349,
+      "y": 1013,
+      "w": 235,
+      "h": 291,
+      "row": 3,
+      "column": 1,
+      "contentBounds": [
+        7,
+        5,
+        232,
+        285
+      ],
+      "pivot": [
+        105,
+        284
+      ],
+      "origin": [
+        0.4468,
+        0.9759
+      ]
+    },
+    "bell-0": {
+      "x": 654,
+      "y": 1019,
+      "w": 246,
+      "h": 285,
+      "row": 3,
+      "column": 2,
+      "contentBounds": [
+        7,
+        4,
+        239,
+        278
+      ],
+      "pivot": [
+        210,
+        277
+      ],
+      "origin": [
+        0.8537,
+        0.9719
+      ]
+    },
+    "bell-1": {
+      "x": 968,
+      "y": 1019,
+      "w": 240,
+      "h": 285,
+      "row": 3,
+      "column": 3,
+      "contentBounds": [
+        5,
+        7,
+        233,
+        276
+      ],
+      "pivot": [
+        58,
+        275
+      ],
+      "origin": [
+        0.2417,
+        0.9649
+      ]
+    }
+  },
+  "pivotStatus": "measured from solid alpha, feet at the bottom-centre of each frame",
+  "alphaPercent": 73.06,
+  "pngBytes": 1176941,
+  "webpBytes": 439392,
+  "qa": {
+    "alphaPreserved": true,
+    "minOpaqueMargin": 0,
+    "requested12PercentPaddingMet": false,
+    "edgeFrames": [],
+    "exactRequestedCanvas": false,
+    "runtimeIntegrated": false,
+    "verifyForeignPixelsInFrames": 0,
+    "verifyForeignByFrame": {},
+    "verifyOrphanPixels": 15738,
+    "minNeighbourGapPixels": 51,
+    "maxVisibleRgbDeviationFromSource": 66,
+    "pixelRepair": {
+      "method": "exclusive-ownership relocation",
+      "gutter": 20,
+      "fringeRadius": 6,
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "shippedCanvas": [
+        1244,
+        1324
+      ],
+      "cell": [
+        311,
+        331
+      ],
+      "spritesMoved": 16,
+      "spritesRelocated": 16,
+      "hazePixelsLeftBehind": 157913,
+      "fringePixelsSharedAndCleared": 0,
+      "pixelsAboveLinkLost": 0
+    }
+  }
+}

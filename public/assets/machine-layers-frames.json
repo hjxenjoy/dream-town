@@ -1,0 +1,170 @@
+{
+  "name": "machine-layers",
+  "label": "机械分层",
+  "image": "/assets/machine-layers.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 6,
+  "reservedCells": 2,
+  "requestedCanvas": [
+    1152,
+    768
+  ],
+  "requestedGrid": [
+    3,
+    2
+  ],
+  "frames": {
+    "windmill-rotor": {
+      "x": 0,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 0,
+      "contentBounds": [
+        36,
+        20,
+        430,
+        437
+      ],
+      "pivot": [
+        235.32,
+        235.32
+      ],
+      "origin": [
+        0.53,
+        0.53
+      ]
+    },
+    "waterwheel": {
+      "x": 444,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 1,
+      "contentBounds": [
+        54,
+        32,
+        413,
+        424
+      ],
+      "pivot": [
+        186.06,
+        244.2
+      ],
+      "origin": [
+        0.42,
+        0.55
+      ]
+    },
+    "saw-blade": {
+      "x": 887,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 2,
+      "contentBounds": [
+        74,
+        54,
+        418,
+        422
+      ],
+      "pivot": [
+        261.37,
+        235.32
+      ],
+      "origin": [
+        0.59,
+        0.53
+      ]
+    },
+    "fishing-rod": {
+      "x": 1330,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 3,
+      "contentBounds": [
+        62,
+        32,
+        409,
+        421
+      ],
+      "pivot": [
+        75.48,
+        386.28
+      ],
+      "origin": [
+        0.17,
+        0.87
+      ]
+    },
+    "minecart": {
+      "x": 0,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 0,
+      "contentBounds": [
+        52,
+        67,
+        396,
+        373
+      ],
+      "pivot": [
+        226.44,
+        372.12
+      ],
+      "origin": [
+        0.51,
+        0.84
+      ]
+    },
+    "hammer": {
+      "x": 444,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 1,
+      "contentBounds": [
+        128,
+        35,
+        337,
+        410
+      ],
+      "pivot": [
+        230.36,
+        367.69
+      ],
+      "origin": [
+        0.52,
+        0.83
+      ]
+    }
+  },
+  "pivotStatus": "suggested-local-anchors; building attachment must be calibrated",
+  "alphaPercent": 72.04,
+  "pngBytes": 1088965,
+  "webpBytes": 254450,
+  "qa": {
+    "alphaPreserved": true,
+    "minOpaqueMargin": 0.0158,
+    "requested12PercentPaddingMet": false,
+    "edgeFrames": [],
+    "exactRequestedCanvas": false,
+    "runtimeIntegrated": false,
+    "verifyForeignPixelsInFrames": 0,
+    "verifyForeignByFrame": {},
+    "verifyOrphanPixels": 143,
+    "minNeighbourGapPixels": 55,
+    "maxVisibleRgbDeviationFromSource": 33
+  }
+}

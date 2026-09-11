@@ -1,0 +1,170 @@
+{
+  "name": "housing-levels",
+  "label": "住宅成长",
+  "image": "/assets/housing-levels.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 6,
+  "reservedCells": 2,
+  "requestedCanvas": [
+    1152,
+    768
+  ],
+  "requestedGrid": [
+    3,
+    2
+  ],
+  "frames": {
+    "cottage-1": {
+      "x": 0,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 0,
+      "contentBounds": [
+        44,
+        57,
+        421,
+        391
+      ],
+      "pivot": [
+        222.0,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "cottage-2": {
+      "x": 444,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 1,
+      "contentBounds": [
+        40,
+        55,
+        406,
+        395
+      ],
+      "pivot": [
+        221.5,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "cottage-3": {
+      "x": 887,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 2,
+      "contentBounds": [
+        25,
+        26,
+        409,
+        416
+      ],
+      "pivot": [
+        221.5,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "farmhouse-1": {
+      "x": 1330,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 3,
+      "contentBounds": [
+        31,
+        51,
+        410,
+        407
+      ],
+      "pivot": [
+        222.0,
+        390.72
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "farmhouse-2": {
+      "x": 0,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 0,
+      "contentBounds": [
+        31,
+        25,
+        424,
+        409
+      ],
+      "pivot": [
+        222.0,
+        389.84
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "farmhouse-3": {
+      "x": 444,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 1,
+      "contentBounds": [
+        25,
+        30,
+        434,
+        417
+      ],
+      "pivot": [
+        221.5,
+        389.84
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    }
+  },
+  "pivotStatus": "local sprite anchors",
+  "alphaPercent": 60.94,
+  "pngBytes": 1573240,
+  "webpBytes": 372744,
+  "qa": {
+    "alphaPreserved": true,
+    "minOpaqueMargin": 0.0203,
+    "requested12PercentPaddingMet": false,
+    "edgeFrames": [],
+    "exactRequestedCanvas": false,
+    "runtimeIntegrated": false,
+    "verifyForeignPixelsInFrames": 0,
+    "verifyForeignByFrame": {},
+    "verifyOrphanPixels": 79,
+    "minNeighbourGapPixels": 45,
+    "maxVisibleRgbDeviationFromSource": 51
+  }
+}

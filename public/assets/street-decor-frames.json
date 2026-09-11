@@ -1,0 +1,302 @@
+{
+  "name": "street-decor",
+  "label": "街区装饰",
+  "image": "/assets/street-decor.webp",
+  "width": 1448,
+  "height": 1086,
+  "columns": 4,
+  "rows": 3,
+  "activeFrames": 12,
+  "reservedCells": 0,
+  "requestedCanvas": [
+    1536,
+    1152
+  ],
+  "requestedGrid": [
+    4,
+    3
+  ],
+  "frames": {
+    "flower-box": {
+      "x": 0,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 0,
+      "contentBounds": [
+        45,
+        100,
+        348,
+        336
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "flower-trellis": {
+      "x": 362,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 1,
+      "contentBounds": [
+        59,
+        50,
+        287,
+        339
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "flower-arch-lights": {
+      "x": 724,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 2,
+      "contentBounds": [
+        37,
+        26,
+        315,
+        349
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "boardwalk": {
+      "x": 1086,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 3,
+      "contentBounds": [
+        43,
+        70,
+        326,
+        339
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "railing": {
+      "x": 0,
+      "y": 362,
+      "w": 362,
+      "h": 362,
+      "row": 1,
+      "column": 0,
+      "contentBounds": [
+        61,
+        72,
+        313,
+        312
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "parasol": {
+      "x": 362,
+      "y": 362,
+      "w": 362,
+      "h": 362,
+      "row": 1,
+      "column": 1,
+      "contentBounds": [
+        46,
+        22,
+        324,
+        328
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "willow": {
+      "x": 724,
+      "y": 362,
+      "w": 362,
+      "h": 362,
+      "row": 1,
+      "column": 2,
+      "contentBounds": [
+        36,
+        9,
+        326,
+        343
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "floating-dock": {
+      "x": 1086,
+      "y": 362,
+      "w": 362,
+      "h": 362,
+      "row": 1,
+      "column": 3,
+      "contentBounds": [
+        45,
+        68,
+        325,
+        319
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "crates": {
+      "x": 0,
+      "y": 724,
+      "w": 362,
+      "h": 362,
+      "row": 2,
+      "column": 0,
+      "contentBounds": [
+        56,
+        33,
+        315,
+        297
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "barrels": {
+      "x": 362,
+      "y": 724,
+      "w": 362,
+      "h": 362,
+      "row": 2,
+      "column": 1,
+      "contentBounds": [
+        36,
+        47,
+        322,
+        280
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "anvil": {
+      "x": 724,
+      "y": 724,
+      "w": 362,
+      "h": 362,
+      "row": 2,
+      "column": 2,
+      "contentBounds": [
+        69,
+        48,
+        306,
+        301
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    },
+    "sign-flags": {
+      "x": 1086,
+      "y": 724,
+      "w": 362,
+      "h": 362,
+      "row": 2,
+      "column": 3,
+      "contentBounds": [
+        84,
+        11,
+        312,
+        315
+      ],
+      "pivot": [
+        181.0,
+        318.56
+      ],
+      "origin": [
+        0.5,
+        0.88
+      ]
+    }
+  },
+  "pivotStatus": "local sprite anchors",
+  "alphaPercent": 61.41,
+  "pngBytes": 1595777,
+  "webpBytes": 448064,
+  "qa": {
+    "alphaPreserved": true,
+    "minOpaqueMargin": 0.0249,
+    "requested12PercentPaddingMet": false,
+    "edgeFrames": [],
+    "exactRequestedCanvas": false,
+    "runtimeIntegrated": false,
+    "verifyForeignPixelsInFrames": 0,
+    "verifyForeignByFrame": {},
+    "verifyOrphanPixels": 380,
+    "minNeighbourGapPixels": 22,
+    "maxVisibleRgbDeviationFromSource": 44
+  }
+}

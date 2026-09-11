@@ -1,0 +1,1116 @@
+{
+  "name": "citizens-actions",
+  "label": "居民搬运与劳作",
+  "image": "/assets/citizens-actions.webp",
+  "width": 1656,
+  "height": 1506,
+  "columns": 8,
+  "rows": 6,
+  "activeFrames": 48,
+  "reservedCells": 0,
+  "requestedCanvas": [
+    1536,
+    1152
+  ],
+  "requestedGrid": [
+    8,
+    6
+  ],
+  "frames": {
+    "gardener-carry-front-0": {
+      "x": 44,
+      "y": 46,
+      "w": 118,
+      "h": 185,
+      "row": 0,
+      "column": 0,
+      "contentBounds": [
+        3,
+        6,
+        115,
+        178
+      ],
+      "pivot": [
+        89,
+        177
+      ],
+      "origin": [
+        0.7542,
+        0.9568
+      ]
+    },
+    "gardener-carry-front-1": {
+      "x": 248,
+      "y": 50,
+      "w": 125,
+      "h": 181,
+      "row": 0,
+      "column": 1,
+      "contentBounds": [
+        7,
+        2,
+        119,
+        175
+      ],
+      "pivot": [
+        95,
+        174
+      ],
+      "origin": [
+        0.76,
+        0.9613
+      ]
+    },
+    "gardener-carry-back-0": {
+      "x": 459,
+      "y": 43,
+      "w": 116,
+      "h": 188,
+      "row": 0,
+      "column": 2,
+      "contentBounds": [
+        6,
+        6,
+        109,
+        182
+      ],
+      "pivot": [
+        38,
+        181
+      ],
+      "origin": [
+        0.3276,
+        0.9628
+      ]
+    },
+    "gardener-carry-back-1": {
+      "x": 668,
+      "y": 44,
+      "w": 113,
+      "h": 187,
+      "row": 0,
+      "column": 3,
+      "contentBounds": [
+        8,
+        4,
+        109,
+        180
+      ],
+      "pivot": [
+        42,
+        179
+      ],
+      "origin": [
+        0.3717,
+        0.9572
+      ]
+    },
+    "gardener-work-front-0": {
+      "x": 874,
+      "y": 42,
+      "w": 114,
+      "h": 189,
+      "row": 0,
+      "column": 4,
+      "contentBounds": [
+        3,
+        3,
+        111,
+        183
+      ],
+      "pivot": [
+        26,
+        182
+      ],
+      "origin": [
+        0.2281,
+        0.963
+      ]
+    },
+    "gardener-work-front-1": {
+      "x": 1071,
+      "y": 69,
+      "w": 134,
+      "h": 162,
+      "row": 0,
+      "column": 5,
+      "contentBounds": [
+        3,
+        3,
+        129,
+        156
+      ],
+      "pivot": [
+        104,
+        155
+      ],
+      "origin": [
+        0.7761,
+        0.9568
+      ]
+    },
+    "gardener-work-back-0": {
+      "x": 1284,
+      "y": 36,
+      "w": 122,
+      "h": 195,
+      "row": 0,
+      "column": 6,
+      "contentBounds": [
+        4,
+        2,
+        117,
+        189
+      ],
+      "pivot": [
+        20,
+        188
+      ],
+      "origin": [
+        0.1639,
+        0.9641
+      ]
+    },
+    "gardener-work-back-1": {
+      "x": 1479,
+      "y": 60,
+      "w": 147,
+      "h": 171,
+      "row": 0,
+      "column": 7,
+      "contentBounds": [
+        4,
+        6,
+        141,
+        165
+      ],
+      "pivot": [
+        17,
+        164
+      ],
+      "origin": [
+        0.1156,
+        0.9591
+      ]
+    },
+    "carpenter-carry-front-0": {
+      "x": 42,
+      "y": 273,
+      "w": 123,
+      "h": 209,
+      "row": 1,
+      "column": 0,
+      "contentBounds": [
+        5,
+        26,
+        117,
+        203
+      ],
+      "pivot": [
+        85,
+        202
+      ],
+      "origin": [
+        0.6911,
+        0.9665
+      ]
+    },
+    "carpenter-carry-front-1": {
+      "x": 246,
+      "y": 275,
+      "w": 128,
+      "h": 207,
+      "row": 1,
+      "column": 1,
+      "contentBounds": [
+        7,
+        26,
+        123,
+        203
+      ],
+      "pivot": [
+        90,
+        202
+      ],
+      "origin": [
+        0.7031,
+        0.9758
+      ]
+    },
+    "carpenter-carry-back-0": {
+      "x": 457,
+      "y": 299,
+      "w": 121,
+      "h": 183,
+      "row": 1,
+      "column": 2,
+      "contentBounds": [
+        6,
+        3,
+        116,
+        176
+      ],
+      "pivot": [
+        34,
+        175
+      ],
+      "origin": [
+        0.281,
+        0.9563
+      ]
+    },
+    "carpenter-carry-back-1": {
+      "x": 668,
+      "y": 297,
+      "w": 112,
+      "h": 185,
+      "row": 1,
+      "column": 3,
+      "contentBounds": [
+        6,
+        3,
+        109,
+        178
+      ],
+      "pivot": [
+        36,
+        177
+      ],
+      "origin": [
+        0.3214,
+        0.9568
+      ]
+    },
+    "carpenter-work-front-0": {
+      "x": 871,
+      "y": 286,
+      "w": 120,
+      "h": 196,
+      "row": 1,
+      "column": 4,
+      "contentBounds": [
+        3,
+        3,
+        116,
+        190
+      ],
+      "pivot": [
+        21,
+        189
+      ],
+      "origin": [
+        0.175,
+        0.9643
+      ]
+    },
+    "carpenter-work-front-1": {
+      "x": 1076,
+      "y": 271,
+      "w": 125,
+      "h": 211,
+      "row": 1,
+      "column": 5,
+      "contentBounds": [
+        7,
+        52,
+        119,
+        204
+      ],
+      "pivot": [
+        71,
+        203
+      ],
+      "origin": [
+        0.568,
+        0.9621
+      ]
+    },
+    "carpenter-work-back-0": {
+      "x": 1286,
+      "y": 283,
+      "w": 118,
+      "h": 199,
+      "row": 1,
+      "column": 6,
+      "contentBounds": [
+        3,
+        11,
+        115,
+        193
+      ],
+      "pivot": [
+        18,
+        192
+      ],
+      "origin": [
+        0.1525,
+        0.9648
+      ]
+    },
+    "carpenter-work-back-1": {
+      "x": 1484,
+      "y": 286,
+      "w": 136,
+      "h": 196,
+      "row": 1,
+      "column": 7,
+      "contentBounds": [
+        5,
+        31,
+        129,
+        191
+      ],
+      "pivot": [
+        19,
+        190
+      ],
+      "origin": [
+        0.1397,
+        0.9694
+      ]
+    },
+    "herbalist-carry-front-0": {
+      "x": 41,
+      "y": 538,
+      "w": 124,
+      "h": 195,
+      "row": 2,
+      "column": 0,
+      "contentBounds": [
+        6,
+        23,
+        122,
+        191
+      ],
+      "pivot": [
+        91,
+        190
+      ],
+      "origin": [
+        0.7339,
+        0.9744
+      ]
+    },
+    "herbalist-carry-front-1": {
+      "x": 251,
+      "y": 538,
+      "w": 118,
+      "h": 195,
+      "row": 2,
+      "column": 1,
+      "contentBounds": [
+        4,
+        24,
+        114,
+        192
+      ],
+      "pivot": [
+        98,
+        191
+      ],
+      "origin": [
+        0.8305,
+        0.9795
+      ]
+    },
+    "herbalist-carry-back-0": {
+      "x": 453,
+      "y": 548,
+      "w": 129,
+      "h": 185,
+      "row": 2,
+      "column": 2,
+      "contentBounds": [
+        5,
+        10,
+        123,
+        179
+      ],
+      "pivot": [
+        33,
+        178
+      ],
+      "origin": [
+        0.2558,
+        0.9622
+      ]
+    },
+    "herbalist-carry-back-1": {
+      "x": 661,
+      "y": 545,
+      "w": 127,
+      "h": 188,
+      "row": 2,
+      "column": 3,
+      "contentBounds": [
+        8,
+        12,
+        121,
+        181
+      ],
+      "pivot": [
+        38,
+        180
+      ],
+      "origin": [
+        0.2992,
+        0.9574
+      ]
+    },
+    "herbalist-work-front-0": {
+      "x": 852,
+      "y": 538,
+      "w": 158,
+      "h": 195,
+      "row": 2,
+      "column": 4,
+      "contentBounds": [
+        6,
+        29,
+        152,
+        190
+      ],
+      "pivot": [
+        40,
+        189
+      ],
+      "origin": [
+        0.2532,
+        0.9692
+      ]
+    },
+    "herbalist-work-front-1": {
+      "x": 1061,
+      "y": 548,
+      "w": 155,
+      "h": 185,
+      "row": 2,
+      "column": 5,
+      "contentBounds": [
+        4,
+        27,
+        149,
+        178
+      ],
+      "pivot": [
+        91,
+        177
+      ],
+      "origin": [
+        0.5871,
+        0.9568
+      ]
+    },
+    "herbalist-work-back-0": {
+      "x": 1271,
+      "y": 563,
+      "w": 148,
+      "h": 170,
+      "row": 2,
+      "column": 6,
+      "contentBounds": [
+        5,
+        4,
+        142,
+        167
+      ],
+      "pivot": [
+        27,
+        166
+      ],
+      "origin": [
+        0.1824,
+        0.9765
+      ]
+    },
+    "herbalist-work-back-1": {
+      "x": 1477,
+      "y": 533,
+      "w": 150,
+      "h": 200,
+      "row": 2,
+      "column": 7,
+      "contentBounds": [
+        6,
+        40,
+        143,
+        194
+      ],
+      "pivot": [
+        24,
+        193
+      ],
+      "origin": [
+        0.16,
+        0.965
+      ]
+    },
+    "farmer-carry-front-0": {
+      "x": 46,
+      "y": 788,
+      "w": 114,
+      "h": 196,
+      "row": 3,
+      "column": 0,
+      "contentBounds": [
+        3,
+        8,
+        106,
+        189
+      ],
+      "pivot": [
+        83,
+        188
+      ],
+      "origin": [
+        0.7281,
+        0.9592
+      ]
+    },
+    "farmer-carry-front-1": {
+      "x": 253,
+      "y": 790,
+      "w": 114,
+      "h": 194,
+      "row": 3,
+      "column": 1,
+      "contentBounds": [
+        3,
+        7,
+        108,
+        189
+      ],
+      "pivot": [
+        78,
+        188
+      ],
+      "origin": [
+        0.6842,
+        0.9691
+      ]
+    },
+    "farmer-carry-back-0": {
+      "x": 461,
+      "y": 786,
+      "w": 113,
+      "h": 198,
+      "row": 3,
+      "column": 2,
+      "contentBounds": [
+        8,
+        12,
+        107,
+        193
+      ],
+      "pivot": [
+        36,
+        192
+      ],
+      "origin": [
+        0.3186,
+        0.9697
+      ]
+    },
+    "farmer-carry-back-1": {
+      "x": 670,
+      "y": 791,
+      "w": 109,
+      "h": 193,
+      "row": 3,
+      "column": 3,
+      "contentBounds": [
+        4,
+        6,
+        103,
+        189
+      ],
+      "pivot": [
+        33,
+        188
+      ],
+      "origin": [
+        0.3028,
+        0.9741
+      ]
+    },
+    "farmer-work-front-0": {
+      "x": 862,
+      "y": 789,
+      "w": 138,
+      "h": 195,
+      "row": 3,
+      "column": 4,
+      "contentBounds": [
+        6,
+        7,
+        132,
+        191
+      ],
+      "pivot": [
+        100,
+        190
+      ],
+      "origin": [
+        0.7246,
+        0.9744
+      ]
+    },
+    "farmer-work-front-1": {
+      "x": 1069,
+      "y": 773,
+      "w": 139,
+      "h": 211,
+      "row": 3,
+      "column": 5,
+      "contentBounds": [
+        6,
+        54,
+        133,
+        205
+      ],
+      "pivot": [
+        109,
+        204
+      ],
+      "origin": [
+        0.7842,
+        0.9668
+      ]
+    },
+    "farmer-work-back-0": {
+      "x": 1288,
+      "y": 779,
+      "w": 114,
+      "h": 205,
+      "row": 3,
+      "column": 6,
+      "contentBounds": [
+        6,
+        16,
+        111,
+        203
+      ],
+      "pivot": [
+        20,
+        202
+      ],
+      "origin": [
+        0.1754,
+        0.9854
+      ]
+    },
+    "farmer-work-back-1": {
+      "x": 1477,
+      "y": 821,
+      "w": 150,
+      "h": 163,
+      "row": 3,
+      "column": 7,
+      "contentBounds": [
+        3,
+        7,
+        146,
+        161
+      ],
+      "pivot": [
+        20,
+        160
+      ],
+      "origin": [
+        0.1333,
+        0.9816
+      ]
+    },
+    "merchant-carry-front-0": {
+      "x": 52,
+      "y": 1056,
+      "w": 102,
+      "h": 179,
+      "row": 4,
+      "column": 0,
+      "contentBounds": [
+        2,
+        4,
+        98,
+        173
+      ],
+      "pivot": [
+        66,
+        172
+      ],
+      "origin": [
+        0.6471,
+        0.9609
+      ]
+    },
+    "merchant-carry-front-1": {
+      "x": 256,
+      "y": 1036,
+      "w": 108,
+      "h": 199,
+      "row": 4,
+      "column": 1,
+      "contentBounds": [
+        4,
+        24,
+        101,
+        193
+      ],
+      "pivot": [
+        70,
+        192
+      ],
+      "origin": [
+        0.6481,
+        0.9648
+      ]
+    },
+    "merchant-carry-back-0": {
+      "x": 465,
+      "y": 1060,
+      "w": 104,
+      "h": 175,
+      "row": 4,
+      "column": 2,
+      "contentBounds": [
+        4,
+        3,
+        99,
+        168
+      ],
+      "pivot": [
+        18,
+        167
+      ],
+      "origin": [
+        0.1731,
+        0.9543
+      ]
+    },
+    "merchant-carry-back-1": {
+      "x": 676,
+      "y": 1044,
+      "w": 97,
+      "h": 191,
+      "row": 4,
+      "column": 3,
+      "contentBounds": [
+        5,
+        21,
+        94,
+        186
+      ],
+      "pivot": [
+        20,
+        185
+      ],
+      "origin": [
+        0.2062,
+        0.9686
+      ]
+    },
+    "merchant-work-front-0": {
+      "x": 857,
+      "y": 1064,
+      "w": 148,
+      "h": 171,
+      "row": 4,
+      "column": 4,
+      "contentBounds": [
+        6,
+        26,
+        141,
+        166
+      ],
+      "pivot": [
+        91,
+        165
+      ],
+      "origin": [
+        0.6149,
+        0.9649
+      ]
+    },
+    "merchant-work-front-1": {
+      "x": 1066,
+      "y": 1050,
+      "w": 144,
+      "h": 185,
+      "row": 4,
+      "column": 5,
+      "contentBounds": [
+        3,
+        53,
+        138,
+        182
+      ],
+      "pivot": [
+        86,
+        181
+      ],
+      "origin": [
+        0.5972,
+        0.9784
+      ]
+    },
+    "merchant-work-back-0": {
+      "x": 1282,
+      "y": 1091,
+      "w": 126,
+      "h": 144,
+      "row": 4,
+      "column": 6,
+      "contentBounds": [
+        8,
+        6,
+        120,
+        141
+      ],
+      "pivot": [
+        38,
+        140
+      ],
+      "origin": [
+        0.3016,
+        0.9722
+      ]
+    },
+    "merchant-work-back-1": {
+      "x": 1481,
+      "y": 1053,
+      "w": 143,
+      "h": 182,
+      "row": 4,
+      "column": 7,
+      "contentBounds": [
+        6,
+        46,
+        135,
+        176
+      ],
+      "pivot": [
+        43,
+        175
+      ],
+      "origin": [
+        0.3007,
+        0.9615
+      ]
+    },
+    "fisher-carry-front-0": {
+      "x": 44,
+      "y": 1315,
+      "w": 118,
+      "h": 171,
+      "row": 5,
+      "column": 0,
+      "contentBounds": [
+        2,
+        4,
+        115,
+        168
+      ],
+      "pivot": [
+        75,
+        167
+      ],
+      "origin": [
+        0.6356,
+        0.9766
+      ]
+    },
+    "fisher-carry-front-1": {
+      "x": 248,
+      "y": 1311,
+      "w": 125,
+      "h": 175,
+      "row": 5,
+      "column": 1,
+      "contentBounds": [
+        5,
+        6,
+        119,
+        172
+      ],
+      "pivot": [
+        84,
+        171
+      ],
+      "origin": [
+        0.672,
+        0.9771
+      ]
+    },
+    "fisher-carry-back-0": {
+      "x": 461,
+      "y": 1316,
+      "w": 112,
+      "h": 170,
+      "row": 5,
+      "column": 2,
+      "contentBounds": [
+        7,
+        3,
+        106,
+        167
+      ],
+      "pivot": [
+        33,
+        166
+      ],
+      "origin": [
+        0.2946,
+        0.9765
+      ]
+    },
+    "fisher-carry-back-1": {
+      "x": 669,
+      "y": 1307,
+      "w": 110,
+      "h": 179,
+      "row": 5,
+      "column": 3,
+      "contentBounds": [
+        5,
+        3,
+        104,
+        173
+      ],
+      "pivot": [
+        39,
+        172
+      ],
+      "origin": [
+        0.3545,
+        0.9609
+      ]
+    },
+    "fisher-work-front-0": {
+      "x": 848,
+      "y": 1317,
+      "w": 167,
+      "h": 169,
+      "row": 5,
+      "column": 4,
+      "contentBounds": [
+        3,
+        5,
+        163,
+        163
+      ],
+      "pivot": [
+        40,
+        162
+      ],
+      "origin": [
+        0.2395,
+        0.9586
+      ]
+    },
+    "fisher-work-front-1": {
+      "x": 1056,
+      "y": 1329,
+      "w": 164,
+      "h": 157,
+      "row": 5,
+      "column": 5,
+      "contentBounds": [
+        6,
+        3,
+        161,
+        151
+      ],
+      "pivot": [
+        79,
+        150
+      ],
+      "origin": [
+        0.4817,
+        0.9554
+      ]
+    },
+    "fisher-work-back-0": {
+      "x": 1268,
+      "y": 1305,
+      "w": 154,
+      "h": 181,
+      "row": 5,
+      "column": 6,
+      "contentBounds": [
+        3,
+        3,
+        148,
+        173
+      ],
+      "pivot": [
+        28,
+        172
+      ],
+      "origin": [
+        0.1818,
+        0.9503
+      ]
+    },
+    "fisher-work-back-1": {
+      "x": 1469,
+      "y": 1329,
+      "w": 166,
+      "h": 157,
+      "row": 5,
+      "column": 7,
+      "contentBounds": [
+        6,
+        4,
+        159,
+        151
+      ],
+      "pivot": [
+        32,
+        150
+      ],
+      "origin": [
+        0.1928,
+        0.9554
+      ]
+    }
+  },
+  "pivotStatus": "measured from solid alpha, feet at the bottom-centre of each frame",
+  "alphaPercent": 77.14,
+  "pngBytes": 1683241,
+  "webpBytes": 581382,
+  "qa": {
+    "alphaPreserved": true,
+    "minOpaqueMargin": 0,
+    "requested12PercentPaddingMet": false,
+    "edgeFrames": [],
+    "exactRequestedCanvas": false,
+    "runtimeIntegrated": false,
+    "verifyForeignPixelsInFrames": 0,
+    "verifyForeignByFrame": {},
+    "verifyOrphanPixels": 1589,
+    "minNeighbourGapPixels": 51,
+    "maxVisibleRgbDeviationFromSource": 78,
+    "pixelRepair": {
+      "method": "exclusive-ownership relocation",
+      "gutter": 20,
+      "fringeRadius": 6,
+      "sourceCanvas": [
+        1448,
+        1086
+      ],
+      "shippedCanvas": [
+        1656,
+        1506
+      ],
+      "cell": [
+        207,
+        251
+      ],
+      "spritesMoved": 48,
+      "spritesRelocated": 48,
+      "hazePixelsLeftBehind": 37108,
+      "fringePixelsSharedAndCleared": 1621,
+      "pixelsAboveLinkLost": 0
+    }
+  }
+}
