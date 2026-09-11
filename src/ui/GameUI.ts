@@ -8,6 +8,7 @@ import { SimWorld, type Building, type BuildingKind, type Resource, type ActionR
 import { BUILDINGS, RESOURCES, RESOURCE_KEYS, SEASON_NAMES, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TECHNOLOGY_KEYS, INDUSTRY_KINDS, INDUSTRY_FRAMES, DECORATION_SPRITES, DECORATION_ATLAS, EXPANSION_SPRITES, EXPANSION_ATLAS, EXPANSION_FRAMES, DECORATION_FRAMES, type TechnologyId } from '../sim/data';
 import { icon } from './icons';
 import { DISASTERS, REPAIR_SECONDS, type DisasterKind } from '../sim/disasters';
+import { GENERATED_ATLASES, atlasFrames, atlasSize, generatedSprite, housingLevelFrame } from '../sim/atlases';
 export const esc = (s: unknown) => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 export const fmt = (n:number)=>Math.floor(n).toLocaleString('zh-CN');
 const duration=(n:number)=>`${Math.floor(Math.max(0,n)/60).toString().padStart(2,'0')}:${Math.floor(Math.max(0,n)%60).toString().padStart(2,'0')}`;
@@ -34,7 +35,26 @@ export class GameUI {
     fetch('/assets/frames.json').then(r=>{if(!r.ok)throw new Error('素材索引未就绪');return r.json();}).then(data=>{this.frames=data.frames;this.renderPanel();this.renderOffline();}).catch(()=>{});
     this.update();
   }
-  art(kind:BuildingKind,className=''){if(EXPANSION_SPRITES.some(k=>k===kind)){const f=EXPANSION_FRAMES[kind as keyof typeof EXPANSION_FRAMES];return `<svg class="art ${className}" viewBox="0 0 ${f.w} ${f.h}" aria-hidden="true"><svg width="${f.w}" height="${f.h}" overflow="hidden"><image href="/assets/town-expansion.png" x="${-f.x}" y="${-f.y}" width="${EXPANSION_ATLAS.width}" height="${EXPANSION_ATLAS.height}" ${f.clip?`clip-path="url(#atlas-${kind})"`:""}/>${f.clip?`<defs><clipPath id="atlas-${kind}" clipPathUnits="userSpaceOnUse"><polygon points="${f.clip.map(([x,y])=>`${x},${y}`).join(" ")}"/></clipPath></defs>`:""}</svg></svg>`;}const decor=DECORATION_SPRITES.findIndex(k=>k===kind);if(decor>=0){const {width,height}=DECORATION_ATLAS,{x,y,w,h}=DECORATION_FRAMES[DECORATION_SPRITES[decor]];return `<svg class="art ${className}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><svg width="${w}" height="${h}" overflow="hidden"><image href="/assets/decorations.png" x="${-x}" y="${-y}" width="${width}" height="${height}"/></svg></svg>`;}if(INDUSTRY_KINDS.includes(kind)){const f=INDUSTRY_FRAMES[kind as keyof typeof INDUSTRY_FRAMES];return `<svg class="art ${className}" viewBox="0 0 ${f.w} ${f.h}" aria-hidden="true"><svg width="${f.w}" height="${f.h}" overflow="hidden"><image href="/assets/industry.png" x="${-f.x}" y="${-f.y}" width="1774" height="887"/></svg></svg>`;}const key=kind==='firetower'?'watchtower':kind;const f=this.frames[key];if(kind==='farm')return cropArt('wheat',className);if(!f)return `<span class="art ${className}">${icon('home',42)}</span>`;return `<svg class="art ${className}" viewBox="0 0 ${f.w} ${f.h}" aria-hidden="true"><svg width="${f.w}" height="${f.h}" overflow="hidden"><image href="/assets/buildings.png" x="${-f.x}" y="${-f.y}" width="1448" height="1086"/></svg></svg>`;}
+  /** One place that maps a building to the atlas rectangle used for thumbnails. */
+  private spriteArt(kind:BuildingKind):{file:string;width:number;height:number;frame:{x:number;y:number;w:number;h:number};clip?:number[][]}|null {
+    const generated=generatedSprite(kind);
+    if(generated){const {width,height}=atlasSize(generated.atlas);return{file:GENERATED_ATLASES[generated.atlas].image,width,height,frame:atlasFrames(generated.atlas)[generated.frame]!};}
+    const housing=housingLevelFrame(kind,1);
+    if(housing){const {width,height}=atlasSize(housing.atlas);return{file:GENERATED_ATLASES[housing.atlas].image,width,height,frame:atlasFrames(housing.atlas)[housing.frame]!};}
+    if(EXPANSION_SPRITES.some(k=>k===kind)){const f=EXPANSION_FRAMES[kind as keyof typeof EXPANSION_FRAMES];return{file:'/assets/town-expansion.png',width:EXPANSION_ATLAS.width,height:EXPANSION_ATLAS.height,frame:f,clip:f.clip};}
+    if(DECORATION_SPRITES.some(k=>k===kind)){const f=DECORATION_FRAMES[kind as keyof typeof DECORATION_FRAMES];return{file:'/assets/decorations.png',width:DECORATION_ATLAS.width,height:DECORATION_ATLAS.height,frame:f};}
+    if(INDUSTRY_KINDS.includes(kind)){const f=INDUSTRY_FRAMES[kind as keyof typeof INDUSTRY_FRAMES];return{file:'/assets/industry.png',width:1774,height:887,frame:f};}
+    const f=this.frames[kind==='firetower'?'watchtower':kind];
+    if(!f)return null;
+    return{file:'/assets/buildings.png',width:1448,height:1086,frame:f};
+  }
+  art(kind:BuildingKind,className=''){
+    if(kind==='farm')return cropArt('wheat',className);
+    const sprite=this.spriteArt(kind);
+    if(!sprite)return `<span class="art ${className}">${icon('home',42)}</span>`;
+    const {file,width,height,frame,clip}=sprite,{x,y,w,h}=frame,id=`atlas-${kind}`;
+    return `<svg class="art ${className}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><svg width="${w}" height="${h}" overflow="hidden"><image href="${file}" x="${-x}" y="${-y}" width="${width}" height="${height}" ${clip?`clip-path="url(#${id})"`:''}/>${clip?`<defs><clipPath id="${id}" clipPathUnits="userSpaceOnUse"><polygon points="${clip.map(([px,py])=>`${px},${py}`).join(' ')}"/></clipPath></defs>`:''}</svg></svg>`;
+  }
   celebrate(title:string,detail:string){
     document.querySelector('.milestone-toast')?.remove();
     const el=document.createElement('div');el.className='milestone-toast';el.setAttribute('role','status');

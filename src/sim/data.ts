@@ -1,7 +1,7 @@
 export type Resource = 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing';
 export type ResourceMap = Record<Resource, number>;
 export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
-export type BuildingKind = 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation';
+export type BuildingKind = 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation';
 
 export interface BuildingDefinition {
   name: string;
@@ -68,6 +68,18 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
   gazebo: { name: '听风凉亭', description: '红瓦木亭，适合安放在花园与河畔空地。环境 +10。', category: 'decoration', cost: 260, wood: 12, stone: 4, frame: null, environment: 10 },
   bench: { name: '花畔长椅', description: '一张木长椅与两盆鲜花，给街边留个歇脚的地方。环境 +4。', category: 'decoration', cost: 65, wood: 3, stone: 1, frame: null, environment: 4 },
   flowerarch: { name: '蔷薇花拱门', description: '开满蔷薇的小拱门，布置在花园入口旁。环境 +8，占用装饰地块，不能铺路穿过。', category: 'decoration', cost: 180, wood: 6, stone: 2, frame: null, environment: 8 },
+  flowerbox: { name: '临街花箱', description: '一排木花箱，把门前的窄边也种满花。环境 +5。', category: 'decoration', cost: 70, wood: 3, stone: 0, frame: null, environment: 5 },
+  trellis: { name: '蔷薇花架', description: '让蔷薇顺着木架往上爬，适合贴着墙面布置。环境 +7。', category: 'decoration', cost: 110, wood: 5, stone: 1, frame: null, environment: 7 },
+  archlights: { name: '串灯花门', description: '花门挂起一串暖灯，傍晚的街角会亮起来。环境 +9。', category: 'decoration', cost: 190, wood: 6, stone: 2, frame: null, environment: 9 },
+  boardwalk: { name: '木栈道', description: '沿河铺一段木板路，雨天也好走。环境 +6。', category: 'decoration', cost: 130, wood: 8, stone: 2, frame: null, environment: 6 },
+  railing: { name: '滨河栏杆', description: '一道矮木栏，把河岸收得整齐些。环境 +4。', category: 'decoration', cost: 55, wood: 4, stone: 0, frame: null, environment: 4 },
+  parasol: { name: '遮阳伞座', description: '一顶条纹遮阳伞配桌椅，是午后最好的位置。环境 +8。', category: 'decoration', cost: 160, wood: 5, stone: 2, frame: null, environment: 8 },
+  willow: { name: '垂柳', description: '枝条垂到水面上，适合种在河湾。环境 +7。', category: 'decoration', cost: 100, wood: 0, stone: 0, frame: null, environment: 7 },
+  dock: { name: '浮动码头', description: '小木筏停靠的地方，给河边添一点生活气。环境 +8。', category: 'decoration', cost: 175, wood: 9, stone: 3, frame: null, environment: 8 },
+  crates: { name: '木箱堆', description: '工坊门口的木箱，堆得稳当也是一景。环境 +4。', category: 'decoration', cost: 60, wood: 4, stone: 0, frame: null, environment: 4 },
+  barrels: { name: '橡木酒桶', description: '两只旧木桶，摆在酒坊和市集旁正合适。环境 +4。', category: 'decoration', cost: 75, wood: 5, stone: 1, frame: null, environment: 4 },
+  anvil: { name: '旧铁砧', description: '退役的铁砧与木墩，铁匠铺门口的老伙计。环境 +5。', category: 'decoration', cost: 90, wood: 2, stone: 3, frame: null, environment: 5 },
+  signflags: { name: '彩旗招牌', description: '挂着彩旗的木招牌，让街口一眼就认得出。环境 +6。', category: 'decoration', cost: 105, wood: 5, stone: 1, frame: null, environment: 6 },
   farm: { name: '田园农田', description: '免费选种，收获后自动续种。园艺成长解锁果蔬，土地越种越肥沃；小麦留仓，果蔬自动送农摊。', category: 'production', cost: 90, wood: 3, stone: 0, frame: null, cycle: 30, output: { wheat: 4 }, workers: 0 },
 };
 

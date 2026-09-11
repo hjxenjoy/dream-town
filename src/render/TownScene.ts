@@ -8,6 +8,7 @@ import { roadLine, roadQuote, ROAD_TYPES, type RoadKind, type Tile } from '../si
 import Phaser from 'phaser';
 import { SimWorld, type Building, type BuildingKind } from '../sim/world';
 import { BUILDINGS, EXPANSION_SPRITES, EXPANSION_FRAMES, INDUSTRY_KINDS, INDUSTRY_FRAMES, DECORATION_SPRITES, DECORATION_FRAMES } from '../sim/data';
+import { atlasFrames, generatedSprite, housingLevelFrame } from '../sim/atlases';
 import { MAP_SIZE, TILE_W, TILE_H, iso, terrainAt, terrainReason, DISTRICTS, type District } from '../sim/terrain';
 import { drawValley } from './ValleyTerrain';
 
@@ -61,8 +62,9 @@ export class TownScene extends Phaser.Scene {
     this.load.image('industry', '/assets/industry.png');
     this.load.image('buildings', '/assets/buildings.png');
     this.load.image('disasters', '/assets/disasters.webp');
+    this.load.image('street-decor', '/assets/street-decor.webp');
+    this.load.image('housing-levels', '/assets/housing-levels.webp');
     this.load.json('frames', '/assets/frames.json');
-    this.load.json('disasterFrames', '/assets/disasters-frames.json');
   }
   create() {
     const crops=this.textures.get('crops');
@@ -83,10 +85,12 @@ export class TownScene extends Phaser.Scene {
     });
     const decor=this.textures.get('decorations');
     Object.entries(DECORATION_FRAMES).forEach(([name,f])=>decor.add(name,0,f.x,f.y,f.w,f.h));
-    // Hazard and repair frames come from the generated catalog rather than a copy in source.
-    const disasters=this.textures.get('disasters');
-    Object.entries(this.cache.json.get('disasterFrames').frames as Record<string,{x:number;y:number;w:number;h:number}>)
-      .forEach(([name,f])=>disasters.add(name,0,f.x,f.y,f.w,f.h));
+    // Every generated atlas registers its frames from the same catalog the asset
+    // preview page reads, so a sprite's location is never restated in source.
+    for(const [atlas,key] of [['disasters','disasters'],['street-decor','street-decor'],['housing-levels','housing-levels']] as const){
+      const texture=this.textures.get(key);
+      Object.entries(atlasFrames(atlas)).forEach(([name,f])=>texture.add(name,0,f.x,f.y,f.w,f.h));
+    }
     this.disasterLayer=new DisasterLayer(this);
     this.ground=drawValley(this);
     this.atmosphere=new TownAtmosphere(this);
@@ -154,10 +158,21 @@ export class TownScene extends Phaser.Scene {
       g.generateTexture(`farm${stage}`,116,86);g.destroy();
     }
   }
-  private spriteTexture(kind:BuildingKind):string { return kind==='school'||kind==='firestation'?`expansion-${kind}`:EXPANSION_SPRITES.some(k=>k===kind)?'expansion':DECORATION_SPRITES.some(k=>k===kind)?'decorations':INDUSTRY_KINDS.includes(kind)?'industry':'buildings'; }
+  /** Which atlas and frame draw this building at this level. */
+  private spriteSource(kind:BuildingKind,level:number):{texture:string;frame?:string} {
+    if(kind==='school'||kind==='firestation')return{texture:`expansion-${kind}`};
+    const housing=housingLevelFrame(kind,level);if(housing)return{texture:housing.atlas,frame:housing.frame};
+    const generated=generatedSprite(kind);if(generated)return{texture:generated.atlas,frame:generated.frame};
+    if(EXPANSION_SPRITES.some(k=>k===kind))return{texture:'expansion'};
+    if(DECORATION_SPRITES.some(k=>k===kind))return{texture:'decorations'};
+    if(INDUSTRY_KINDS.includes(kind))return{texture:'industry'};
+    return{texture:'buildings'};
+  }
   private spriteWidth(kind:BuildingKind):number {
     if(EXPANSION_SPRITES.some(k=>k===kind))return kind==='watertower'?124:kind==='apartment'?156:160;
     if(DECORATION_SPRITES.some(k=>k===kind))return kind==='bench'?108:kind==='fountain'?108:kind==='gazebo'?126:kind==='flowerarch'?120:170;
+    if(generatedSprite(kind))return kind==='willow'?150:kind==='parasol'?120:kind==='railing'?150:130;
+    if(housingLevelFrame(kind,1))return 150;
     return kind==='townhall'?177:kind==='well'?100:kind==='garden'?139:151;
   }
   private syncBuildings(){
@@ -170,7 +185,8 @@ export class TownScene extends Phaser.Scene {
       this.progressSnapshot.set(b.id,b.progress);
       let v=this.visuals.get(b.id);const p=iso(b.x,b.y);
       if(!v){
-        const sprite=b.kind==='farm'?this.add.image(p.x,p.y,'farm0').setOrigin(.5,.65):this.add.image(p.x,p.y,this.spriteTexture(b.kind),b.kind).setOrigin(.5,.86);
+        const source=this.spriteSource(b.kind,b.level);
+        const sprite=b.kind==='farm'?this.add.image(p.x,p.y,'farm0').setOrigin(.5,.65):this.add.image(p.x,p.y,source.texture,source.frame??b.kind).setOrigin(.5,.86);
         if(b.kind!=='farm'){const w=this.spriteWidth(b.kind);sprite.setDisplaySize(w,w*sprite.frame.height/sprite.frame.width);}
         sprite.setDepth(p.y+5).setInteractive({useHandCursor:true,pixelPerfect:true,alphaTolerance:50}).setData('buildingId',b.id);
         sprite.on('pointerover',()=>{if(!this.down&&!this.buildKind)sprite.setTint(0xfff0c6);});sprite.on('pointerout',()=>sprite.clearTint());
@@ -181,6 +197,16 @@ export class TownScene extends Phaser.Scene {
         const progress=this.add.graphics().setDepth(p.y+200);
         v={sprite,badge,progress,ready:false};this.visuals.set(b.id,v);
         this.tweens.add({targets:sprite,alpha:{from:0,to:1},duration:300});
+      }
+      // Cottage and farmhouse art is per-level, so an upgrade swaps the frame in place.
+      if(b.kind!=='farm'){
+        const source=this.spriteSource(b.kind,b.level);
+        const current=v.sprite.texture.key;
+        if(source.frame&&(current!==source.texture||v.sprite.frame.name!==source.frame)){
+          v.sprite.setTexture(source.texture,source.frame);
+          const w=this.spriteWidth(b.kind);
+          v.sprite.setDisplaySize(w,w*v.sprite.frame.height/v.sprite.frame.width);
+        }
       }
       v.sprite.setPosition(p.x,p.y).setDepth(p.y+5);v.badge.setPosition(p.x,p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)).setDepth(p.y+220);v.progress.setDepth(p.y+200);
       if(b.kind==='farm'){
@@ -219,7 +245,7 @@ export class TownScene extends Phaser.Scene {
   }
   setBuildMode(kind:BuildingKind|null){
     this.roadMode=null;this.roadStart=null;this.moveId=null;this.buildKind=kind;if(!this.ready)return;this.grid.setVisible(!!kind);this.ghost?.destroy();this.ghost=undefined;this.highlight.clear();
-    if(kind){this.paintPlacementGrid();this.ghost=kind==='farm'?this.add.image(0,0,'farm2').setOrigin(.5,.65):this.add.image(0,0,this.spriteTexture(kind),kind).setOrigin(.5,.86);if(kind!=='farm')this.ghost.setScale(this.spriteWidth(kind)/this.ghost.frame.width);this.ghost.setAlpha(.6);this.updateGhost(this.input.activePointer);}else this.drawSelection();
+    if(kind){this.paintPlacementGrid();const source=this.spriteSource(kind,1);this.ghost=kind==='farm'?this.add.image(0,0,'farm2').setOrigin(.5,.65):this.add.image(0,0,source.texture,source.frame??kind).setOrigin(.5,.86);if(kind!=='farm')this.ghost.setScale(this.spriteWidth(kind)/this.ghost.frame.width);this.ghost.setAlpha(.6);this.updateGhost(this.input.activePointer);}else this.drawSelection();
   }
   setRoadMode(kind:RoadKind|'remove'|null){this.setBuildMode(null);this.roadMode=kind;if(!this.ready)return;this.grid.setVisible(!!kind);this.highlight.clear();}
   private previewRoad(pointer:Phaser.Input.Pointer){
