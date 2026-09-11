@@ -5,7 +5,7 @@ import { RESOURCE_KEYS, RESOURCES } from './sim/data';
 import { GAME_TOOLS, executeGameTool } from './sim/tools';
 import { TownScene } from './render/TownScene';
 import { GameUI } from './ui/GameUI';
-import { loadGame, saveGame, exportSave, importSave } from './save/storage';
+import { loadGame, saveGame, exportSave, importSave, listSaves } from './save/storage';
 import './ui/styles.css';
 
 async function bootstrap(){
@@ -89,7 +89,7 @@ ui=new GameUI(world,{
   action:act,build:kind=>scene.setBuildMode(kind),road:kind=>scene.setRoadMode(kind),focus:id=>scene.focusBuilding(id),
   zoom:delta=>scene.zoomBy(delta),home:()=>scene.resetCamera(),district:id=>scene.focusDistrict(id),move:id=>scene.setMoveMode(id),speed:value=>{speed=value;scene.simulationSpeed=value;},
   sound:()=>{runtimeRevision++;chime();},
-  save:slot=>persist(slot,true),
+  save:slot=>persist(slot,true),listSaves,
   load:async slot=>{if(loading)return;loading=true;try{const state=await loadGame(slot);if(!state){ui.toast('这个位置还没有存档，先保存一次吧。',false);return;}if(!window.confirm('读取存档会替换当前小镇。继续吗？'))return;await replaceWorld(state,'已回到保存时的小镇。');}catch(e){ui.toast(errorMessage(e),false);}finally{loading=false;}},
   export:()=>{try{exportSave(world.state);ui.toast('存档备份已准备好。');}catch(e){ui.toast(errorMessage(e),false);}},
   import:async file=>{if(loading)return;loading=true;try{const state=await importSave(file);if(!window.confirm('导入这份存档并替换当前小镇？'))return;await replaceWorld(state,'存档已导入，欢迎回家。');}catch(e){ui.toast(errorMessage(e),false);}finally{loading=false;}},

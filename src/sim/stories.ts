@@ -1,7 +1,6 @@
 import type { ResourceMap } from './data.ts';
 import type { BuildingKind } from './data.ts';
 import type { Building } from './world.ts';
-import { NEIGHBOURS } from './residents.ts';
 
 /**
  * A lasting or one-off reward for a story choice. Every option gives something: the review
@@ -409,8 +408,3 @@ const BUILDING_LABELS: Partial<Record<BuildingKind, string>> = {
   brickworks: '一座制砖场', watertower: '一座水塔', firestation: '一间消防站',
   cottage: '一栋小屋', farmhouse: '一座农家院', rowhouse: '一排出租房', apartment: '一栋公寓',
 };
-
-/** Every named neighbour that has a story, in roster order. */
-export function storyPortraits(): string[] {
-  return NEIGHBOURS.filter(neighbour => BY_PORTRAIT.has(neighbour.portrait)).map(neighbour => neighbour.portrait);
-}

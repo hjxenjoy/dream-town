@@ -10,7 +10,7 @@ import { icon } from './icons';
 import { DISASTERS, REPAIR_SECONDS, type DisasterKind } from '../sim/disasters';
 import { SEASONAL_ACTIVITIES } from '../sim/seasonal';
 import { PETS, PET_KINDS } from '../sim/pets';
-import { NEIGHBOURS } from '../sim/residents';
+import { NEIGHBOURS, neighbourGreeting } from '../sim/residents';
 import { neighbourNews } from '../sim/stories';
 import { ACHIEVEMENT_CATEGORY_NAMES } from '../sim/achievements';
 import { DESTINATIONS, DESTINATION_IDS as destinationIds, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from '../sim/destinations';
@@ -20,7 +20,7 @@ export const esc = (s: unknown) => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;'
 export const fmt = (n:number)=>Math.floor(n).toLocaleString('zh-CN');
 const duration=(n:number)=>`${Math.floor(Math.max(0,n)/60).toString().padStart(2,'0')}:${Math.floor(Math.max(0,n)%60).toString().padStart(2,'0')}`;
 type Panel='farming'|'layout'|'build'|'warehouse'|'orders'|'caravan'|'residents'|'quests'|'settings'|'building'|'help'|'mayor'|'technology'|'supply'|'map'|'roads'|null;
-export interface UICallbacks { action: (fn:()=>ActionResult,id?:string,effect?:string)=>void; build:(kind:BuildingKind|null)=>void; road:(kind:RoadKind|'remove'|null)=>void; focus:(id:string)=>void; zoom:(delta:number)=>void; home:()=>void; district:(id:MapDestination)=>void; move:(id:string)=>void; speed:(value:number)=>void; sound:()=>void; save:(slot?:string)=>Promise<void>; load:(slot:string)=>Promise<void>; export:()=>void; import:(file:File)=>Promise<void>; fullscreen:()=>void; }
+export interface UICallbacks { action: (fn:()=>ActionResult,id?:string,effect?:string)=>void; build:(kind:BuildingKind|null)=>void; road:(kind:RoadKind|'remove'|null)=>void; focus:(id:string)=>void; zoom:(delta:number)=>void; home:()=>void; district:(id:MapDestination)=>void; move:(id:string)=>void; speed:(value:number)=>void; sound:()=>void; save:(slot?:string)=>Promise<void>; load:(slot:string)=>Promise<void>; export:()=>void; import:(file:File)=>Promise<void>; fullscreen:()=>void; listSaves:()=>Promise<{slot:string;savedAt:number;level:number;population:number}[]>; }
 export class GameUI {
   panel:Panel=null; selected:string|null=null; speed=1; buildKind:BuildingKind|null=null; category='all'; moveId:string|null=null; supplyResource:Resource='wood'; journeyTab:'growth'|'achievements'|'styles'|'projects'|'quests'='growth'; farmId:string|null=null; gardenAlbum=false;
   roadMode:RoadKind|'remove'|null=null;
@@ -289,13 +289,17 @@ export class GameUI {
       const work=s.buildings.find(b=>b.id===record.workplaceId);
       const where=record.unsettled?'住处正在修缮，暂时借住在别处':home?`住在 ${BUILDINGS[home.kind].name}`:'还没找到住处';
       const job=work?`在 ${BUILDINGS[work.kind].name} 做事`:'在镇上帮忙';
+      // Two lines, doing different jobs: the greeting says who they are, the news says what
+      // changed near their door. The design review asked for the second instead of a platitude,
+      // not instead of an introduction.
+      const greeting=neighbourGreeting(definition,'小镇');
       const news=neighbourNews(home??null,s.buildings,s.population);
       const pending=record.pending;
       const storyBlock=pending
         ?`<div class="story-stage"><b>${esc(pending.title)}</b><p>${esc(pending.prompt)}</p><div class="story-choices">${pending.choices.map(choice=>this.button('story-choice',`${record.portrait}|${choice.id}`,`${esc(choice.label)}<small>${esc(choice.description)} · ${esc(choice.perk)}</small>`,false,'story-choice-button')).join('')}</div></div>`
         :record.history.length?`<div class="story-done">${icon('check',13)} 三段故事都已说完。</div>`:`<small class="story-locked">${icon('lock',12)} 等住处安顿好、${BUILDINGS[definition.workplace].name}立起来，他会和你聊聊。</small>`;
       const history=record.history.length?`<ol class="story-history">${record.history.map(entry=>`<li><b>${esc(entry.title)}</b> — ${esc(entry.label)}<small>${esc(entry.perk)}</small></li>`).join('')}</ol>`:'';
-      return `<article class="neighbour-row"><span class="neighbour-face">${this.portrait(record.portrait)}</span><div><h4>${esc(record.name)}</h4><p>${esc(news)}</p><small>${icon('home',13)} ${esc(where)} · ${icon('hammer',13)} ${esc(job)}</small>${storyBlock}${history}</div>${home?this.button('inspect',home.id,`${icon('focus',14)} 去住处`,false,'text-button'):''}</article>`;
+      return `<article class="neighbour-row"><span class="neighbour-face">${this.portrait(record.portrait)}</span><div><h4>${esc(record.name)}</h4><p>${esc(greeting)}</p><p class="neighbour-news">${icon('spark',12)} ${esc(news)}</p><small>${icon('home',13)} ${esc(where)} · ${icon('hammer',13)} ${esc(job)}</small>${storyBlock}${history}</div>${home?this.button('inspect',home.id,`${icon('focus',14)} 去住处`,false,'text-button'):''}</article>`;
     }).join('');
     return `<div class="activity-card neighbour-card"><b>${icon('people',19)} 邻居们 ${stories.length} 位熟人</b><small>每位邻居都有自己的住处和做事的地方；他们说的话会提到附近真正新建的东西。</small><div class="neighbour-list">${rows}</div></div>`;
   }
@@ -317,10 +321,31 @@ export class GameUI {
     const owned=PET_KINDS.map(kind=>`<span class="pet-chip">${icon('heart',15)} ${PETS[kind].name} × ${pets.filter(p=>p.kind===kind).length}</span>`).join('');
     return `<div class="activity-card pet-card"><b>${icon('heart',19)} 小动物 ${pets.length} / ${limit}</b><small>${pets.length?'它们会跟着邻居在小镇里散步，走得慢的那只会落在后面。':'领养一只小猫或小狗，让它跟着邻居一起出门；小猫走得慢，小狗跑得快。'}</small><div class="pet-chips">${owned}</div>${PET_KINDS.map(kind=>{const pet=PETS[kind];const short=issue?issue:s.coins<pet.coins?'金币不足':'';return `${this.button('adopt',kind,short?`${pet.name} · ${short}`:`领养${pet.name} · ${pet.coins} 金币`,Boolean(issue)||s.coins<pet.coins,'small-button')}`;}).join('')}${pets.length?this.button('release-pet','','送走最后一只',false,'text-button'):''}<p class="muted">${PET_KINDS.map(kind=>PETS[kind].description).join(' ')}</p></div>`;
   }
+  /**
+   * Labels each manual save slot with what it holds. The panel is built synchronously while
+   * reading saves is asynchronous, so the summaries are filled in once they arrive.
+   */
+  private async refreshSaveSlots(){
+    const host=this.root.querySelector('#panel-host');
+    if(!host)return;
+    let summaries:{slot:string;savedAt:number;level:number;population:number}[]=[];
+    try{summaries=await this.cb.listSaves();}catch{return;}
+    if(this.panel!=='settings')return;
+    const bySlot=new Map(summaries.map(summary=>[summary.slot,summary]));
+    for(const node of host.querySelectorAll('.slot-summary')){
+      const summary=bySlot.get((node as HTMLElement).dataset.slot??'');
+      if(!summary){node.textContent='还没有存档';continue;}
+      const minutes=Math.max(0,Math.round((Date.now()-summary.savedAt)/60000));
+      const when=minutes<1?'刚刚':minutes<60?`${minutes} 分钟前`:minutes<60*24?`${Math.round(minutes/60)} 小时前`:`${Math.round(minutes/(60*24))} 天前`;
+      node.textContent=`${summary.population} 位居民 · LV.${summary.level} · ${when}`;
+    }
+  }
+
   renderPanel(){
     this.lastPanelRender=Date.now();const host=this.root.querySelector('#panel-host')!;const context=`${this.panel}:${this.panel==='supply'?this.supplyResource:this.panel==='building'?this.selected:''}:${this.demolishId||''}:${this.panel==='farming'?`${this.farmId}:${this.gardenAlbum}`:''}:${this.panel==='quests'?`${this.journeyTab}:${this.world.state.projects?.active}:${Object.values(this.world.state.projects?.stages??{}).join(',')}`:''}`;const scroll=this.renderedContext===context?host.querySelector('.panel-content')?.scrollTop||0:0;this.renderedContext=context;const s=this.world.state;
     if(!this.panel){host.innerHTML='';return;}
     const titles:Record<Exclude<Panel,null>,[string,string,string]>={farming:['GROW A LITTLE EVERY DAY','我的田园','wheat'],layout:['MAKE ROOM FOR BEAUTY','调整小镇布局','move'],roads:['PATHS OF EVERYDAY LIFE','把生活连成小路','road'],build:['BUILD YOUR DREAM','让小镇再长大一点','hammer'],warehouse:['A LITTLE ABUNDANCE','丰收仓库','box'],orders:['FROM YOUR NEIGHBORS','邻里订单','orders'],caravan:['BEYOND THE RIVER','河畔商队','caravan'],residents:['A PLACE TO CALL HOME','我们的邻居','people'],quests:['THE STORY SO FAR','小镇旅程','book'],settings:['MAKE YOURSELF AT HOME','小镇设置','gear'],building:['YOUR LITTLE TOWN','建筑详情','home'],help:['A SLOWER KIND OF LIFE','小镇生活指南','help'],mayor:['A HELPING HAND','小镇副官','spark'],technology:['A NEW CHAPTER','小镇的明日蓝图','research'],supply:['EVERY LITTLE THING','物资的来处','box'],map:['ACROSS THE VALLEY','河的两岸，都是家','map']};
+    if(this.panel==='settings')void this.refreshSaveSlots();
     const [eyebrow,title,ico]=titles[this.panel];let content='';
     if(this.panel==='farming'){content=farmingContent(this.world,this.farmId,this.gardenAlbum);
     } else if(this.panel==='layout'){content=this.layoutContent();
@@ -369,7 +394,7 @@ export class GameUI {
     } else if(this.panel==='quests'){
       content=`<div class="journey-tabs">${this.button('journey-tab','growth','田园成长',false,this.journeyTab==='growth'?'active':'')}${this.button('journey-tab','achievements','成就',false,this.journeyTab==='achievements'?'active':'')}${this.button('journey-tab','styles','街区风格',false,this.journeyTab==='styles'?'active':'')}${this.button('journey-tab','projects','建设收藏',false,this.journeyTab==='projects'?'active':'')}${this.button('journey-tab','quests','旧日手记',false,this.journeyTab==='quests'?'active':'')}</div>`+(this.journeyTab==='growth'?growthContent(this.world):this.journeyTab==='achievements'?this.achievementsContent():this.journeyTab==='styles'?this.stylesContent():this.journeyTab==='projects'?this.projectsContent():`<div class="journey-heading"><span>${icon('book',38)}</span><div><h3>把日子，过成喜欢的样子</h3><p>每一个小小的进步，都值得被记住。</p></div></div><div class="journey-list">${s.quests.map((q,i)=>`<article class="journey-item ${q.claimed?'completed':''}"><span class="journey-number">${q.claimed?icon('check',18):String(i+1).padStart(2,'0')}</span><div><h3>${esc(q.title)}</h3><p>${esc(q.description)}</p><div class="quest-progress"><i style="width:${Math.min(100,q.progress/q.target*100)}%"></i></div><span class="reward">${icon('coin',15)} ${q.rewardCoins} ${icon('star',13)} ${q.rewardPrestige} 声望</span></div>${this.button('quest',q.id,q.claimed?'已完成':q.progress>=q.target?'领取':`${Math.min(q.progress,q.target)}/${q.target}`,q.claimed||q.progress<q.target,'small-button quiet')}</article>`).join('')}</div>`);
     } else if(this.panel==='settings'){
-      content=`<div class="setting-row"><div><b>小镇音效</b><small>轻快的点击、收获与奖励声音</small></div><button role="switch" aria-checked="${s.settings.sound}" aria-label="小镇音效" class="toggle ${s.settings.sound?'on':''}" data-action="sound"><i></i></button></div><div class="setting-row"><div><b>自然挑战</b><small>随季节出现火情、水患、旱情、雹灾与虫害，考验小镇的布局与防护</small></div><button role="switch" aria-checked="${s.settings.disasters}" aria-label="自然挑战" class="toggle ${s.settings.disasters?'on':''}" data-action="disasters"><i></i></button></div><div class="setting-row"><div><b>小镇副官</b><small>离线规则助手 · 自动收获、交单、调税</small></div><button role="switch" aria-checked="${s.settings.autoMayor}" aria-label="小镇副官" class="toggle ${s.settings.autoMayor?'on':''}" data-action="mayor"><i></i></button></div>${this.button('open','mayor',`${icon('book',17)} 看看副官的工作手记`,false,'text-button')}<div class="setting-row"><div><b>离线游玩</b><small>${esc(this.offlineStatus)}</small></div>${icon('leaf',21)}</div><div class="section-label">把今天好好保存 <small>${esc(this.saveLabel)}</small></div><div class="save-slots">${[1,2,3].map(i=>`<div class="save-slot"><span>${icon('save',20)} 手动存档 ${i}</span>${this.button('save',`slot-${i}`,'保存',false,'small-button')}${this.button('load',`slot-${i}`,'读取',false,'small-button quiet')}</div>`).join('')}</div><div class="button-row">${this.button('export','',`${icon('download',17)} 导出备份`,false,'secondary-button')}${this.button('import','',`${icon('upload',17)} 导入存档`,false,'secondary-button')}</div><p class="muted">每 30 秒自动保存。读取或导入会切换当前小镇，可先存入其他槽位。离开后，小镇最多为你积攒 8 小时的收获。存档留在这台设备上，可导出带走。</p><div class="settings-footer">DREAM TOWN <span>田园与成长 · 2.8</span></div>`;
+      content=`<div class="setting-row"><div><b>小镇音效</b><small>轻快的点击、收获与奖励声音</small></div><button role="switch" aria-checked="${s.settings.sound}" aria-label="小镇音效" class="toggle ${s.settings.sound?'on':''}" data-action="sound"><i></i></button></div><div class="setting-row"><div><b>自然挑战</b><small>随季节出现火情、水患、旱情、雹灾与虫害，考验小镇的布局与防护</small></div><button role="switch" aria-checked="${s.settings.disasters}" aria-label="自然挑战" class="toggle ${s.settings.disasters?'on':''}" data-action="disasters"><i></i></button></div><div class="setting-row"><div><b>小镇副官</b><small>离线规则助手 · 自动收获、交单、调税</small></div><button role="switch" aria-checked="${s.settings.autoMayor}" aria-label="小镇副官" class="toggle ${s.settings.autoMayor?'on':''}" data-action="mayor"><i></i></button></div>${this.button('open','mayor',`${icon('book',17)} 看看副官的工作手记`,false,'text-button')}<div class="setting-row"><div><b>离线游玩</b><small>${esc(this.offlineStatus)}</small></div>${icon('leaf',21)}</div><div class="section-label">把今天好好保存 <small>${esc(this.saveLabel)}</small></div><div class="save-slots">${[1,2,3].map(i=>`<div class="save-slot"><span>${icon('save',20)} 手动存档 ${i}<small class="slot-summary" data-slot="slot-${i}">读取中…</small></span>${this.button('save',`slot-${i}`,'保存',false,'small-button')}${this.button('load',`slot-${i}`,'读取',false,'small-button quiet')}</div>`).join('')}</div><div class="button-row">${this.button('export','',`${icon('download',17)} 导出备份`,false,'secondary-button')}${this.button('import','',`${icon('upload',17)} 导入存档`,false,'secondary-button')}</div><p class="muted">每 30 秒自动保存。读取或导入会切换当前小镇，可先存入其他槽位。离开后，小镇最多为你积攒 8 小时的收获。存档留在这台设备上，可导出带走。</p><div class="settings-footer">DREAM TOWN <span>田园与成长 · 2.8</span></div>`;
           content+=`<div class="setting-row"><div><b>轻量动画</b><small>减少飘动、粒子与镜头移动，保留操作提示</small></div>${this.button('motion','',(s.settings.reducedMotion??window.matchMedia('(prefers-reduced-motion: reduce)').matches)?'已开启':'未开启',false,'small-button')}</div>`;
     } else if(this.panel==='mayor'){
       content=`<div class="mayor-header">${icon('spark',36)}<h3>${s.settings.autoMayor?'副官正在照顾小镇':'需要一只帮忙的手吗'}</h3><p>规则助手根据库存与需求执行操作，所有决定都遵守小镇的经营规则。</p>${this.button('mayor','',s.settings.autoMayor?'让副官休息':'请副官上岗',false,'game-button wide')}</div><div class="section-label">工作手记</div><div class="town-logs">${s.logs.slice(0,16).map(log=>`<div class="town-log ${log.type}"><span>${duration(log.time)}</span><p>${esc(log.message)}</p></div>`).join('')}</div>`;

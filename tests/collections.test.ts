@@ -2,7 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, type BuildingKind } from '../src/sim/data.ts';
-import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, ornamentsFor, type CollectionId } from '../src/sim/collections.ts';
+import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, type CollectionId } from '../src/sim/collections.ts';
+
+/** Every ornament the styles award, read straight off the tier table. */
+function ornamentsFor(id: CollectionId): BuildingKind[] {
+  return COLLECTIONS[id].tiers.flatMap(tier => tier.unlocks ? [tier.unlocks] : []);
+}
 
 /** A town with plenty of materials and no disasters, used as the base for street layouts. */
 function town(){

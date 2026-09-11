@@ -167,8 +167,3 @@ for (const id of COLLECTION_IDS) {
 export function ornamentRequirement(kind: BuildingKind): { id: CollectionId; tier: number } | null {
   return ORNAMENT_REQUIREMENTS[kind] ?? null;
 }
-
-/** Every ornament a style offers, so the catalog can list what is still missing. */
-export function ornamentsFor(id: CollectionId): BuildingKind[] {
-  return COLLECTIONS[id].tiers.flatMap(tier => tier.unlocks ? [tier.unlocks] : []);
-}

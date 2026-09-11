@@ -58,13 +58,76 @@ test('v1 migration preserves town progress and adds only new schema fields, with
   assert.equal(new SimWorld(legacy).state.version, 2);
 });
 
-test('migration never repairs malformed legacy data or incomplete modern saves', () => {
+test('migration never repairs malformed legacy data', () => {
   const asResources = (state: ReturnType<typeof legacySave>) => state.resources as unknown as Record<string, unknown>;
   const missingWood = legacySave(); delete asResources(missingWood).wood;
   const negative = legacySave(); asResources(negative).fish = -1;
   const extra = legacySave(); asResources(extra).ore = 3;
-  const modern = createInitialState(); delete asResources(modern).ore;
-  for (const save of [missingWood, negative, extra, modern, {...legacySave(), version: 99}]) assert.equal(migrateSave(save), null);
+  for (const save of [missingWood, negative, extra, {...legacySave(), version: 99}]) assert.equal(migrateSave(save), null);
+});
+
+test('a current-format save missing a resource or counter added since still loads', () => {
+  // The game adds resources over time, and a save written before one existed simply lacks it.
+  // Rejecting such a save loses a player's whole town, so the missing keys are topped up with
+  // the empty values they genuinely had — and nothing else about the save is repaired.
+  const asResources = (state: ReturnType<typeof createInitialState>) => state.resources as unknown as Record<string, unknown>;
+  const asStats = (state: ReturnType<typeof createInitialState>) => state.stats as unknown as Record<string, unknown>;
+
+  const older = createInitialState(1_000_000);
+  older.level = 9; older.coins = 4321; older.population = 30; older.resources.wood = 77;
+  const removedResources = ['milk', 'cheese', 'honey', 'grape', 'wine', 'vintage'];
+  for (const key of removedResources) delete asResources(older)[key];
+  delete asStats(older).repairs;
+  assert.equal(validateSave(older), false, 'the raw save is not valid as it stands');
+
+  const restored = migrateSave(older)!;
+  assert.ok(restored, 'but it migrates');
+  for (const key of removedResources) assert.equal(restored.resources[key as 'milk'], 0, `${key} is filled in as empty`);
+  assert.equal(restored.stats.repairs, 0, 'a counter that did not exist yet is zero');
+  // Everything the save did carry is preserved exactly.
+  assert.equal(restored.level, 9);
+  assert.equal(restored.coins, 4321);
+  assert.equal(restored.population, 30);
+  assert.equal(restored.resources.wood, 77);
+  assert.equal(restored.buildings.length, older.buildings.length);
+  assert.equal(validateSave(restored), true);
+  assert.deepEqual(migrateSave(restored), restored, 'and a top-up save is idempotent');
+
+  // The boundary is not weakened: only absent keys are filled, never wrong ones.
+  const negative = createInitialState(); delete asResources(negative).milk; asResources(negative).fish = -3;
+  assert.equal(migrateSave(negative), null, 'a negative amount is still corruption');
+  const fractional = createInitialState(); delete asResources(fractional).milk; asResources(fractional).wine = 1.5;
+  assert.equal(migrateSave(fractional), null, 'a fractional amount is still corruption');
+  const unknown = createInitialState(); delete asResources(unknown).milk; asResources(unknown).moon = 4;
+  assert.equal(migrateSave(unknown), null, 'an unknown resource is still corruption');
+  const notARecord = createInitialState() as unknown as Record<string, unknown>;
+  notARecord.resources = 12;
+  assert.equal(migrateSave(notARecord), null, 'a non-record resource block cannot be fabricated into one');
+  const badCounter = createInitialState(); delete asStats(badCounter).repairs; asStats(badCounter).collected = 'many';
+  assert.equal(migrateSave(badCounter), null, 'a non-numeric counter is still corruption');
+});
+
+test('the migration completes every key the game validates in full', () => {
+  // `resources` and `stats` are the two records a save must carry in full, so they are the two
+  // the migration has to complete. Dropping any single key from either must still load.
+  for (const key of RESOURCE_KEYS) {
+    const older = createInitialState();
+    delete (older.resources as unknown as Record<string, unknown>)[key];
+    const restored = migrateSave(older);
+    assert.ok(restored, `a save missing ${key} still loads`);
+    assert.ok(Number.isInteger(restored.resources[key]), `${key} is a whole number afterwards`);
+  }
+  for (const key of ['collected', 'ordersCompleted', 'buildingsBuilt', 'caravansCompleted', 'coinsEarned', 'festivals', 'repairs', 'toolsProduced', 'clothingProduced']) {
+    const older = createInitialState();
+    delete (older.stats as unknown as Record<string, unknown>)[key];
+    const restored = migrateSave(older);
+    assert.ok(restored, `a save missing the ${key} counter still loads`);
+    assert.ok(Number.isInteger(restored.stats[key as 'collected']), `${key} is a whole number afterwards`);
+  }
+  // And the migration is a one-way door: what it produces is already valid.
+  const once = migrateSave(createInitialState())!;
+  assert.equal(validateSave(once), true);
+  assert.deepEqual(migrateSave(once), once);
 });
 
 test('file imports verify the original checksum before migration and round-trip researched towns', () => {

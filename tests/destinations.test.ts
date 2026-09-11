@@ -2,7 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, RESOURCE_KEYS, TECHNOLOGY_KEYS, emptyResources, type Resource } from '../src/sim/data.ts';
-import { DESTINATIONS, DESTINATION_IDS, availableDestinations, caravanDuration, destinationOf, missingCargo, rewardRatio, type DestinationId } from '../src/sim/destinations.ts';
+import { DESTINATIONS, DESTINATION_IDS, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from '../src/sim/destinations.ts';
+
+/** Reward per item shipped, so a longer route can be shown to be worth it. */
+function rewardRatio(destination: typeof DESTINATIONS.valley): number {
+  const shipped = Object.values(destination.cargo).reduce<number>((n, v) => n + (v ?? 0), 0);
+  return shipped ? destination.rewardCoins / shipped : 0;
+}
 import { caravanRoute } from '../src/sim/caravan.ts';
 import { terrainAt } from '../src/sim/terrain.ts';
 

@@ -211,16 +211,45 @@ function expansionQuests(): Quest[] {
   ];
 }
 
-/** Only the known v1 format receives defaults. Corrupt or incomplete v2 saves stay rejected. */
+/**
+ * Migration policy. A save is completed, never repaired: keys the game has added since are
+ * filled from their empty values, and anything the save got *wrong* — a negative amount, an
+ * unknown building, an option that does not exist — still fails validation and is rejected.
+ * The two records validated in full are `resources` and `stats`, because a missing key there
+ * is indistinguishable from a corrupt one until it is filled; every other additive field is
+ * optional in the boundary and defaulted where it is read.
+ */
 export function migrateSave(value: unknown): SimState | null {
   if (validateSave(value)) return clone(value);
-  if (!isRecord(value) || value.version !== 1 || !isRecord(value.resources) || !isRecord(value.stats) || !Array.isArray(value.quests)) return null;
+  if (!isRecord(value)) return null;
+  if (value.version === 2) {
+    // A current-format save can still predate a resource or a counter the game has since
+    // added, and validation demands both records in full. Top the missing keys up with their
+    // empty values — which is what they were — and only then judge the save. Anything
+    // actually wrong (a negative amount, a bad kind) still fails validation below.
+    if (!isRecord(value.resources) || !isRecord(value.stats)) return null;
+    const topped = clone(value) as Record<string, unknown>;
+    const resources = topped.resources as Partial<ResourceMap>;
+    const stats = topped.stats as Record<string, number>;
+    for (const [key, amount] of Object.entries(emptyResources()) as [Resource, number][]) {
+      if (resources[key] === undefined) resources[key] = amount;
+    }
+    for (const key of STAT_COUNTERS) if (stats[key] === undefined) stats[key] = 0;
+    return validateSave(topped) ? topped : null;
+  }
+  if (value.version !== 1 || !isRecord(value.resources) || !isRecord(value.stats) || !Array.isArray(value.quests)) return null;
   const legacyResources = ['wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials'];
   if (Object.keys(value.resources).length !== legacyResources.length || legacyResources.some(key => !whole((value.resources as Record<string, unknown>)[key]))) return null;
   if ('researched' in value || 'toolsProduced' in value.stats || 'clothingProduced' in value.stats) return null;
   const migrated = clone({ ...value, version: 2, researched: [], resources: { ...emptyResources(), ...value.resources }, stats: { ...value.stats, toolsProduced: 0, clothingProduced: 0 }, quests: [...value.quests, ...expansionQuests()] });
   return validateSave(migrated) ? migrated : null;
 }
+
+/**
+ * The lifetime counters a save carries. Everything here is additive — a save written before a
+ * counter existed simply lacks it — so the migration tops them up rather than rejecting it.
+ */
+const STAT_COUNTERS = ['collected', 'ordersCompleted', 'buildingsBuilt', 'caravansCompleted', 'coinsEarned', 'festivals', 'repairs', 'toolsProduced', 'clothingProduced'] as const;
 
 /** Strict boundary for imports: reject corrupt data instead of replacing a good save. */
 export function validateSave(value: unknown): value is SimState {
@@ -324,7 +353,7 @@ export function validateSave(value: unknown): value is SimState {
     }
   }
   if (!isRecord(value.needs) || ['food', 'water', 'services', 'environment'].some(key => !nonnegative((value.needs as Record<string, unknown>)[key]) || Number((value.needs as Record<string, unknown>)[key]) > 100)) return false;
-  if (!isRecord(value.stats) || ['collected', 'ordersCompleted', 'buildingsBuilt', 'caravansCompleted', 'coinsEarned', 'festivals', 'repairs', 'toolsProduced', 'clothingProduced'].some(key => !whole((value.stats as Record<string, unknown>)[key]))) return false;
+  if (!isRecord(value.stats) || STAT_COUNTERS.some(key => !whole((value.stats as Record<string, unknown>)[key]))) return false;
   // Absent on saves written before seasonal activities were counted, so only its type is checked.
   if (value.stats.activities !== undefined && !whole(value.stats.activities)) return false;
   for (const log of value.logs) if (!isRecord(log) || typeof log.id !== 'string' || typeof log.message !== 'string' || !nonnegative(log.time) || !['success', 'warning', 'info', 'mayor'].includes(log.type as string)) return false;

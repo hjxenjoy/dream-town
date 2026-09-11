@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { SimWorld } from '../src/sim/world.ts';
 import { BUILDINGS, emptyResources, TECHNOLOGY_KEYS, type BuildingKind } from '../src/sim/data.ts';
-import { NEIGHBOURS, neighbourGreeting, neighbourOf, namedResidentCount, residentRoster } from '../src/sim/residents.ts';
+import { NEIGHBOURS, neighbourGreeting, namedResidentCount, residentRoster } from '../src/sim/residents.ts';
 import { atlasFrames } from '../src/sim/atlases.ts';
 
 function prepared(population = 12){
@@ -110,8 +110,8 @@ test('greetings name the town and look up by portrait',()=>{
   const greeting=neighbourGreeting(definition,'青岚小镇');
   assert.ok(greeting.includes('青岚小镇'),'the town name is substituted in');
   assert.equal(greeting.includes('%'),false,'no placeholder is left behind');
-  assert.equal(neighbourOf(definition.portrait),definition);
-  assert.equal(neighbourOf('nobody'),undefined);
+  assert.equal(NEIGHBOURS.filter(entry=>entry.portrait===definition.portrait).length,1,'each portrait identifies exactly one neighbour');
+  assert.equal(NEIGHBOURS.some(entry=>entry.portrait==='nobody'),false);
 });
 
 test('the residents panel renders the roster rather than a hardcoded list',()=>{

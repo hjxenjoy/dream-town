@@ -75,7 +75,3 @@ export function residentRoster(buildings: Building[], population: number): Resid
 export function neighbourGreeting(definition: NeighbourDefinition, townName: string): string {
   return definition.greeting.replace(/%/g, townName);
 }
-
-export function neighbourOf(portrait: string): NeighbourDefinition | undefined {
-  return NEIGHBOURS.find(entry => entry.portrait === portrait);
-}

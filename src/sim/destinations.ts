@@ -87,9 +87,3 @@ export function missingCargo(
   }
   return missing;
 }
-
-/** Reward per outbound item, used to explain why a longer route is worth it. */
-export function rewardRatio(destination: CaravanDestination): number {
-  const shipped = Object.values(destination.cargo).reduce((n, v) => n + (v ?? 0), 0);
-  return shipped ? destination.rewardCoins / shipped : 0;
-}
