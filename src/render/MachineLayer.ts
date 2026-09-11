@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { iso } from '../sim/terrain';
 import { atlasFrames } from '../sim/atlases';
-import { MACHINE_PARTS, machinePivot, partAngle, partLayout } from '../sim/machines';
+import { frameScale } from './atlasSprite';
+import { MACHINE_PARTS, PART_WIDTH, machinePivot, partAngle, partLayout } from '../sim/machines';
 import type { Building } from '../sim/world';
 
 interface Part {
@@ -38,7 +39,7 @@ export class MachineLayer {
       const point = iso(building.x, building.y);
       // Both the scale and the offset come from the same layout, so the part's drawn
       // size and the size its position assumes can never disagree.
-      part.image.setScale(layout.scale);
+      part.image.setScale(frameScale(frame.w, PART_WIDTH));
       part.image.setPosition(point.x + layout.offsetX, point.y + layout.offsetY);
       if (running.has(building.id) && !reduced) part.seconds += deltaMs / 1000;
       part.angle = partAngle(part.seconds, part.spin, part.swing);

@@ -1,4 +1,5 @@
 import { GENERATED_ATLASES, atlasFrames } from './atlases.ts';
+import { frameScale } from '../render/atlasSprite.ts';
 import type { BuildingKind } from './data.ts';
 
 /** How wide a part is drawn, in world pixels, regardless of its atlas cell size. */
@@ -50,7 +51,7 @@ export function partLayout(
   attach: { x: number; y: number },
   targetWidth = PART_WIDTH,
 ): { scale: number; width: number; height: number; offsetX: number; offsetY: number } {
-  const scale = targetWidth / frame.w;
+  const scale = frameScale(frame.w, targetWidth);
   const width = frame.w * scale;
   const height = frame.h * scale;
   // The building sprite is bottom-anchored, so its box top is one box height above the base.

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { atlasFrames } from '../src/sim/atlases.ts';
 import { BUILDINGS } from '../src/sim/data.ts';
+import { GENERATED_ATLASES } from '../src/sim/atlases.ts';
 
 const RENDER_DIR = new URL('../src/render/', import.meta.url);
 
@@ -25,19 +26,44 @@ function rendererSources(): [string, string][] {
  */
 const SINGLE_FRAME_TEXTURES = ['farm0', 'farm1', 'farm2'];
 
-test('atlas sprites are never sized by hand',()=>{
-  // The shipped bug twice over: size applied once at creation, frames swapped later, so
-  // the sprite kept the first frame's scale. Multi-frame atlases must go through the helper.
+test('setting a frame and sizing it are inseparable',()=>{
+  // The rule keys on setTexture, not on setDisplaySize. The shipped disaster bug applied
+  // no size anywhere near the frame swap — it sized once at creation and swapped frames
+  // later — so a rule that watched for setDisplaySize could not see it. Watching the
+  // frame swap catches the shape regardless of where the missing size should have been.
   for(const [name,source] of rendererSources()){
     if(name==='atlasSprite.ts')continue;
-    for(const line of source.split('\n')){
-      if(!line.includes('setDisplaySize'))continue;
-      const runtimeOnly=SINGLE_FRAME_TEXTURES.some(texture=>line.includes(`'${texture}'`));
+    // Statement granularity, not line windows: a nearby call for a *different* sprite
+    // must not count as sizing this one. That mistake made this rule pass while the
+    // disaster layer was drawing every hazard at its neighbour's scale.
+    const offset=(index:number)=>source.slice(0,index).split('\n').length;
+    for(const match of source.matchAll(/[^;{}\n]*setTexture\([^;]*/g)){
+      const statement=match[0];
+      assert.ok(match[0].includes('setTexture('),'guard');
+      const sizesThisSprite=/drawFrame(Width|Scale)\(/.test(statement);
+      const singleFrameTexture=SINGLE_FRAME_TEXTURES.some(texture=>statement.includes(`'${texture}'`));
       assert.ok(
-        runtimeOnly,
-        `${name}: ${line.trim()} sizes a multi-frame atlas by hand; use drawFrameWidth/drawFrameScale`,
+        sizesThisSprite||singleFrameTexture,
+        `${name}:${offset(match.index!)} swaps a frame without sizing that sprite from that frame; use drawFrameWidth/drawFrameScale`,
       );
+      if(singleFrameTexture&&!sizesThisSprite){
+        assert.ok(/setDisplaySize/.test(statement),`${name}:${offset(match.index!)} leaves a single-frame sprite unsized`);
+      }
     }
+  }
+});
+
+/**
+ * Every frame name a renderer can display for a given sprite, taken from the atlas it
+ * draws. Used to confirm a sprite is sized from the frame actually shown.
+ */
+test('no renderer sizes a multi-frame atlas from anything but its current frame',()=>{
+  for(const [name,source] of rendererSources()){
+    if(name==='atlasSprite.ts')continue;
+    // A width taken from the atlas as a whole (rather than the frame) is the other half of
+    // the same mistake: it ignores that frames within one sheet differ in size.
+    const atlasWide=/texture\.source\[0\]\.(width|height)|texture\.getSourceImage\(\)\.(width|height)/.test(source);
+    assert.equal(atlasWide,false,`${name} sizes from the atlas rather than the displayed frame`);
   }
 });
 
@@ -122,4 +148,28 @@ test('sprite sizing stays inside a plausible range for the map scale',()=>{
   for(const [label,width] of widths){
     assert.ok(width>=24&&width<=260,`${label} draws at ${width}px, within the map's scale`);
   }
+});
+
+test('a renderer that creates atlas sprites goes through the shared sizer',()=>{
+  // The machine-part bug was this shape: a sprite created from a 444px atlas cell and
+  // never scaled at all. There is no frame swap to watch, so the tell is that the file
+  // draws atlas art without consulting the sizer that knows the frame's size.
+  const atlasTextures=Object.keys(GENERATED_ATLASES);
+  for(const [name,source] of rendererSources()){
+    if(name==='atlasSprite.ts')continue;
+    const createsAtlasSprite=atlasTextures.some(texture=>source.includes(`'${texture}'`))
+      &&/add\.image\(/.test(source);
+    if(!createsAtlasSprite)continue;
+    assert.match(source,/from '\.\/atlasSprite'/,`${name} creates atlas sprites but never consults the sizer`);
+  }
+});
+
+test('one derivation of scale exists, shared by every caller',()=>{
+  // Two places computing "target width / frame width" is how the machine layer and the
+  // hazard layer drifted apart in the first place.
+  const helper=readFileSync(new URL('atlasSprite.ts',RENDER_DIR),'utf8');
+  assert.match(helper,/export function frameScale\(frameWidth: number, targetWidth: number\): number \{\s*return targetWidth \/ frameWidth;/,'the sizer owns the division');
+  const machines=readFileSync(new URL('../sim/machines.ts',RENDER_DIR),'utf8');
+  assert.match(machines,/frameScale\(frame\.w, targetWidth\)/,'the machine layout uses the shared derivation');
+  assert.equal(/targetWidth \/ frame\.w/.test(machines),false,'and does not repeat the division itself');
 });

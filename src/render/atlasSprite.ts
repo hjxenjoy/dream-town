@@ -20,7 +20,7 @@ export function drawFrameWidth(
   image.setScale(targetWidth / image.frame.width);
 }
 
-/** Draws a frame at a fixed scale. Used where art pixels must map to screen pixels. */
+/** Draws a frame at an explicit scale. Used where art pixels must map to screen pixels. */
 export function drawFrameScale(
   image: Phaser.GameObjects.Image,
   texture: string,
@@ -29,4 +29,13 @@ export function drawFrameScale(
 ): void {
   image.setTexture(texture, frame);
   image.setScale(scale);
+}
+
+/**
+ * The scale that draws a frame at `targetWidth`. Exported so code that positions a sprite
+ * from its own layout metrics — a part rotating about a measured pivot — uses the same
+ * derivation as everything else instead of re-implementing it.
+ */
+export function frameScale(frameWidth: number, targetWidth: number): number {
+  return targetWidth / frameWidth;
 }
