@@ -132,7 +132,8 @@ test('the scene registers caravan frames, so the cart never falls back to the wh
   const atlases=listed.split(',').map(part=>part.trim().replace(/['"]/g,'')).filter(Boolean);
   assert.ok(atlases.includes('caravan'),'the scene loads the caravan atlas');
   assert.match(scene,/for\(const atlas of SCENE_ATLASES\)\{[\s\S]*?atlasFrames\(atlas\)[\s\S]*?texture\.add\(/,'frames are registered from the catalog for every listed atlas');
-  // And the cart renderer must ask for frames that vary, not a fixed base frame.
+  // The cart must set an explicit frame and size it from that frame, every sync.
   const cart=readFileSync(new URL('../src/render/CaravanCart.ts',import.meta.url),'utf8');
-  assert.match(cart,/setTexture\('caravan', frame\)/,'the cart sets an explicit frame');
+  assert.match(cart,/drawFrameWidth\(this\.sprite, 'caravan', frame, CART_WIDTH\)/,'the cart sizes each frame it draws');
+  assert.equal(cart.includes('setDisplaySize'),false,'sizing never happens once at creation');
 });

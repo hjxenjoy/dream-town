@@ -3,6 +3,7 @@ import { iso } from '../sim/terrain';
 import { CART_PARK_FRAMES, CART_TRAVEL_FRAMES, caravanPose, caravanRoute } from '../sim/caravan';
 import { tileKey } from '../sim/roads';
 import type { SimWorld } from '../sim/world';
+import { drawFrameWidth } from './atlasSprite';
 
 const FRAME_MS = 300;
 const CART_WIDTH = 132;
@@ -32,10 +33,10 @@ export class CaravanCart {
     const frame = frames[reduced ? 0 : Math.floor(time / FRAME_MS) % frames.length]!;
     if (!this.sprite) {
       this.sprite = this.scene.add.image(point.x, point.y, 'caravan').setOrigin(.5, .88);
-      this.sprite.setDisplaySize(CART_WIDTH, CART_WIDTH * this.sprite.frame.height / this.sprite.frame.width);
     }
     // The cart is mirrored on the way home so it visibly returns rather than sliding back.
     const flip = pose.direction === 'back';
-    this.sprite.setTexture('caravan', frame).setPosition(point.x, point.y).setDepth(point.y + 7).setFlipX(flip);
+    drawFrameWidth(this.sprite, 'caravan', frame, CART_WIDTH);
+    this.sprite.setPosition(point.x, point.y).setDepth(point.y + 7).setFlipX(flip);
   }
 }

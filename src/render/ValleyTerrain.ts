@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { BRIDGES, DISTRICTS, DISTRICT_KEYS, iso, riverX } from '../sim/terrain';
+import { drawFrameWidth } from './atlasSprite';
 
 /** Land, river and crossings use the same coordinates as the simulation. */
 export function drawValley(scene:Phaser.Scene) {
@@ -69,8 +70,10 @@ export function drawValley(scene:Phaser.Scene) {
   texture.add('peak',0,12,0,809,509);texture.add('orehill',0,845,13,691,499);
   texture.add('pines',0,30,508,716,516);texture.add('grove',0,824,527,712,497);
   const scenic=(frame:string,x:number,y:number,width:number)=>{
-    const p=iso(x,y),s=scene.add.image(p.x,p.y,'scenery',frame).setOrigin(.5,.87);
-    s.setDisplaySize(width,width*s.frame.height/s.frame.width).setDepth(p.y-5);return s;
+    const p=iso(x,y),s=scene.add.image(p.x,p.y,'scenery').setOrigin(.5,.87);
+    // Sized from the frame being drawn, so every scenic tile keeps its own proportions.
+    drawFrameWidth(s,'scenery',frame,width);
+    s.setDepth(p.y-5);return s;
   };
   // Peaks are on unbuildable terrain; the broad foothills in front remain usable for mines.
   for(const [x,y,w] of [[31,3,660],[36,3,770],[41,4,710],[46,8,680],[46,14,620]])scenic('peak',x,y,w);

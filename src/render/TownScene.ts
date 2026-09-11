@@ -12,12 +12,18 @@ import Phaser from 'phaser';
 import { SimWorld, type Building, type BuildingKind } from '../sim/world';
 import { BUILDINGS, EXPANSION_SPRITES, EXPANSION_FRAMES, INDUSTRY_KINDS, INDUSTRY_FRAMES, DECORATION_SPRITES, DECORATION_FRAMES } from '../sim/data';
 import { GENERATED_ATLASES, atlasFrames, generatedSprite, housingLevelFrame } from '../sim/atlases';
+import { drawFrameWidth } from './atlasSprite';
 import { MAP_SIZE, TILE_W, TILE_H, iso, terrainAt, terrainReason, DISTRICTS, type District } from '../sim/terrain';
 import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
 /** Generated atlases the scene draws. Preloading and frame registration both read this. */
 const SCENE_ATLASES = ['disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions'] as const;
+/** On-screen widths for the two farm visuals, which are drawn from generated textures. */
+const CROP_WIDTH = 130;
+const FARM_WIDTH = 116;
+const FARM_HEIGHT = 86;
+
 const deiso = (x: number, y: number) => ({ x: Math.round(x / TILE_W + y / TILE_H), y: Math.round(y / TILE_H - x / TILE_W) });
 type BuildingVisual = { sprite: Phaser.GameObjects.Image; badge: Phaser.GameObjects.Container; progress: Phaser.GameObjects.Graphics; ready: boolean };
 export class TownScene extends Phaser.Scene {
@@ -198,7 +204,7 @@ export class TownScene extends Phaser.Scene {
       if(!v){
         const source=this.spriteSource(b.kind,b.level);
         const sprite=b.kind==='farm'?this.add.image(p.x,p.y,'farm0').setOrigin(.5,.65):this.add.image(p.x,p.y,source.texture,source.frame??b.kind).setOrigin(.5,.86);
-        if(b.kind!=='farm'){const w=this.spriteWidth(b.kind);sprite.setDisplaySize(w,w*sprite.frame.height/sprite.frame.width);}
+        if(b.kind!=='farm')drawFrameWidth(sprite,source.texture,source.frame??b.kind,this.spriteWidth(b.kind));
         sprite.setDepth(p.y+5).setInteractive({useHandCursor:true,pixelPerfect:true,alphaTolerance:50}).setData('buildingId',b.id);
         sprite.on('pointerover',()=>{if(!this.down&&!this.buildKind)sprite.setTint(0xfff0c6);});sprite.on('pointerout',()=>sprite.clearTint());
         const bg=this.add.graphics().fillStyle(0x3a553b,.22).fillRoundedRect(-21,-18,42,39,12).fillStyle(0xfff7df).fillRoundedRect(-21,-22,42,38,12).lineStyle(2,0xfffef4).strokeRoundedRect(-21,-22,42,38,12);
@@ -214,16 +220,16 @@ export class TownScene extends Phaser.Scene {
         const source=this.spriteSource(b.kind,b.level);
         const current=v.sprite.texture.key;
         if(source.frame&&(current!==source.texture||v.sprite.frame.name!==source.frame)){
-          v.sprite.setTexture(source.texture,source.frame);
-          const w=this.spriteWidth(b.kind);
-          v.sprite.setDisplaySize(w,w*v.sprite.frame.height/v.sprite.frame.width);
+          drawFrameWidth(v.sprite,source.texture,source.frame,this.spriteWidth(b.kind));
         }
       }
       v.sprite.setPosition(p.x,p.y).setDepth(p.y+5);v.badge.setPosition(p.x,p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)).setDepth(p.y+220);v.progress.setDepth(p.y+200);
       if(b.kind==='farm'){
         const crop=b.crop??'wheat',f=CROP_FRAMES[crop];
-        if(b.ready||b.progress>.7){v.sprite.setTexture('crops',crop).setOrigin(.5,f.anchor).setDisplaySize(130,130*f.h/f.w);if(!b.ready)v.sprite.setTint(0xc3d995);else v.sprite.clearTint();}
-        else{v.sprite.setTexture(b.progress>.22?'farm1':'farm0').setOrigin(.5,.65).setDisplaySize(116,86);v.sprite.setTint(soilLevel(b.tended).level>2?0xf6e6ae:0xffffff);}
+        if(b.ready||b.progress>.7){drawFrameWidth(v.sprite,'crops',crop,CROP_WIDTH);v.sprite.setOrigin(.5,f.anchor);if(!b.ready)v.sprite.setTint(0xc3d995);else v.sprite.clearTint();}
+        // farm0/farm1 are single-frame textures generated at runtime, so sizing them
+        // once is correct: there is no other frame whose dimensions could disagree.
+        else{v.sprite.setTexture(b.progress>.22?'farm1':'farm0').setOrigin(.5,.65).setDisplaySize(FARM_WIDTH,FARM_HEIGHT);v.sprite.setTint(soilLevel(b.tended).level>2?0xf6e6ae:0xffffff);}
       }
       v.badge.setVisible(b.ready||!!b.damaged);const text=v.badge.list[1] as Phaser.GameObjects.Text;
       text.setText(b.damaged?'!':'✓').setColor(b.damaged?'#bc6643':'#658844');
@@ -256,7 +262,7 @@ export class TownScene extends Phaser.Scene {
   }
   setBuildMode(kind:BuildingKind|null){
     this.roadMode=null;this.roadStart=null;this.moveId=null;this.buildKind=kind;if(!this.ready)return;this.grid.setVisible(!!kind);this.ghost?.destroy();this.ghost=undefined;this.highlight.clear();
-    if(kind){this.paintPlacementGrid();const source=this.spriteSource(kind,1);this.ghost=kind==='farm'?this.add.image(0,0,'farm2').setOrigin(.5,.65):this.add.image(0,0,source.texture,source.frame??kind).setOrigin(.5,.86);if(kind!=='farm')this.ghost.setScale(this.spriteWidth(kind)/this.ghost.frame.width);this.ghost.setAlpha(.6);this.updateGhost(this.input.activePointer);}else this.drawSelection();
+    if(kind){this.paintPlacementGrid();const source=this.spriteSource(kind,1);this.ghost=kind==='farm'?this.add.image(0,0,'farm2').setOrigin(.5,.65):this.add.image(0,0,source.texture,source.frame??kind).setOrigin(.5,.86);if(kind!=='farm')drawFrameWidth(this.ghost,source.texture,source.frame??kind,this.spriteWidth(kind));this.ghost.setAlpha(.6);this.updateGhost(this.input.activePointer);}else this.drawSelection();
   }
   setRoadMode(kind:RoadKind|'remove'|null){this.setBuildMode(null);this.roadMode=kind;if(!this.ready)return;this.grid.setVisible(!!kind);this.highlight.clear();}
   private previewRoad(pointer:Phaser.Input.Pointer){

@@ -2,8 +2,13 @@ import Phaser from 'phaser';
 import { iso } from '../sim/terrain';
 import { ALERT_FRAME_MS, ALERT_FRAMES, HAZARD_FRAME_MS, hazardOverlay, loopFrame } from '../sim/disasters';
 import type { Building } from '../sim/world';
+import { drawFrameWidth } from './atlasSprite';
 
 const MAX_EFFECTS = 24;
+/** Hazard effects share one footprint so no kind looks arbitrarily larger than another. */
+const EFFECT_WIDTH = 112;
+/** The warning bell is a marker, not an effect, so it stays small. */
+const BELL_WIDTH = 60;
 
 /**
  * Hazard and repair overlays. Keeps one pooled image per affected building instead
@@ -28,10 +33,11 @@ export class DisasterLayer {
       active.add(building.id);
 
       const sprite = this.place(this.effects, building.id, point);
-      sprite.setTexture('disasters', overlay.frame);
+      drawFrameWidth(sprite, 'disasters', overlay.frame, EFFECT_WIDTH);
       const alert = this.place(this.alerts, building.id, point);
-      alert.setTexture('disasters', loopFrame(ALERT_FRAMES, time, ALERT_FRAME_MS, reduced)).setVisible(overlay.warning);
-      alert.setPosition(point.x + 30, point.y - sprite.displayHeight * .72);
+      drawFrameWidth(alert, 'disasters', loopFrame(ALERT_FRAMES, time, ALERT_FRAME_MS, reduced), BELL_WIDTH);
+      // The bell hangs above the effect, so its own size follows the effect's height.
+      alert.setDepth(point.y + 240).setPosition(point.x + 30, point.y - sprite.displayHeight * .72);
     }
     this.retire(this.effects, active);
     this.retire(this.alerts, active);
@@ -41,7 +47,6 @@ export class DisasterLayer {
     let sprite = pool.get(id);
     if (!sprite) {
       sprite = this.scene.add.image(point.x, point.y, 'disasters').setOrigin(.5, .92);
-      sprite.setDisplaySize(112, 112 * sprite.frame.height / sprite.frame.width);
       pool.set(id, sprite);
     }
     sprite.setPosition(point.x, point.y).setDepth(point.y + 8).setVisible(true);

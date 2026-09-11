@@ -2,10 +2,22 @@ import Phaser from 'phaser';
 import { TownCrowd } from '../sim/crowd';
 import { PETS } from '../sim/pets';
 import { atlasFrames } from '../sim/atlases';
+import { drawFrameScale, drawFrameWidth } from './atlasSprite';
 import { iso } from '../sim/terrain';
 import type { SimWorld } from '../sim/world';
 /** Which of the six action rows each walking style uses, in the original citizens order. */
 const NEIGHBOUR_STYLE=['gardener','carpenter','herbalist','farmer','merchant','fisher'];
+/**
+ * Scale for the action atlas. Its frames are cropped tight to each pose (median 186px
+ * tall, ~90% of that being the figure) while the walking cells are 256px with margins.
+ * Sizing by frame width would make a hauling resident nearly twice the height of the
+ * same resident strolling, so both atlases are matched on the figure, not the cell.
+ */
+const ACTION_SCALE=0.264;
+/** Pets are small but must stay readable next to a resident. */
+const PET_SIZE=34;
+/** Walking cells are square, so one width drives both axes. */
+const walkerWidth=(i:number)=>42+(i%3)*2;
 
 export class Residents {
   crowd=new TownCrowd();
@@ -29,7 +41,7 @@ export class Residents {
     while(this.sprites.length>this.crowd.walkers.length){this.sprites.pop()!.destroy();this.shadows.pop()!.destroy();}
     this.crowd.walkers.forEach((w,i)=>{
       let sprite=this.sprites[i];
-      if(!sprite){this.shadows.push(this.scene.add.ellipse(0,0,14,6,0x425138,.23));sprite=this.scene.add.image(0,0,'citizens',`${w.style}-0`).setOrigin(.5,.95).setDisplaySize(42+(i%3)*2,42+(i%3)*2);this.sprites.push(sprite);}
+      if(!sprite){this.shadows.push(this.scene.add.ellipse(0,0,14,6,0x425138,.23));sprite=this.scene.add.image(0,0,'citizens',`${w.style}-0`).setOrigin(.5,.95);this.sprites.push(sprite);}
       const p=iso(w.x,w.y),screenX=w.headingX-w.headingY,screenY=w.headingX+w.headingY;
       const step=w.walking&&delta>0?Math.floor(time/280+i)%2:0;
       if(w.task!=='walk'){
@@ -37,10 +49,10 @@ export class Residents {
         // front then back, two frames each.
         const persona=NEIGHBOUR_STYLE[w.style]??'gardener';
         const facing=screenY<0?'back':'front';
-        sprite.setTexture('citizens-actions',`${persona}-${w.task}-${facing}-${step}`).setDisplaySize(44,44);
+        drawFrameScale(sprite,'citizens-actions',`${persona}-${w.task}-${facing}-${step}`,ACTION_SCALE);
       }else{
         const pose=screenY<0?2:0;
-        sprite.setTexture('citizens',`${w.style}-${pose+step}`).setDisplaySize(42+(i%3)*2,42+(i%3)*2);
+        drawFrameWidth(sprite,'citizens',`${w.style}-${pose+step}`,walkerWidth(i));
       }
       sprite.setFlipX(screenX<0).setPosition(p.x,p.y+(w.walking&&delta>0?Math.sin(time/140+i)*.6:0)).setDepth(p.y+6);
       if(w.relocated){w.relocated=false;sprite.setAlpha(0);this.scene.tweens.add({targets:sprite,alpha:1,duration:300});}
@@ -51,13 +63,14 @@ export class Residents {
       let sprite=this.petSprites[i];
       if(!sprite){
         this.petShadows.push(this.scene.add.ellipse(0,0,9,4,0x425138,.2));
-        sprite=this.scene.add.image(0,0,'pets',PETS[pet.kind].frames.front[0]).setOrigin(.5,.93).setDisplaySize(34,34);
+        sprite=this.scene.add.image(0,0,'pets',PETS[pet.kind].frames.front[0]).setOrigin(.5,.93);
         this.petSprites.push(sprite);
       }
       const p=iso(pet.x,pet.y),screenX=pet.headingX-pet.headingY,screenY=pet.headingX+pet.headingY;
       const facing=screenY<0?'back':'front';
       const step=pet.walking&&delta>0?Math.floor(time/300+i)%2:0;
-      sprite.setTexture('pets',PETS[pet.kind].frames[facing][step]).setFlipX(screenX<0).setPosition(p.x,p.y).setDepth(p.y+4);
+      drawFrameWidth(sprite,'pets',PETS[pet.kind].frames[facing][step],PET_SIZE);
+      sprite.setFlipX(screenX<0).setPosition(p.x,p.y).setDepth(p.y+4);
       this.petShadows[i].setPosition(p.x,p.y).setDepth(p.y-1);
     });
   }
