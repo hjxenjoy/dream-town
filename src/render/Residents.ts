@@ -33,7 +33,7 @@ export class Residents {
     Object.entries(atlasFrames('citizens-actions')).forEach(([name,frame])=>actions.add(name,0,frame.x,frame.y,frame.w,frame.h));
   }
   sync(world:SimWorld){
-    this.crowd.sync(world.state.buildings,world.state.roads??[],world.state.population,world.state.buildings.map(b=>b.kind));
+    this.crowd.sync(world.state.buildings,world.state.roads??[],world.state.population,world.state.buildings.map(b=>b.kind),world.state.gameTime);
     this.crowd.syncPets(world.state.pets??[]);
   }
   update(time:number,delta:number){
@@ -44,9 +44,10 @@ export class Residents {
       if(!sprite){this.shadows.push(this.scene.add.ellipse(0,0,14,6,0x425138,.23));sprite=this.scene.add.image(0,0,'citizens',`${w.style}-0`).setOrigin(.5,.95);this.sprites.push(sprite);}
       const p=iso(w.x,w.y),screenX=w.headingX-w.headingY,screenY=w.headingX+w.headingY;
       const step=w.walking&&delta>0?Math.floor(time/280+i)%2:0;
-      if(w.task!=='walk'){
+      if(w.task==='carry'||w.task==='work'){
         // Hauling and working come from the action atlas: eight columns per resident,
-        // front then back, two frames each.
+        // front then back, two frames each. Resting at home uses the walking atlas, because
+        // that atlas has no rest pose and a resident at home is simply standing on their step.
         const persona=NEIGHBOUR_STYLE[w.style]??'gardener';
         const facing=screenY<0?'back':'front';
         drawFrameScale(sprite,'citizens-actions',`${persona}-${w.task}-${facing}-${step}`,ACTION_SCALE);

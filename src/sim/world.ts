@@ -12,6 +12,7 @@ import { DESTINATION_IDS, availableDestinations, caravanDuration, destinationOf,
 import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, ornamentRequirement, type CollectionId } from './collections.ts';
 import { STORY_PORTRAITS, STORY_STAGES, nextStoryStage, storyChoiceIds, storyEffect, storyEnvironment, storyHistory, type StoryProgress } from './stories.ts';
 import { residentRoster } from './residents.ts';
+import { clockLabel, dayOf, partOfDay, PARTS, secondsUntilNextPart } from './clock.ts';
 export type { BuildingKind, Resource, ResourceMap } from './data.ts';
 
 export interface Building {
@@ -1362,6 +1363,7 @@ export class SimWorld {
     this.updateNeeds(); this.syncProgress();
     return {
       gameTime: this.state.gameTime, season: this.state.season, level: this.state.level,
+      clock: { label: clockLabel(this.state.gameTime), day: dayOf(this.state.gameTime), part: partOfDay(this.state.gameTime), partName: PARTS[partOfDay(this.state.gameTime)].name, note: PARTS[partOfDay(this.state.gameTime)].note, untilNextPart: secondsUntilNextPart(this.state.gameTime) },
       researched: [...this.state.researched], technologies: TECHNOLOGY_KEYS.map(id => ({ id, ...TECHNOLOGIES[id], ...this.researchStatus(id) })),
       coins: this.state.coins, population: this.state.population, populationCapacity: this.populationCapacity(),
       housingCapacity: this.housingCapacity(), communityCapacity: this.communityCapacity(), happiness: Math.round(this.state.happiness),

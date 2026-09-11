@@ -8,6 +8,7 @@ import { roadLine, tileKey } from '../src/sim/roads.ts';
 import { TownNavigation } from '../src/sim/navigation.ts';
 import { TownCrowd } from '../src/sim/crowd.ts';
 import { BUILDINGS, emptyResources } from '../src/sim/data.ts';
+import { DAY_LENGTH } from '../src/sim/clock.ts';
 import { readFileSync } from 'node:fs';
 
 const rich=()=>{const w=new SimWorld();w.state.coins=10000;w.state.resources.stone=50;w.state.capacity=2000;return w;};
@@ -100,14 +101,16 @@ test('agent road and harvest actions use the same validated rules',()=>{
 
 test('the crowd distinguishes strolling, hauling and working, and every pose exists',()=>{
   // The action atlas is only useful if residents actually switch to it: a resident
-  // bound for a workshop hauls goods there, then works while they wait.
+  // bound for a workshop hauls goods there, then works while they wait. Work poses only
+  // happen during the working day, so this test runs at noon.
+  const NOON=DAY_LENGTH*(12/24);
   const w=new SimWorld();
   w.state.capacity=20000;
   w.state.resources={...emptyResources(),wood:600,stone:600,wheat:600,bread:200,fish:200};
   w.state.settings.disasters=false;w.state.settings.autoMayor=false;
   const crowd=new TownCrowd();
-  crowd.sync(w.state.buildings,w.state.roads??[],w.state.population,w.state.buildings.map(b=>b.kind));
-  for(let frame=0;frame<600;frame++) crowd.tick(1/30);
+  crowd.sync(w.state.buildings,w.state.roads??[],w.state.population,w.state.buildings.map(b=>b.kind),NOON);
+  for(let frame=0;frame<600;frame++){crowd.tick(1/30);crowd.sync(w.state.buildings,w.state.roads??[],w.state.population,w.state.buildings.map(b=>b.kind),NOON);}
   const tasks=new Set(crowd.walkers.map(walker=>walker.task));
   assert.ok(tasks.has('walk'),'residents also stroll');
   assert.ok(tasks.has('carry')||tasks.has('work'),'and they haul and work at workshops');
