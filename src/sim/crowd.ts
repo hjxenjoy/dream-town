@@ -65,10 +65,23 @@ export class TownCrowd {
       // and visitors, who keep the streets alive while everyone else is at a workbench.
       const commutes = i % 3 !== 0;
       const home=commutes&&this.homes.length?this.homes[i%this.homes.length]:undefined;
-      const work=commutes&&this.workplaces.length?this.workplaces[i%this.workplaces.length]:undefined;
+      // People work near where they live. Pairing by index instead would send a resident
+      // across the whole valley and back, which takes most of a day and leaves nobody at a
+      // workbench — the commute would swallow the thing it exists to show.
+      const work=commutes&&home?this.nearestWorkplace(home):undefined;
       this.walkers.push({...p,route:[],step:0,wait:i*.17,style:i%6,headingX:1,headingY:0,walking:false,relocated:false,task:'walk',...(home?{home}:{}),...(work?{work}:{})});
     }
   }
+  /** The workshop closest to a home, which is the one that resident commutes to. */
+  private nearestWorkplace(home:Tile):{tile:Tile;kind:BuildingKind}|undefined{
+    let best:{tile:Tile;kind:BuildingKind}|undefined,bestDistance=Infinity;
+    for(const candidate of this.workplaces){
+      const distance=Math.abs(candidate.tile.x-home.x)+Math.abs(candidate.tile.y-home.y);
+      if(distance<bestDistance){bestDistance=distance;best=candidate;}
+    }
+    return best;
+  }
+
   /** Keeps one walker per adopted pet, each leashed to a resident. */
   syncPets(pets:readonly PetState[]){
     while(this.pets.length>pets.length)this.pets.pop();

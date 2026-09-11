@@ -64,7 +64,46 @@ export const DISASTERS: Record<DisasterKind, DisasterDefinition> = {
 export const REPAIR_FRAMES: readonly [string, string] = ['scaffold-0', 'scaffold-1'];
 export const ALERT_FRAMES: readonly [string, string] = ['bell-0', 'bell-1'];
 export const REPAIR_SECONDS = 30;
+
+/**
+ * What a unit of a material costs when the town has none and no way to make any. Bought in
+ * from outside, so both are dearer than making them yourself — a safety valve for a damaged
+ * town, not a strategy.
+ */
+export const BUY_IN_PRICE = { wood: 45, stone: 55 } as const;
 export const DISASTER_INTERVAL = 420;
+
+/**
+ * The most of the town that may be out of action at once, as a share of everything built.
+ * Repair demand grows with every damaged building while income shrinks with every halted one,
+ * so without a ceiling a town that falls behind can never catch up: the neglected town is
+ * hit again as fast as it repairs, forever. Bound the damage and recovery is always possible.
+ */
+export const MAX_DAMAGED_SHARE = 1 / 3;
+
+/** How many buildings may be damaged at once in a town of `total` buildings. */
+export function damageCeiling(total: number): number {
+  return Math.max(1, Math.floor(total * MAX_DAMAGED_SHARE));
+}
+
+/** How long a struggling town is spared between hazards, given how much is already broken. */
+export function strikeInterval(buildings: number, damaged: number): number {
+  if (buildings <= 0 || damaged <= 0) return DISASTER_INTERVAL;
+  // Repair demand rises with every damaged building while income falls with every halted one.
+  // Stretching the interval by the same measure turns that runaway into a stable point: a
+  // healthy town is hit exactly as before, a wrecked one is given room to dig itself out.
+  return DISASTER_INTERVAL * (1 + (damaged / buildings) * DISTRESS_THROTTLE);
+}
+
+/** How strongly outstanding damage slows the next hazard. */
+export const DISTRESS_THROTTLE = 6;
+
+/**
+ * Hazards are pressure on a working town, not a coup de grâce. Below this many residents
+ * there is nothing worth losing and no income to pay for repairs, so nothing strikes: a
+ * wrecked town is left to put itself back together instead of being finished off.
+ */
+export const MIN_DISASTER_POPULATION = 10;
 
 /** Saves written before hazards had kinds, and any unknown value, read as a fire. */
 export function disasterOf(kind: DisasterKind | undefined): DisasterDefinition {

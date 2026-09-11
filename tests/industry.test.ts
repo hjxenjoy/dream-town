@@ -9,7 +9,7 @@ function prepared() {
   const world = new SimWorld();
   world.state.level = 6; world.state.prestige = 50; world.state.coins = 30000; world.state.capacity = 4000;
   world.state.resources = { ...emptyResources(), wood: 200, stone: 200, wheat: 200, plank: 100, materials: 100, bread: 100, fish: 100 };
-  for (const b of world.state.buildings) { b.paused = true; b.workers = 0; b.ready = false; b.stock = {}; b.progress = 0; }
+  for (const b of world.state.buildings) { b.paused = true; b.workers = 0; b.staffing = 0; b.ready = false; b.stock = {}; b.progress = 0; }
   return world;
 }
 function research(world: SimWorld, ...ids: TechnologyId[]) { for (const id of ids) assert.equal(world.research(id).ok, true, id); }

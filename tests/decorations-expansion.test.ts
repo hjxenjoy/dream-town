@@ -14,7 +14,7 @@ function prepared(){
   const w=new SimWorld();w.state.coins=100000;w.state.capacity=10000;
   w.state.resources={...emptyResources(),wood:600,stone:600,materials:200};
   w.state.settings.disasters=false;w.state.settings.autoMayor=false;
-  for(const b of w.state.buildings){b.paused=true;b.workers=0;b.progress=0;b.ready=false;b.stock={};}
+  for(const b of w.state.buildings){b.paused=true;b.workers=0;b.staffing=0;b.progress=0;b.ready=false;b.stock={};}
   return w;
 }
 

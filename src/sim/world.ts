@@ -3,8 +3,8 @@ import { PROJECT_IDS, PROJECTS, freshProjects, validProjects, projectMetrics, ha
 import { stockTargets, woodReserve } from './economy.ts';
 import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type RoadKind, type Tile } from './roads.ts';
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
-import { BUILDINGS, BUILDING_KEYS, CARAVAN_CARGO, CARAVAN_DURATION, emptyResources, GAME_DAY_SECONDS, MAP_SIZE, MAX_OFFLINE_SECONDS, RESOURCE_KEYS, RESOURCES, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TECHNOLOGY_KEYS, PRODUCTION_SEQUENCE, type TechnologyId, type BuildingKind, type Resource, type ResourceMap } from './data.ts';
-import { DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, REPAIR_SECONDS, canStrike, disasterOf, type DisasterKind, type SeasonKey } from './disasters.ts';
+import { BUILDINGS, BUILDING_KEYS, CARAVAN_CARGO, CARAVAN_DURATION, GAME_DAY_SECONDS, MAP_SIZE, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TECHNOLOGY_KEYS, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId } from './data.ts';
+import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, canStrike, damageCeiling, disasterOf, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
@@ -30,6 +30,11 @@ export interface Building {
   damageKind?: DisasterKind;
   repairingUntil?: number;
   workers?: number;
+  /**
+   * The complement the player asked for at this workshop, if they set one. The town allocates
+   * labour on its own; this pins a workshop so the allocation cannot take its people back.
+   */
+  staffing?: number;
   crop?: CropId;
   nextCrop?: CropId;
   tended?: number;
@@ -252,6 +257,7 @@ export function validateSave(value: unknown): value is SimState {
     const technology = BUILDINGS[building.kind as BuildingKind].technology;
     if (technology && !researched.includes(technology)) return false;
     const maximumWorkers = BUILDINGS[building.kind as BuildingKind].workers ?? 0;
+    if (building.staffing !== undefined && (!whole(building.staffing) || building.staffing < 0 || building.staffing > maximumWorkers)) return false;
     if (building.workers !== undefined && (!whole(building.workers) || building.workers > maximumWorkers)) return false;
     assignedWorkers += Number(building.workers ?? maximumWorkers);
     const position = `${building.x},${building.y}`;
@@ -748,8 +754,8 @@ export class SimWorld {
     if (!whole(workerCount) || workerCount > maximum) return this.fail(`这座工坊可安排 0 至 ${maximum} 位工人。`, 'INVALID_WORKFORCE');
     const elsewhere = this.state.buildings.filter(candidate => candidate.id !== id).reduce((total, candidate) => total + (candidate.workers ?? 0), 0);
     if (elsewhere + workerCount > this.state.population) return this.fail('空闲居民不足，请先调整其他工坊的人手。', 'INSUFFICIENT_WORKFORCE');
-    building.workers = workerCount;
-    return this.success(`${BUILDINGS[building.kind].name}现在安排 ${workerCount} 位工人。`, { buildingId: id });
+    building.workers = workerCount; building.staffing = workerCount;
+    return this.success(`${BUILDINGS[building.kind].name}现在安排 ${workerCount} 位工人，小镇重新分配人手时不会改动它。`, { buildingId: id });
   }
 
   setProductionFocus(id: string, recipeId: string): ActionResult {
@@ -981,14 +987,34 @@ export class SimWorld {
   }
 
   /** Repairing takes time and shows scaffolding; the building stays out of production until done. */
+  /**
+   * What a repair will actually cost right now. Whatever the town is short of is bought in
+   * from outside at a premium, so a repair is only ever blocked by coins — never by a missing
+   * material that the town cannot make. Without this a town whose sawmill and quarry are both
+   * out of action could not repair anything at all, because repairs cost wood and stone and
+   * every producer of those costs wood and stone to build. The premium keeps it a way out of
+   * a hole rather than a way to buy timber cheaply.
+   */
+  repairQuote(building: Building): { coins: number; wood: number; stone: number; bought: { wood: number; stone: number } } {
+    const cost = disasterOf(building.damageKind).repair;
+    const bought = {
+      wood: Math.max(0, cost.wood - this.state.resources.wood),
+      stone: Math.max(0, cost.stone - this.state.resources.stone),
+    };
+    const premium = bought.wood * BUY_IN_PRICE.wood + bought.stone * BUY_IN_PRICE.stone;
+    return { coins: cost.coins + premium, wood: cost.wood - bought.wood, stone: cost.stone - bought.stone, bought };
+  }
+
   repair(id: string): ActionResult {
     const building = this.state.buildings.find(candidate => candidate.id === id);
     if (!building) return this.fail('没有找到这座建筑。', 'BUILDING_NOT_FOUND');
     if (!building.damaged) return this.fail('这座建筑目前不需要修缮。', 'NOT_DAMAGED');
     if (building.repairingUntil !== undefined) return this.fail('工匠已经在修缮这座建筑了。', 'REPAIR_IN_PROGRESS');
-    const cost = disasterOf(building.damageKind).repair;
+    const cost = this.repairQuote(building);
     if (this.state.coins < cost.coins || !this.has({ wood: cost.wood, stone: cost.stone })) {
-      return this.fail(`修缮需要 ${cost.coins} 金币、${cost.wood} 木材和 ${cost.stone} 石料。`, 'INSUFFICIENT_RESOURCES');
+      const bought = (['wood', 'stone'] as const).filter(material => cost.bought[material] > 0);
+      const note = bought.length ? `（${bought.map(material => RESOURCE_LABELS[material]).join('和')}要现买）` : '';
+      return this.fail(`修缮需要 ${cost.coins} 金币、${cost.wood} 木材和 ${cost.stone} 石料${note}。`, 'INSUFFICIENT_RESOURCES');
     }
     this.state.coins -= cost.coins; this.deduct({ wood: cost.wood, stone: cost.stone });
     building.repairingUntil = this.state.gameTime + REPAIR_SECONDS;
@@ -1019,12 +1045,53 @@ export class SimWorld {
     return null;
   }
   private assignedWorkers(): number { return this.state.buildings.reduce((total, building) => total + (building.workers ?? BUILDINGS[building.kind].workers ?? 0), 0); }
+  /**
+   * Hands out the town's workers when there are fewer of them than there are jobs. Jobs are
+   * filled in order of what the town cannot do without: first the workshops that put food on
+   * the table, then the ones that supply building materials, and only then everything else.
+   * Filling by build order instead leaves a small town's handful of residents staffing
+   * whatever happens to stand first — a bakery that cannot bake for want of flour — while the
+   * fishery that feeds everyone from nothing gets nobody, and a town that cannot feed itself
+   * can never grow back.
+   */
   private reconcileWorkforce(): void {
     let available = this.state.population;
-    for (const building of this.state.buildings) {
-      building.workers = Math.min(building.workers ?? BUILDINGS[building.kind].workers ?? 0, available);
+    const ranked = [...this.state.buildings].sort((a, b) => this.workforcePriority(a) - this.workforcePriority(b));
+    for (const building of ranked) {
+      const maximum = BUILDINGS[building.kind].workers ?? 0;
+      // Fill from the workshop's complement rather than from whatever it happens to hold:
+      // keeping the old number makes starvation permanent, because a workshop trimmed to zero
+      // while the town was short would stay at zero for good, even with people to spare. A
+      // workshop the player has pinned keeps the number they chose.
+      building.workers = Math.min(building.staffing ?? maximum, Math.max(0, available));
       available -= building.workers;
     }
+  }
+
+  /** Whether the town is short of the food it eats every day. */
+  private foodShort(): boolean {
+    return this.state.resources.fish + this.state.resources.bread < Math.ceil(this.state.population / 4) * 3;
+  }
+
+  /**
+   * Lower sorts first, and only when the town is going hungry: then the food chain comes
+   * before the yards, and workshops that can actually run come before ones waiting on goods
+   * the town does not hold, so nobody is parked at a bakery with no flour. A town that is fed
+   * keeps its existing order, so a player's own industry is never robbed of hands to feed a
+   * town that is already eating.
+   */
+  private workforcePriority(building: Building): number {
+    if (!this.foodShort()) return 0;
+    const definition = BUILDINGS[building.kind];
+    const output = definition.output ?? {};
+    const food = (output.fish ?? 0) > 0 || (output.bread ?? 0) > 0 || (output.flour ?? 0) > 0;
+    const materials = (output.wood ?? 0) > 0 || (output.stone ?? 0) > 0 || (output.plank ?? 0) > 0;
+    const tier = food ? 0 : materials ? 1 : 2;
+    const waiting = definition.input && !this.has(definition.input) ? 1 : 0;
+    // Among food, the workshops that need nothing come first: a fishery that feeds everyone
+    // from the river outranks a mill that needs grain, which outranks nothing at all.
+    const needsInput = definition.input ? 1 : 0;
+    return tier * 4 + waiting * 2 + needsInput;
   }
   private populationCapacity(): number {
     return Math.min(this.housingCapacity(), this.communityCapacity());
@@ -1185,13 +1252,17 @@ export class SimWorld {
     this.state.happiness = clamp(this.state.happiness + (this.targetHappiness() - this.state.happiness) * Math.min(1, elapsed / 90), 0, 100);
     const newDays = Math.floor(this.state.gameTime / GAME_DAY_SECONDS) - Math.floor(previousTime / GAME_DAY_SECONDS);
     for (let day = 0; day < newDays; day++) this.settleDay();
-    if (this.state.settings.disasters && this.state.gameTime - this.state.lastDisasterAt >= DISASTER_INTERVAL) this.triggerDisaster();
+    if (this.disasterDue()) this.triggerDisaster();
     this.completeRepairs();this.completeActivities();
     if (this.state.settings.autoMayor && this.state.gameTime - this.state.lastMayorAt >= 5) this.runMayor();
     this.syncProgress();
   }
 
   private settleDay(): void {
+    // Who can usefully work changes as workshops are repaired and as goods run short, not just
+    // when the headcount moves, so the town revisits the split once a day and can dig itself
+    // out of a bad one instead of leaving a workshop empty forever.
+    this.reconcileWorkforce();
     let demand = Math.ceil(this.state.population / 4);
     for (const key of ['fish', 'bread'] as const) { const used = Math.min(demand, this.state.resources[key]); this.state.resources[key] -= used; demand -= used; }
     if (this.state.season === 'winter') { const fuel = Math.min(this.state.resources.wood, Math.ceil(this.state.population / 8)); this.state.resources.wood -= fuel; if (fuel === 0) this.state.happiness = Math.max(10, this.state.happiness - 3); }
@@ -1208,8 +1279,24 @@ export class SimWorld {
   }
 
   /** Hazards are seasonal, and the player's defence is placement plus protective cover. */
+  /**
+   * Whether a hazard is due. A town that is already struggling is left alone: past a ceiling
+   * of simultaneous damage nothing new strikes, and below it the wait lengthens with how much
+   * is broken. Without both, repair demand outgrows income and a town that falls behind can
+   * never catch up — it is hit again as fast as it repairs, for good.
+   */
+  private disasterDue(): boolean {
+    if (!this.state.settings.disasters) return false;
+    if (this.state.population < MIN_DISASTER_POPULATION) return false;
+    const total = this.state.buildings.length;
+    const damaged = this.state.buildings.filter(building => building.damaged).length;
+    if (damaged >= damageCeiling(total)) return false;
+    return this.state.gameTime - this.state.lastDisasterAt >= strikeInterval(total, damaged);
+  }
+
   private triggerDisaster(): void {
     this.state.lastDisasterAt = this.state.gameTime;
+
     const season = this.state.season as SeasonKey;
     const guards = this.state.buildings.filter(building => !building.damaged && (building.kind === 'firetower' || building.kind === 'firestation'));
     const guarded = (building: Building): boolean => guards.some(tower =>

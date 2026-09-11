@@ -67,7 +67,7 @@ test('full boards never block replenishing wood in balanced mode', () => {
 test('kilns protect construction timber online and offline, kitchens can still bake', () => {
   const {world}=isolated('bakery');
   world.state.researched=['mining'];
-  for(const b of world.state.buildings)b.workers=0;
+  for(const b of world.state.buildings){b.workers=0;b.staffing=0;b.staffing=0;}
   const kiln: Building={id:'test-kiln',kind:'kiln',x:2,y:2,level:1,paused:false,ready:false,stock:{},progress:.5,workers:1};
   world.state.buildings.push(kiln);
   world.state.resources.wood=world.woodReserve(); world.state.resources.flour=6;

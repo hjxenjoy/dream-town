@@ -10,7 +10,7 @@ function prepared(){
   const w=new SimWorld();w.state.coins=100000;w.state.capacity=10000;
   w.state.resources={...emptyResources(),wood:600,stone:600,materials:200,feed:100,charcoal:100,bread:100,fish:100};
   w.state.researched=[...TECHNOLOGY_KEYS];w.state.settings.disasters=false;w.state.settings.autoMayor=false;
-  for(const b of w.state.buildings){b.paused=true;b.workers=0;b.progress=0;b.ready=false;b.stock={};}
+  for(const b of w.state.buildings){b.paused=true;b.workers=0;b.staffing=0;b.progress=0;b.ready=false;b.stock={};}
   return w;
 }
 function add(w:SimWorld,kind:BuildingKind,x=38,y=40){
@@ -83,6 +83,10 @@ test('flood only reaches the river plain, so placement is the player defence',()
 test('protective cover prevents a hazard, and losing the cover exposes the building',()=>{
   const w=prepared();w.state.buildings=[];
   const station=add(w,'firestation',38,40),factory=add(w,'forester',42,40);
+  // A town with only the two buildings under test sits at the mercy ceiling for damage, so it
+  // would be spared a second hazard. Decoration raises the ceiling without becoming a target
+  // itself, so the factory stays the only building a fire can strike.
+  for(let i=0;i<4;i++) add(w,'garden',30+i,44);
   strike(w,'fire','summer');
   assert.equal(factory.damaged,undefined,'covered by the fire station');
   station.damaged=true;factory.damaged=false;

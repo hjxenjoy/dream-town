@@ -266,10 +266,10 @@ export class GameUI {
       const left=Math.max(0,Math.ceil(b.repairingUntil-s.gameTime));
       return `<div class="repair-block"><b>${hazard.name} · 工匠正在修缮</b><small>约 ${left} 秒后恢复生产（共需 ${REPAIR_SECONDS} 秒）</small></div>`;
     }
-    const cost=hazard.repair;
+    const cost=this.world.repairQuote(b);
     const enough=s.coins>=cost.coins&&s.resources.wood>=cost.wood&&s.resources.stone>=cost.stone;
     const items={wood:cost.wood,stone:cost.stone};
-    return `<div class="repair-block"><b>${hazard.name}：需要修缮</b><small>${hazard.advice}</small>${this.button('repair',b.id,'安排修缮',!enough,'game-button wide')}</div><p class="muted">${icon('coin',15)} ${fmt(cost.coins)} 金币${s.coins<cost.coins?' · 金币不足':''}</p>${this.goods(items,true)}`;
+    return `<div class="repair-block"><b>${hazard.name}：需要修缮</b><small>${hazard.advice}</small>${this.button('repair',b.id,'安排修缮',!enough,'game-button wide')}</div><p class="muted">${icon('coin',15)} ${fmt(cost.coins)} 金币${s.coins<cost.coins?' · 金币不足':''}${cost.bought.wood>0||cost.bought.stone>0?' · 材料现买':''}</p>${this.goods(items,true)}`;
   }
   /** A neighbour's portrait, cropped from the story-portraits atlas like any other art. */
   private portrait(frame:string,className=''){

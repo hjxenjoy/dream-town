@@ -1,3 +1,6 @@
+/** Short names for the two construction materials, used in costs and refusals. */
+export const RESOURCE_LABELS: Record<'wood' | 'stone', string> = { wood: '木材', stone: '石料' };
+
 export type Resource = 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage';
 export type ResourceMap = Record<Resource, number>;
 export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
