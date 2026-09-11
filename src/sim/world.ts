@@ -5,6 +5,7 @@ import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
 import { BUILDINGS, BUILDING_KEYS, CARAVAN_CARGO, CARAVAN_DURATION, emptyResources, GAME_DAY_SECONDS, MAP_SIZE, MAX_OFFLINE_SECONDS, RESOURCE_KEYS, RESOURCES, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TECHNOLOGY_KEYS, PRODUCTION_SEQUENCE, type TechnologyId, type BuildingKind, type Resource, type ResourceMap } from './data.ts';
 import { DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, REPAIR_SECONDS, canStrike, disasterOf, type DisasterKind, type SeasonKey } from './disasters.ts';
+import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 export type { BuildingKind, Resource, ResourceMap } from './data.ts';
 
 export interface Building {
@@ -94,6 +95,8 @@ export interface SimState {
   logs: TownLog[];
   nextId: number;
   festivalUntil: number;
+  /** The voluntary seasonal activity in progress, if the player started one. */
+  activity?: ActivityState;
   lastMayorAt: number;
   lastDisasterAt: number;
 }
@@ -256,6 +259,9 @@ export function validateSave(value: unknown): value is SimState {
   for (const order of value.orders) if (!isRecord(order) || typeof order.id !== 'string' || typeof order.npc !== 'string' || typeof order.title !== 'string' || !validItems(order.items) || !whole(order.rewardCoins) || !whole(order.rewardXp) || (order.cooldownUntil !== undefined && !nonnegative(order.cooldownUntil))) return false;
   for (const quest of value.quests) if (!isRecord(quest) || typeof quest.id !== 'string' || typeof quest.title !== 'string' || typeof quest.description !== 'string' || !whole(quest.target) || !whole(quest.progress) || !whole(quest.rewardCoins) || !whole(quest.rewardXp) || !whole(quest.rewardPrestige) || typeof quest.claimed !== 'boolean') return false;
   if (!isRecord(value.caravan) || !['idle', 'traveling', 'returned'].includes(value.caravan.status as string) || !validItems(value.caravan.cargo) || ['returnAt', 'duration', 'rewardCoins', 'rewardMaterials', 'trips'].some(key => !nonnegative((value.caravan as Record<string, unknown>)[key]))) return false;
+  if (value.activity !== undefined) {
+    if (!isRecord(value.activity) || !['spring', 'summer', 'autumn', 'winter'].includes(value.activity.season as string) || !nonnegative(value.activity.endsAt)) return false;
+  }
   if (!isRecord(value.settings) || ['sound', 'disasters', 'autoMayor'].some(key => typeof (value.settings as Record<string, unknown>)[key] !== 'boolean')) return false;
   if (value.settings.reducedMotion !== undefined && typeof value.settings.reducedMotion !== 'boolean') return false;
   if (!isRecord(value.needs) || ['food', 'water', 'services', 'environment'].some(key => !nonnegative((value.needs as Record<string, unknown>)[key]) || Number((value.needs as Record<string, unknown>)[key]) > 100)) return false;
@@ -611,6 +617,61 @@ export class SimWorld {
     return this.success('邻里庆典开始了！幸福度 +12，欢快的气氛将持续一段时间。', { coins: -cost });
   }
 
+  /** A seasonal activity runs only while its own season lasts and the timer has not run out. */
+  activityActive(): boolean {
+    const activity = this.state.activity;
+    return activity !== undefined && activity.endsAt > this.state.gameTime && activity.season === this.state.season;
+  }
+
+  /** Items the activity asks for that the town cannot spare, ignoring protected reserves. */
+  activityShortfall(season: SeasonKey = this.state.season): Partial<ResourceMap> {
+    const activity = activityOf(season);
+    const shortfall: Partial<ResourceMap> = {};
+    const woodReserve = this.woodReserve();
+    const foodReserve = Math.max(3, Math.ceil(this.state.population / 4) * 3);
+    for (const [key, amount] of Object.entries(activity.items) as [Resource, number][]) {
+      if (this.state.resources[key] < amount) shortfall[key] = amount - this.state.resources[key];
+    }
+    // The activity must not eat the timber needed for building or the three-day larder.
+    if (activity.items.wood && this.state.resources.wood - activity.items.wood < woodReserve) {
+      shortfall.wood = activity.items.wood + woodReserve - this.state.resources.wood;
+    }
+    const foodAsked = (activity.items.bread ?? 0) + (activity.items.fish ?? 0);
+    const foodHeld = this.state.resources.bread + this.state.resources.fish;
+    if (foodAsked && foodHeld - foodAsked < foodReserve) {
+      const missing = foodAsked + foodReserve - foodHeld;
+      const key = (activity.items.bread ?? 0) >= missing ? 'bread' : 'fish';
+      shortfall[key] = (shortfall[key] ?? 0) + missing;
+    }
+    return shortfall;
+  }
+
+  /** Starts the activity for the current season. Optional: skipping a season never costs anything. */
+  startActivity(): ActionResult {
+    const activity = activityOf(this.state.season);
+    if (this.state.activity && this.state.activity.endsAt > this.state.gameTime) {
+      return this.fail(`「${activityOf(this.state.activity.season).name}」正在进行，先享受这段好时光吧。`, 'ACTIVITY_ACTIVE');
+    }
+    if (this.state.coins < activity.coins) return this.fail(`举办${activity.name}需要 ${activity.coins} 金币。`, 'INSUFFICIENT_GOLD');
+    const shortfall = this.activityShortfall();
+    if (Object.keys(shortfall).length) {
+      const missing = Object.entries(shortfall).map(([key, amount]) => `${amount} ${RESOURCES[key as Resource].name}`).join('、');
+      return this.fail(`还差 ${missing}；活动只取富余物资，不动建造木材与三日口粮。`, 'INSUFFICIENT_RESOURCES');
+    }
+    this.state.coins -= activity.coins; this.deduct(activity.items);
+    this.state.activity = { season: this.state.season, endsAt: this.state.gameTime + activity.duration };
+    this.state.happiness = Math.min(100, this.state.happiness + activity.happiness);
+    return this.success(`${activity.name}开始了！幸福度 +${activity.happiness}，好心情会持续一季中的这一小段。`, { coins: -activity.coins });
+  }
+
+  private completeActivities(): void {
+    const activity = this.state.activity;
+    if (!activity || activity.endsAt > this.state.gameTime) return;
+    const name = SEASONAL_ACTIVITIES[activity.season].name;
+    delete this.state.activity;
+    this.log(`${name}结束了，邻居们还在回味。下一个季节再见。`, 'info');
+  }
+
   sell(resource: Resource, amount: number): ActionResult {
     if (!RESOURCE_KEYS.includes(resource) || !whole(amount) || amount <= 0) return this.fail('请选择有效的物资和正整数数量。', 'INVALID_QUANTITY');
     if (this.state.resources[resource] < amount) return this.fail(`${RESOURCES[resource].name}库存不足。`, 'INSUFFICIENT_RESOURCES');
@@ -724,7 +785,7 @@ export class SimWorld {
     const basePenalty = [-5, 0, 6, 12, 20][this.state.taxRate];
     const penalty = basePenalty > 0 && this.state.researched.includes('civics') ? basePenalty / 2 : basePenalty;
     const damage = this.state.buildings.filter(building => building.damaged).length * 5;
-    return clamp(needs.food * 0.4 + needs.water * 0.25 + needs.services * 0.2 + needs.environment * 0.15 - penalty - damage + (this.state.festivalUntil > this.state.gameTime ? 12 : 0), 10, 100);
+    return clamp(needs.food * 0.4 + needs.water * 0.25 + needs.services * 0.2 + needs.environment * 0.15 - penalty - damage + (this.state.festivalUntil > this.state.gameTime ? 12 : 0) + (this.activityActive() ? ACTIVITY_HAPPINESS : 0), 10, 100);
   }
   private taxPerDay(happiness = this.state.happiness): number {
     if (this.state.needs.food <= 0 || happiness < 25) return 0;
@@ -866,7 +927,7 @@ export class SimWorld {
     const newDays = Math.floor(this.state.gameTime / GAME_DAY_SECONDS) - Math.floor(previousTime / GAME_DAY_SECONDS);
     for (let day = 0; day < newDays; day++) this.settleDay();
     if (this.state.settings.disasters && this.state.gameTime - this.state.lastDisasterAt >= DISASTER_INTERVAL) this.triggerDisaster();
-    this.completeRepairs();
+    this.completeRepairs();this.completeActivities();
     if (this.state.settings.autoMayor && this.state.gameTime - this.state.lastMayorAt >= 5) this.runMayor();
     this.syncQuests();
   }
@@ -1014,7 +1075,7 @@ export class SimWorld {
       const fuel = Math.min(this.state.resources.wood, Math.ceil(this.state.population / 8) * days);
       this.state.resources.wood -= fuel; report.consumed.wood += fuel;
     }
-    this.completeRepairs();
+    this.completeRepairs();this.completeActivities();
     this.updateNeeds();
     const shortagePenalty = demand > 0 ? Math.min(18, demand) : 0;
     this.state.happiness = clamp(originalHappiness - shortagePenalty + (this.state.taxRate === 0 ? Math.min(5, days) : 0), 25, 100);
@@ -1054,6 +1115,7 @@ export class SimWorld {
       projects: PROJECT_IDS.map(id=>({id,name:PROJECTS[id].name,title:PROJECTS[id].title,perk:PROJECTS[id].perk,...this.projectStatus(id)})),
       resources: { ...this.state.resources }, orders: clone(this.state.orders), caravan: clone(this.state.caravan),
       readyBuildings: this.state.buildings.filter(building => building.ready).map(building => building.id),
+      activity: this.activityActive() ? { ...this.state.activity } : null,
       alerts: this.state.buildings.filter(building => building.damaged || building.repairingUntil !== undefined).map(building => ({
         buildingId: building.id,
         type: building.damaged ? (building.damageKind ?? 'fire') : 'repairing',
