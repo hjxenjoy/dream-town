@@ -14,7 +14,7 @@ npm run dev
 开发地址默认 `http://localhost:5173`。
 
 ```sh
-npm test       # 275 项纯模拟测试：经济、科技、道路、居民、灾害、存档迁移等
+npm test       # 276 项纯模拟测试：经济、科技、道路、居民、灾害、存档迁移等
 npm run build # TypeScript 检查、生产包与 PWA 离线缓存
 npm run preview
 ```
