@@ -116,7 +116,9 @@ test('greetings name the town and look up by portrait',()=>{
 
 test('the residents panel renders the roster rather than a hardcoded list',()=>{
   const source=readFileSync(new URL('../src/ui/GameUI.ts',import.meta.url),'utf8');
-  assert.match(source,/residentRoster\(s\.buildings,s\.population\)/,'the panel derives the roster from the town');
+  // The roster is built by the simulation from its own buildings, so the panel only renders
+  // what the town actually contains rather than a list of its own.
+  assert.match(source,/const stories=this\.world\.observe\(\)\.stories/,'the panel renders the roster the simulation reports');
   assert.match(source,/portrait\(record\.portrait\)/,'and draws each neighbour portrait from the atlas');
   // The portraits must come from the generated atlas, not from names baked into markup.
   for(const neighbour of NEIGHBOURS){

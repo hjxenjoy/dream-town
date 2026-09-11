@@ -10,6 +10,8 @@ import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetStat
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
 import { DESTINATION_IDS, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from './destinations.ts';
 import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, ornamentRequirement, type CollectionId } from './collections.ts';
+import { STORY_PORTRAITS, STORY_STAGES, nextStoryStage, storyChoiceIds, storyEffect, storyEnvironment, storyHistory, type StoryProgress } from './stories.ts';
+import { residentRoster } from './residents.ts';
 export type { BuildingKind, Resource, ResourceMap } from './data.ts';
 
 export interface Building {
@@ -103,6 +105,8 @@ export interface SimState {
   achievements?: AchievementId[];
   /** Street styles collected, and how many tiers of each were banked. */
   collections?: Partial<Record<CollectionId, number>>;
+  /** Which story choice each neighbour made, stage by stage. */
+  stories?: StoryProgress;
   logs: TownLog[];
   nextId: number;
   festivalUntil: number;
@@ -122,6 +126,7 @@ export interface ActionResult {
   items?: Partial<ResourceMap>;
   coins?: number;
   xp?: number;
+  prestige?: number;
   farmCoins?: number;
   cropQuantity?: number;
 }
@@ -292,6 +297,16 @@ export function validateSave(value: unknown): value is SimState {
     if (new Set(value.achievements).size !== value.achievements.length) return false;
     if (value.achievements.some(id => !ACHIEVEMENT_IDS.includes(id as AchievementId))) return false;
   }
+  // Absent on saves written before neighbours had stories. Every recorded choice must be a
+  // real option for that neighbour at that stage, so a corrupt save cannot invent a reward.
+  if (value.stories !== undefined) {
+    if (!isRecord(value.stories)) return false;
+    for (const [portrait, choices] of Object.entries(value.stories)) {
+      if (!STORY_PORTRAITS.includes(portrait)) return false;
+      if (!Array.isArray(choices) || choices.length > STORY_STAGES) return false;
+      if (choices.some((choice, index) => !storyChoiceIds(portrait, index).includes(choice as string))) return false;
+    }
+  }
   // Absent on saves written before street styles existed. Tier counts must be in range,
   // so a corrupt number cannot unlock an ornament that was never earned.
   if (value.collections !== undefined) {
@@ -321,6 +336,7 @@ export class SimWorld {
     this.state.stats.activities ??= 0;
     this.state.caravan.destination ??= 'valley';
     this.state.collections ??= {};
+    this.state.stories ??= {};
     for (const building of this.state.buildings) building.workers ??= BUILDINGS[building.kind].workers ?? 0;
     this.syncQuests();
     if(state===undefined){this.arrangeDistricts();delete this.state.layoutUndo;}
@@ -432,6 +448,65 @@ export class SimWorld {
     const style = COLLECTIONS[ornament.id];
     const tier = style.tiers[ornament.tier - 1]!;
     return `「${BUILDINGS[kind].name}」是${style.name}的纪念摆件：先让「${tier.name}」成形（一处 ${tier.need} 件、${tier.distinct} 种）。`;
+  }
+
+  /**
+   * The named neighbours, with what they are ready to talk about. Assignments come from
+   * real buildings, so a story only opens once the place it is about actually stands.
+   */
+  private storyContext(portrait: string) {
+    const record = residentRoster(this.state.buildings, this.state.population)
+      .find(entry => entry.portrait === portrait);
+    return {
+      record,
+      context: {
+        home: Boolean(record?.homeId) && record?.unsettled === false,
+        workplace: Boolean(record?.workplaceId),
+        level: this.state.level,
+        population: this.state.population,
+      },
+    };
+  }
+
+  /** Every neighbour's story state, for the panel and the tools. */
+  neighbourStories() {
+    const progress = this.state.stories ?? {};
+    return residentRoster(this.state.buildings, this.state.population).map(record => {
+      const { context } = this.storyContext(record.portrait);
+      const pending = nextStoryStage(record.portrait, progress, context);
+      return {
+        ...record,
+        pending: pending ? { index: pending.index, title: pending.stage.title, prompt: pending.stage.prompt, choices: pending.stage.choices.map(choice => ({ id: choice.id, label: choice.label, description: choice.description, perk: choice.effect.perk })) } : null,
+        history: storyHistory(record.portrait, progress),
+      };
+    });
+  }
+
+  /**
+   * Answers a neighbour's story stage. The choice applies immediately: goods go to the
+   * warehouse, or a lasting bonus is banked. An unaffordable gift is refused before
+   * anything is recorded, so a refusal leaves the save exactly as it was.
+   */
+  chooseStoryOption(portrait: string, choiceId: string): ActionResult {
+    const record = residentRoster(this.state.buildings, this.state.population)
+      .find(entry => entry.portrait === portrait);
+    if (!record) return this.fail('还没有这位邻居的消息。', 'UNKNOWN_NEIGHBOUR');
+    const progress = this.state.stories ?? (this.state.stories = {});
+    const { context } = this.storyContext(portrait);
+    const pending = nextStoryStage(portrait, progress, context);
+    if (!pending) return this.fail('这位邻居眼下没有什么要说的。', 'NO_STORY');
+    const choice = pending.stage.choices.find(entry => entry.id === choiceId);
+    if (!choice) return this.fail('没有这个选项。', 'INVALID_CHOICE');
+    const effect = storyEffect(portrait, pending.index, choiceId)!;
+    if (effect.items && !this.has(effect.items)) return this.fail(`需要${resourceLabel(effect.items)}，仓里还不够。`, 'INSUFFICIENT_RESOURCES');
+    if (this.room() < sum(effect.items ?? {})) return this.fail('仓库腾不出位置，先清理一下库存。', 'WAREHOUSE_FULL');
+
+    progress[portrait] = [...(progress[portrait] ?? []), choiceId];
+    if (effect.items) this.add(effect.items);
+    if (effect.coins) this.state.coins += effect.coins;
+    if (effect.prestige) this.state.prestige += effect.prestige;
+    this.log(`${record.name}：${choice.reply}`, 'success');
+    return this.success(choice.reply, { items: effect.items, coins: effect.coins, prestige: effect.prestige });
   }
 
   isUnlocked(kind: BuildingKind): boolean {
@@ -961,7 +1036,7 @@ export class SimWorld {
     this.state.needs.food = clamp(food / Math.max(1, Math.ceil(this.state.population / 4) * 3) * 100, 0, 100);
     this.state.needs.water = homes.length ? watered.reduce((n, b) => n + BUILDINGS[b.kind].housing! * b.level, 0) / this.housingCapacity() * 100 : 0;
     this.state.needs.services = clamp(this.state.buildings.filter(building => BUILDINGS[building.kind].services && !building.damaged).reduce((total, building) => total + building.level * BUILDINGS[building.kind].services!, 10), 0, 100);
-    this.state.needs.environment = clamp(60 + this.state.buildings.filter(building => !building.damaged).reduce((total, building) => total + building.level * (BUILDINGS[building.kind].environment ?? 0), 0) + collectionEnvironment(this.state.collections ?? {}), 0, 100);
+    this.state.needs.environment = clamp(60 + this.state.buildings.filter(building => !building.damaged).reduce((total, building) => total + building.level * (BUILDINGS[building.kind].environment ?? 0), 0) + collectionEnvironment(this.state.collections ?? {}) + storyEnvironment(this.state.stories ?? {}), 0, 100);
   }
   private targetHappiness(): number {
     const needs = this.state.needs;
@@ -1301,6 +1376,7 @@ export class SimWorld {
       activity: this.activityActive() ? { ...this.state.activity } : null,
       achievements: achievementProgress(this.achievementMetrics(), this.state.achievements ?? []),
       collections: collectionProgress(this.state.buildings, this.state.collections ?? {}),
+      stories: this.neighbourStories(),
       caravanRoutes: availableDestinations(this.state.researched).map(destination => ({
         ...destination,
         chosen: (this.state.caravan.destination ?? 'valley') === destination.id,

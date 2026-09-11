@@ -10,7 +10,8 @@ import { icon } from './icons';
 import { DISASTERS, REPAIR_SECONDS, type DisasterKind } from '../sim/disasters';
 import { SEASONAL_ACTIVITIES } from '../sim/seasonal';
 import { PETS, PET_KINDS } from '../sim/pets';
-import { NEIGHBOURS, neighbourGreeting, residentRoster } from '../sim/residents';
+import { NEIGHBOURS } from '../sim/residents';
+import { neighbourNews } from '../sim/stories';
 import { ACHIEVEMENT_CATEGORY_NAMES } from '../sim/achievements';
 import { DESTINATIONS, DESTINATION_IDS as destinationIds, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from '../sim/destinations';
 import { COLLECTIONS } from '../sim/collections';
@@ -154,6 +155,7 @@ export class GameUI {
       case 'cancel-order':this.cb.action(()=>this.world.cancelOrder(value!));break;
       case 'caravan':this.cb.action(()=>this.world.dispatchCaravan(),undefined,'caravan');break;
       case 'choose-route':this.cb.action(()=>this.world.chooseCaravanDestination(value as DestinationId));break;
+      case 'story-choice':{const [portrait,choice]=value!.split('|');this.cb.action(()=>this.world.chooseStoryOption(portrait!,choice!));break;}
       case 'tax':this.cb.action(()=>this.world.setTax(Number(value)));break;
       case 'festival':this.cb.action(()=>this.world.festival(),undefined,'festival');break;
       case 'activity':this.cb.action(()=>this.world.startActivity(),undefined,'festival');break;
@@ -278,17 +280,23 @@ export class GameUI {
   /** The named neighbours, each tied to the home and workshop they actually use. */
   private neighbourCard(){
     const s=this.world.state;
-    const roster=residentRoster(s.buildings,s.population);
-    if(!roster.length)return `<div class="activity-card"><b>${icon('people',19)} 邻居们</b><small>再多几位居民，小镇就会有自己的熟人故事。</small></div>`;
-    const rows=roster.map(record=>{
+    const stories=this.world.observe().stories;
+    if(!stories.length)return `<div class="activity-card"><b>${icon('people',19)} 邻居们</b><small>再多几位居民，小镇就会有自己的熟人故事。</small></div>`;
+    const rows=stories.map(record=>{
       const definition=NEIGHBOURS.find(entry=>entry.portrait===record.portrait)!;
       const home=s.buildings.find(b=>b.id===record.homeId);
       const work=s.buildings.find(b=>b.id===record.workplaceId);
       const where=record.unsettled?'住处正在修缮，暂时借住在别处':home?`住在 ${BUILDINGS[home.kind].name}`:'还没找到住处';
       const job=work?`在 ${BUILDINGS[work.kind].name} 做事`:'在镇上帮忙';
-      return `<article class="neighbour-row"><span class="neighbour-face">${this.portrait(record.portrait)}</span><div><h4>${esc(record.name)}</h4><p>${esc(neighbourGreeting(definition,'小镇'))}</p><small>${icon('home',13)} ${esc(where)} · ${icon('hammer',13)} ${esc(job)}</small></div>${home?this.button('inspect',home.id,`${icon('focus',14)} 去住处`,false,'text-button'):''}</article>`;
+      const news=neighbourNews(home??null,s.buildings,s.population);
+      const pending=record.pending;
+      const storyBlock=pending
+        ?`<div class="story-stage"><b>${esc(pending.title)}</b><p>${esc(pending.prompt)}</p><div class="story-choices">${pending.choices.map(choice=>this.button('story-choice',`${record.portrait}|${choice.id}`,`${esc(choice.label)}<small>${esc(choice.description)} · ${esc(choice.perk)}</small>`,false,'story-choice-button')).join('')}</div></div>`
+        :record.history.length?`<div class="story-done">${icon('check',13)} 三段故事都已说完。</div>`:`<small class="story-locked">${icon('lock',12)} 等住处安顿好、${BUILDINGS[definition.workplace].name}立起来，他会和你聊聊。</small>`;
+      const history=record.history.length?`<ol class="story-history">${record.history.map(entry=>`<li><b>${esc(entry.title)}</b> — ${esc(entry.label)}<small>${esc(entry.perk)}</small></li>`).join('')}</ol>`:'';
+      return `<article class="neighbour-row"><span class="neighbour-face">${this.portrait(record.portrait)}</span><div><h4>${esc(record.name)}</h4><p>${esc(news)}</p><small>${icon('home',13)} ${esc(where)} · ${icon('hammer',13)} ${esc(job)}</small>${storyBlock}${history}</div>${home?this.button('inspect',home.id,`${icon('focus',14)} 去住处`,false,'text-button'):''}</article>`;
     }).join('');
-    return `<div class="activity-card neighbour-card"><b>${icon('people',19)} 邻居们 ${roster.length} 位熟人</b><small>每位邻居都有自己的住处和做事的地方；住处修缮期间会先借住在别处。</small><div class="neighbour-list">${rows}</div></div>`;
+    return `<div class="activity-card neighbour-card"><b>${icon('people',19)} 邻居们 ${stories.length} 位熟人</b><small>每位邻居都有自己的住处和做事的地方；他们说的话会提到附近真正新建的东西。</small><div class="neighbour-list">${rows}</div></div>`;
   }
   /** The voluntary activity for the current season, with its exact contribution. */
   private activityCard(){

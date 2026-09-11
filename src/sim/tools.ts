@@ -52,6 +52,8 @@ export const GAME_TOOLS: ToolDefinition[] = [
   tool('get_town_life', '查询季节活动、小动物与幸福度相关的生活状态。'),
   tool('get_achievements', '查询成就进度与已达成项。'),
   tool('get_street_styles', '查询三种街区风格各自的进度、已达成的阶段与下一步要求。'),
+  tool('get_neighbour_stories', '查询邻居们的关系故事：当前待说的一段、可选做法与已经说过的段落。'),
+  tool('choose_story_option', '回应邻居故事中的一段，二选一。礼物会立刻入库，长期做法会留下永久环境加成。', { neighbour: { type: 'string' }, option: { type: 'string' } }, ['neighbour', 'option']),
 ];
 
 export type GameToolResult = ActionResult | { ok: true; data: unknown };
@@ -102,6 +104,8 @@ export function executeGameTool(world: SimWorld, name: string, args: unknown = {
     case 'get_caravan_routes': return { ok: true, data: world.observe().caravanRoutes };
     case 'get_achievements': return { ok: true, data: world.observe().achievements };
     case 'get_street_styles': return { ok: true, data: world.observe().collections };
+    case 'get_neighbour_stories': return { ok: true, data: world.observe().stories };
+    case 'choose_story_option': return world.chooseStoryOption(String(values.neighbour), String(values.option));
     case 'get_disaster_alerts': return { ok: true, data: world.observe().alerts };
     case 'adopt_pet': return world.adoptPet(values.kind as 'cat' | 'dog');
     case 'release_pet': return world.releasePet();
