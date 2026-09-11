@@ -57,7 +57,7 @@ PWA 离线缓存需要先联网访问一次生产预览或部署版本，开发�
 - `src/render/TownScene.ts`：相机、建筑、地面、居民与视觉反馈；`CaravanCart`、`SeasonalProps`、`DisasterLayer` 分别绘制商队、季节摊位与灾害/修缮。
 - `src/ui/`：游戏 HUD、操作面板与响应式样式。
 - `src/save/storage.ts`：Dexie/IndexedDB、事务写入、校验与备份。
-- `public/assets/`：本地游戏素材；`frames.json` 描述实际精灵区域，`prompts.json` 与 `industry-prompts.json` 保留生成提示词。`industry.png` 为 8 座扩展工坊；`valley-scenery.png` 为山峰、矿石丘陵与森林图集，提示词保留在 `valley-prompts.json`。`citizens.png` 是 6 类居民、前后视角与交替步态图集，对应 `citizens-prompts.json`。图片使用内建 ImageGen 生成，未复用旧项目素材。
+- `public/assets/`：本地游戏素材。离线预缓存只收游戏实际加载的文件：`world.png` 是旧版遗留、代码从不加载，已排除出预缓存（省 2.5 MB），但文件保留在仓库备用；`verify-offline.mjs` 会断言每一个被排除的文件都确实无人引用。`frames.json` 描述实际精灵区域，`prompts.json` 与 `industry-prompts.json` 保留生成提示词。`industry.png` 为 8 座扩展工坊；`valley-scenery.png` 为山峰、矿石丘陵与森林图集，提示词保留在 `valley-prompts.json`。`citizens.png` 是 6 类居民、前后视角与交替步态图集，对应 `citizens-prompts.json`。图片使用内建 ImageGen 生成，未复用旧项目素材。
 - `tests/sim.test.ts`、`tests/industry.test.ts` 、`tests/terrain.test.ts` 与 `tests/roads-crowd.test.ts`：资源守恒、越界/负数、订单/商队防重复、仓储、工人、离线时间与坏档测试。
 
 本次将新实现的数据版本从 1 升为 2。已有新版小镇的自动档、手动档和导出文件会在 CRC 校验后自动迁移，原库存、建筑、人口、任务和时间戳均保留；只补齐新资源、研究记录和成长任务。版本 2 的坏档不会被补默认值掩盖。
