@@ -12,7 +12,7 @@ import { STORIES } from '../src/sim/stories.ts';
  * pre-unlocked so a level-12 town cannot pay out milestone prestige in the middle of an
  * assertion about prices.
  */
-function town(level = 12, prestige = 200) {
+function town(level = 12, prestige = 400) {
   const w = new SimWorld();
   w.state.level = level;
   w.state.prestige = prestige;
@@ -42,20 +42,42 @@ test('every honour track is well formed and its price rises', () => {
   assert.equal(new Set(HONOUR_TRACK_IDS.map(id => HONOURS[id].name)).size, HONOUR_TRACK_IDS.length);
 });
 
-test('the honours are priced against the standing the town actually earns', () => {
-  // This is the point of the system: research alone is a small, one-time cost, so without a
-  // sink the standing that everything else pays becomes inert. The sink must be able to
-  // absorb a completionist's surplus, and must not be so cheap that it is bought out at once.
+test('the sink is matched to a capped supply and leaves headroom for the uncapped one', () => {
+  // The standing economy has two kinds of faucet, and they call for different sink power.
+  //
+  // Most faucets are CAPPED — a fixed list of achievements, collections, stories, quests and
+  // project stages, each paying once. Those are matched by a sink of the same power, so a
+  // completionist can spend what they earned.
+  //
+  // One faucet is not capped: the town pays a point for every level it reaches, for ever.
+  // Daniel Cook's rule for matching a value chain is that a source must feed a sink of equal or
+  // higher power (constant < linear < exponential); a linear faucet feeding a capped sink leaks
+  // for ever. A geometric price curve is what covers it, because it always has room to absorb
+  // more. So the sink is deliberately larger than the capped supply — that surplus is the
+  // headroom, not an accident.
   const research = TECHNOLOGY_KEYS.reduce((total, id) => total + TECHNOLOGIES[id].prestige, 0);
-  const sink = HONOUR_TRACK_IDS.reduce((total, id) => total + HONOURS[id].levels.reduce((sum, _level, index) => sum + honourLevelCost(index), 0), 0);
+  const levels = HONOURS.granary.levels.length;
+  const trackCost = (id: (typeof HONOUR_TRACK_IDS)[number]) =>
+    HONOURS[id].levels.reduce((sum, _level, index) => sum + honourLevelCost(index), 0);
+  const sink = HONOUR_TRACK_IDS.reduce((total, id) => total + trackCost(id), 0);
   const supply = ACHIEVEMENTS.reduce((total, entry) => total + entry.prestige, 0)
     + COLLECTION_IDS.reduce((total, id) => total + COLLECTIONS[id].tiers.reduce((sum, _tier, index) => sum + 4 * (index + 1), 0), 0)
     + STORIES.reduce((total, story) => total + story.stages.reduce((sum, stage) => sum + Math.max(0, ...stage.choices.map(choice => choice.effect.prestige ?? 0)), 0), 0);
-  assert.ok(sink > research, `there is more to spend on than research alone: ${sink} vs ${research}`);
-  assert.ok(sink >= supply * 0.5, `the sink absorbs a meaningful share of the standing: ${sink} of ${supply}`);
-  assert.ok(sink <= supply * 2, `and does not dwarf it: ${sink} of ${supply}`);
-  // Research must still be a real price, not a rounding error next to the sink.
-  assert.ok(research >= sink * 0.3, `research still matters: ${research} against a ${sink} sink`);
+
+  // There is more to spend on than research alone.
+  assert.ok(sink > research, `honours dwarf research as a destination: ${sink} vs ${research}`);
+  // The capped faucets alone must be able to buy a real dent in the sink, or the currency is
+  // inert; and the sink must exceed them, or the uncapped faucet has nowhere to go.
+  assert.ok(sink >= supply, `a completionist can spend what they earned: ${sink} of ${supply}`);
+  assert.ok(sink > supply, `and there is headroom for the uncapped level faucet: ${sink} of ${supply}`);
+  // The opening levels must be affordable from the capped faucets, so the system is usable
+  // long before a town is 80 levels deep. The first half of every track is the reachable part.
+  const opening = HONOUR_TRACK_IDS.reduce((total, id) =>
+    total + HONOURS[id].levels.slice(0, Math.ceil(levels / 2)).reduce((sum, _level, index) => sum + honourLevelCost(index), 0), 0);
+  assert.ok(opening <= supply, `the first half of every track is payable from the capped supply: ${opening} of ${supply}`);
+  // And research is still a real price, not a rounding error beside the sink.
+  assert.ok(research >= sink * 0.05, `research still costs something: ${research} against a ${sink} sink`);
+  assert.ok(research >= supply * 0.25, `and is not trivial next to the capped supply: ${research} of ${supply}`);
 });
 
 test('the price curve is geometric, as the idle-game cost model prescribes', () => {
@@ -65,7 +87,8 @@ test('the price curve is geometric, as the idle-game cost model prescribes', () 
   // a real decision instead of a formality. Cookie Clicker uses 1.15 per purchase with a flat
   // +1% per prestige level; four levels need a steeper ratio to reach the same effect.
   const costs = HONOURS.granary.levels.map((_level, index) => honourLevelCost(index));
-  assert.equal(costs.join(','), '6,9,13,18', 'the curve reproduces the published table');
+  assert.equal(costs.join(','), '6,9,13,18,27,38,56,81', 'the curve reproduces the published table');
+  assert.equal(costs.length, 8, 'eight levels deep, because the uncapped faucet needs the headroom');
   assert.equal(HONOUR_COST_BASE, 6);
   assert.equal(HONOUR_COST_GROWTH, 1.45);
 
@@ -189,7 +212,7 @@ test('an unknown track is refused by name', () => {
 });
 
 test('the granary really adds storage, once per level', () => {
-  const w = town();
+  const w = town(12, 600);
   w.tick(0.1);
   const start = w.state.capacity;
   for (const [index, level] of HONOURS.granary.levels.entries()) {

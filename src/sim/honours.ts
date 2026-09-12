@@ -24,6 +24,21 @@
  * the town's bottleneck. Comparable strength plus different bottlenecks is what keeps the
  * choice meaningful: three tracks of equal power that all relieve the same pressure would be
  * an illusion of choice, and one track far weaker than the others would never be bought.
+ *
+ * The tracks run eight levels deep on purpose. Most of what pays standing is capped — a fixed
+ * list of achievements, collections and stories — and those are matched by a fixed sink. But
+ * one faucet never stops: the town pays a point of standing for every level it reaches, for as
+ * long as it stands. Daniel Cook's rule for matching a chain is that a source must feed a sink
+ * of equal or higher power (constant → linear → exponential), and a linear faucet feeding a
+ * capped sink leaks for ever. A geometric price curve is the answer, because it always has room
+ * to absorb more: the eight levels cost 6 / 9 / 13 / 18 / 27 / 38 / 56 / 81, so the deep levels
+ * stay out of reach for a long time and then, eventually, are reached. That headroom is what
+ * keeps standing from piling up with nothing to spend it on — the failure that made this system
+ * necessary in the first place.
+ *
+ * The per-level amounts were halved when the tracks went from four levels to eight, so each
+ * track's eight levels sum to exactly what its four used to. Deepening the sink is therefore
+ * not a power increase: the same ceiling, reached in more, smaller steps.
  */
 export type HonourTrackId = 'granary' | 'craft' | 'welcome';
 
@@ -83,10 +98,14 @@ export const HONOURS: Record<HonourTrackId, HonourTrack> = {
     unit: '容量',
     unlockLevel: 5,
     levels: [
-      { value: 8, note: '加高一排货架' },
-      { value: 8, note: '再辟一间侧屋' },
-      { value: 8, note: '重铺防潮地面' },
-      { value: 8, note: '扩建整座仓院' },
+      { value: 4, note: '加高一排货架' },
+      { value: 4, note: '再辟一间侧屋' },
+      { value: 4, note: '重铺防潮地面' },
+      { value: 4, note: '扩建整座仓院' },
+      { value: 4, note: '再买下隔壁的空院' },
+      { value: 4, note: '把库房分出干湿两间' },
+      { value: 4, note: '给仓顶加一道天窗' },
+      { value: 4, note: '把整条巷子并进仓区' },
     ],
   },
   craft: {
@@ -97,10 +116,14 @@ export const HONOURS: Record<HonourTrackId, HonourTrack> = {
     unit: '% 更快',
     unlockLevel: 6,
     levels: [
-      { value: 3, note: '订立学徒规矩' },
-      { value: 3, note: '统一量具' },
-      { value: 3, note: '记下工序簿' },
-      { value: 3, note: '开设匠人夜课' },
+      { value: 1.5, note: '订立学徒规矩' },
+      { value: 1.5, note: '统一量具' },
+      { value: 1.5, note: '记下工序簿' },
+      { value: 1.5, note: '开设匠人夜课' },
+      { value: 1.5, note: '把作坊打通成一排' },
+      { value: 1.5, note: '分出专做细活的一间' },
+      { value: 1.5, note: '请外镇的师傅来住一季' },
+      { value: 1.5, note: '把手艺刻在工坊的门楣上' },
     ],
   },
   welcome: {
@@ -111,10 +134,14 @@ export const HONOURS: Record<HonourTrackId, HonourTrack> = {
     unit: '名额',
     unlockLevel: 7,
     levels: [
-      { value: 2, note: '修一条迎客路' },
-      { value: 2, note: '添置公用桌椅' },
-      { value: 2, note: '给新邻居接风' },
-      { value: 2, note: '把小镇写进族谱' },
+      { value: 1, note: '修一条迎客路' },
+      { value: 1, note: '添置公用桌椅' },
+      { value: 1, note: '给新邻居接风' },
+      { value: 1, note: '把小镇写进族谱' },
+      { value: 1, note: '在镇口立一块指路石' },
+      { value: 1, note: '给每户门前挂一盏灯' },
+      { value: 1, note: '把空着的院子收拾出来' },
+      { value: 1, note: '替新邻居备好第一季口粮' },
     ],
   },
 };
