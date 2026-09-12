@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { GAME_DAY_SECONDS, RESOURCE_KEYS, TECHNOLOGIES, TECHNOLOGY_KEYS } from '../src/sim/data.ts';
-import { HONOURS, HONOUR_COST_BASE, HONOUR_COST_GROWTH, HONOUR_TRACK_IDS, honourCapacity, honourCommunity, honourCycleFactor, honourLevel, honourLevelCost, honourSpent, honourSummary, nextHonourLevel } from '../src/sim/honours.ts';
+import { HONOURS, HONOUR_COST_BASE, HONOUR_COST_GROWTH, HONOUR_TRACK_IDS, affordableHonours, honourCapacity, honourCommunity, honourCycleFactor, honourLevel, honourLevelCost, honourLevelsTaken, honourSpent, honourSummary, nextHonourLevel } from '../src/sim/honours.ts';
 import { ACHIEVEMENTS } from '../src/sim/achievements.ts';
 import { COLLECTIONS, COLLECTION_IDS } from '../src/sim/collections.ts';
 import { STORIES } from '../src/sim/stories.ts';
@@ -340,4 +340,108 @@ test('standing spent on honours is standing the town really had', () => {
   w.tick(GAME_DAY_SECONDS + 1);
   assert.equal(honourLevel(w.state.honours!, 'granary'), 1);
   assert.equal(honourCapacity(w.state.honours!), HONOURS.granary.levels[0]!.value);
+});
+
+test('the badge count answers "can I buy something right now?"', () => {
+  // This drives the dock badge, so it must be exactly the number of purchases the town could
+  // actually make: unlocked, not finished, and payable. Being generous here would leave a
+  // badge on screen with nothing behind it, which is worse than no badge at all.
+  const deepest = Math.max(...HONOUR_TRACK_IDS.map(id => HONOURS[id].unlockLevel));
+  assert.equal(affordableHonours({}, 999, 1), 0, 'nothing is affordable before any track opens');
+  assert.equal(affordableHonours({}, 0, deepest), 0, 'nor with no standing');
+  assert.equal(affordableHonours({}, honourLevelCost(0) - 1, deepest), 0, 'one short of the price is still nothing');
+
+  // Standing enough for one level of every track, at a level where all three are open.
+  assert.equal(affordableHonours({}, honourLevelCost(0), deepest), 3, 'exactly the first price buys one level of each');
+
+  // Once a track is finished it stops being buyable, whatever the purse holds.
+  const full = Object.fromEntries(HONOUR_TRACK_IDS.map(id => [id, HONOURS[id].levels.length])) as Record<typeof HONOUR_TRACK_IDS[number], number>;
+  assert.equal(affordableHonours(full, 99999, deepest), 0, 'a finished track is not an offer');
+
+  // And a partly finished track offers its next, dearer level, not its first.
+  const bought = { granary: 1 };
+  assert.equal(affordableHonours(bought, honourLevelCost(0), deepest), 2, 'the deepened track needs its next price');
+  assert.equal(affordableHonours(bought, honourLevelCost(1), deepest), 3, 'which the higher purse covers');
+
+  // Unlock levels are respected individually.
+  const firstOnly = Math.min(...HONOUR_TRACK_IDS.map(id => HONOURS[id].unlockLevel));
+  const openAtFirst = HONOUR_TRACK_IDS.filter(id => HONOURS[id].unlockLevel <= firstOnly).length;
+  assert.equal(affordableHonours({}, 999, firstOnly), openAtFirst, 'only the tracks already open are counted');
+
+  // It agrees with the panel: every count it returns can really be bought.
+  const w = town(deepest, 999);
+  const before = affordableHonours(w.state.honours ?? {}, w.state.prestige, w.state.level);
+  let bought2 = 0;
+  for (const id of HONOUR_TRACK_IDS) if (w.deepenHonour(id).ok) bought2++;
+  assert.equal(bought2, before, `the badge promised ${before} purchases and ${bought2} were possible`);
+});
+
+test('the header counts levels taken across every track', () => {
+  assert.equal(honourLevelsTaken({}), 0);
+  assert.equal(honourLevelsTaken({ granary: 2, craft: 3 }), 5);
+  const total = HONOUR_TRACK_IDS.reduce((n, id) => n + HONOURS[id].levels.length, 0);
+  const full = Object.fromEntries(HONOUR_TRACK_IDS.map(id => [id, HONOURS[id].levels.length])) as Record<typeof HONOUR_TRACK_IDS[number], number>;
+  assert.equal(honourLevelsTaken(full), total, 'a finished set reports the whole depth');
+  assert.ok(honourLevelsTaken({ granary: 999 }) <= total, 'a corrupt level cannot exceed the total');
+});
+
+test('the town announces the feature the moment it opens, once per track', () => {
+  // The panel is the last place a player who has finished researching will look, so the town
+  // says so itself rather than waiting to be found. The rule is one announcement per track
+  // that has opened — not every level (which would be noise), and not none (which is the
+  // problem this exists to solve).
+  const opens = HONOUR_TRACK_IDS.map(id => HONOURS[id].unlockLevel);
+  const first = Math.min(...opens);
+  const w = new SimWorld();
+  w.state.settings.autoMayor = true;
+  // Every level-up line names the standing it pays, so "names a track" is the marker that
+  // distinguishes the hint from an ordinary level-up.
+  const hinted = (state: typeof w.state) => state.logs.filter(entry => entry.message.includes('科技面板'));
+  const tracksNamed = (state: typeof w.state) => hinted(state)
+    .map(entry => HONOUR_TRACK_IDS.find(id => entry.message.includes(HONOURS[id].name)))
+    .filter((id): id is (typeof HONOUR_TRACK_IDS)[number] => id !== undefined);
+
+  assert.equal(hinted(w.state).length, 0, 'a new town has opened no track yet');
+  assert.equal(w.state.logs.filter(entry => entry.message.includes('小镇升至')).length, 0, 'and has not levelled at all');
+
+  // Level the town the way it really levels: by producing and collecting.
+  let guard = 0;
+  while (w.state.level < first && guard++ < 60000) w.tick(0.25);
+  assert.ok(w.state.level >= first, `the town reached the opening level (${w.state.level} of ${first})`);
+
+  const opened = HONOUR_TRACK_IDS.filter(id => HONOURS[id].unlockLevel <= w.state.level);
+  assert.ok(opened.length > 0, 'at least one track is open');
+  assert.ok(w.state.logs.some(entry => entry.message.includes('小镇升至')), 'and the town has levelled');
+  const named = tracksNamed(w.state);
+  assert.deepEqual(named, opened, `exactly the tracks that opened are announced: ${JSON.stringify(named)}`);
+  assert.ok(hinted(w.state)[0]!.message.includes('科技面板最下面'), 'the hint says where to look');
+
+  // Further play must not repeat it. Logs are capped, so the robust claim is: no track is ever
+  // announced twice, and nothing is announced that has not opened.
+  for (let i = 0; i < 600; i++) w.tick(0.25);
+  const later = tracksNamed(w.state);
+  assert.equal(new Set(later).size, later.length, 'no track is announced twice');
+  for (const id of later) assert.ok(HONOURS[id].unlockLevel <= w.state.level, `${id} was announced only once open`);
+});
+
+test('finishing the tree points at where the standing goes', () => {
+  // ui-patterns calls this "the end of the road": a feature that unlocks everything must say
+  // what happens next, or the player is left with a completed screen and no lead.
+  const w = town(20, 100000);
+  w.state.coins = 1_000_000; w.state.capacity = 400000;
+  // Research consumes its ingredients, so hold far more than the whole tree needs.
+  for (const key of RESOURCE_KEYS) w.state.resources[key] = 200;
+  for (const id of TECHNOLOGY_KEYS) assert.equal(w.research(id).ok, true, id);
+  w.tick(0.1);
+  assert.equal(w.state.researched.length, TECHNOLOGY_KEYS.length, 'the tree is complete');
+
+  const closing = w.state.logs.filter(entry => entry.message.includes('手艺都学齐了'));
+  assert.equal(closing.length, 1, 'the closing line is said once');
+  assert.ok(closing[0]!.message.includes('荣誉'), `and names where the standing goes: ${closing[0]!.message}`);
+
+  // It is not repeated by later ticks or by researching nothing more.
+  for (let i = 0; i < 50; i++) w.tick(0.5);
+  assert.equal(w.state.logs.filter(entry => entry.message.includes('手艺都学齐了')).length, 1, 'and never again');
+  // With the tree done, every honour track the town has reached is buyable from the badge.
+  assert.ok(affordableHonours(w.state.honours ?? {}, w.state.prestige, w.state.level) > 0, 'so the badge has something to show');
 });

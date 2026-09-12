@@ -10,7 +10,7 @@ import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetStat
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
 import { DESTINATION_IDS, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from './destinations.ts';
 import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, ornamentRequirement, type CollectionId } from './collections.ts';
-import { HONOURS, HONOUR_TRACK_IDS, honourCapacity, honourCommunity, honourCycleFactor, honourLevel, honourSummary, nextHonourLevel, type HonourTrackId } from './honours.ts';
+import { HONOURS, HONOUR_TRACK_IDS, honourCapacity, honourCommunity, honourCycleFactor, honourLevel, honourLevelsTaken, honourSummary, nextHonourLevel, type HonourTrackId } from './honours.ts';
 import { STORY_PORTRAITS, STORY_STAGES, nextStoryStage, storyChoiceIds, storyEffect, storyEnvironment, storyHistory, type StoryProgress } from './stories.ts';
 import { residentRoster } from './residents.ts';
 import { DAY_START_HOUR, clockLabel, dayOf, gameTimeAtHour, partOfDay, PARTS, secondsUntilNextPart } from './clock.ts';
@@ -406,7 +406,16 @@ export class SimWorld {
   private earn(coins: number, xp = 0): void {
     this.state.coins += coins; this.state.stats.coinsEarned += coins; this.state.xp += xp;
     let threshold = this.state.level * 140;
-    while (this.state.xp >= threshold) { this.state.xp -= threshold; this.state.level++; this.state.prestige++; this.log(`小镇升至 ${this.state.level} 级，获得 1 点声望。`, 'success'); threshold = this.state.level * 140; }
+    while (this.state.xp >= threshold) {
+      this.state.xp -= threshold; this.state.level++; this.state.prestige++;
+      // The level a town can first spend its standing is the moment the feature exists for it,
+      // so say so rather than waiting for the player to find it in a panel they may have
+      // finished with. This fires exactly once, on the level-up that opens the track.
+      const opened = HONOUR_TRACK_IDS.filter(id => HONOURS[id].unlockLevel === this.state.level);
+      const hint = opened.length ? ` 「${opened.map(id => HONOURS[id].name).join('」「')}」可以投入声望了，在科技面板最下面。` : '';
+      this.log(`小镇升至 ${this.state.level} 级，获得 1 点声望。${hint}`, 'success');
+      threshold = this.state.level * 140;
+    }
   }
   /** Everything the achievement table can read, computed from state on demand. */
   private achievementMetrics(): AchievementMetrics {
@@ -608,7 +617,11 @@ export class SimWorld {
     this.deduct(definition.items); this.state.researched.push(id);
     if (id === 'logistics') this.state.capacity = Math.floor(this.state.capacity * 1.2);
     this.updateNeeds();
-    return this.success(`已掌握「${definition.name}」！${definition.unlocks.length ? '新的工坊蓝图已收入建造目录。' : definition.description}`, { coins: -definition.coins });
+    // When the tree runs out, the panel the player came here for has nothing left to offer.
+    // Say where the standing goes instead of leaving a dead end.
+    const finished = this.state.researched.length === TECHNOLOGY_KEYS.length;
+    if (finished) this.log(`手艺都学齐了。往后攒下的声望，可以投进下面的「小镇荣誉」。`, 'success');
+    return this.success(`已掌握「${definition.name}」！${finished ? '手艺已经全部学完，下面是留住声望的地方。' : definition.unlocks.length ? '新的工坊蓝图已收入建造目录。' : definition.description}`, { coins: -definition.coins });
   }
 
   placementIssue(x:number,y:number,movingId?:string): {code:string;message:string}|null {

@@ -15,7 +15,7 @@ import { neighbourNews } from '../sim/stories';
 import { ACHIEVEMENT_CATEGORY_NAMES } from '../sim/achievements';
 import { DESTINATIONS, DESTINATION_IDS as destinationIds, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from '../sim/destinations';
 import { COLLECTIONS } from '../sim/collections';
-import type { HonourTrackId } from '../sim/honours';
+import { HONOURS, HONOUR_TRACK_IDS, affordableHonours, honourLevelsTaken, type HonourTrackId } from '../sim/honours';
 import { GENERATED_ATLASES, atlasFrames, atlasSize, generatedSprite, housingLevelFrame } from '../sim/atlases';
 export const esc = (s: unknown) => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 export const fmt = (n:number)=>Math.floor(n).toLocaleString('zh-CN');
@@ -213,7 +213,11 @@ export class GameUI {
     this.html(this.root.querySelector('#time-controls')!,`<button data-action="speed" data-value="${this.speed===0?1:0}" class="${this.speed===0?'active':''}" aria-label="${this.speed===0?'继续游戏':'暂停游戏'}">${icon(this.speed===0?'play':'pause',15)}</button>${[1,2,4].map(n=>`<button data-action="speed" data-value="${n}" class="${this.speed===n?'active':''}" aria-label="${n} 倍速">${n}×</button>`).join('')}`);
     this.root.querySelector('#world-caption')!.textContent=this.buildKind?'为新的故事，留一块地方':this.speed===0?'时间暂停，慢慢想一想':ready?`${ready} 处收获，正在等你`:'春风正好，万物生长';
     this.root.querySelectorAll<HTMLElement>('.dock-button').forEach(b=>b.classList.toggle('selected',b.dataset.value===this.panel));
-    for(const key of ['quests','caravan','technology']){const el=this.root.querySelector(`#badge-${key}`) as HTMLElement;if(!el)continue;const n=key==='caravan'?Number(s.caravan.status==='returned'):0;el.hidden=!n;el.textContent=String(n);}
+    // Each badge answers "is there something in here for me right now?" — a finished goal to
+    // claim, a caravan to meet, or standing the town can spend. Two of these were wired to a
+    // constant zero, so the dock had the machinery and said nothing with it.
+    const badges:Record<string,number>={quests:s.quests.filter(q=>!q.claimed&&q.progress>=q.target).length,caravan:Number(s.caravan.status==='returned'),technology:affordableHonours(s.honours??{},s.prestige,s.level)};
+    for(const [key,n] of Object.entries(badges)){const el=this.root.querySelector(`#badge-${key}`) as HTMLElement;if(!el)continue;el.hidden=!n;el.textContent=String(n);}
     this.root.classList.toggle('panel-open',this.panel!==null);this.root.classList.toggle('building-mode',this.buildKind!==null||this.roadMode!==null);
     void total;
     if(this.panel&&Date.now()-this.lastPanelRender>1000)this.renderPanel();
@@ -480,7 +484,7 @@ export class GameUI {
     // so adding a technology cannot leave the page showing a stale list.
     const BRANCHES=[['industry','山野炉火','工业之路','ore'],['pastoral','麦穗与暖衣','田园之路','wool'],['town','把日子过好','小镇之路','home']] as const;
     const CHAINS:Record<string,Resource[]>={industry:['ore','ingot','tools'],pastoral:['feed','wool','cloth','clothing','milk','grape','wine'],town:[]};
-    return `<div class="research-intro"><div><span class="eyebrow">写给明天的小镇</span><h3>好手艺，让梦想生根。</h3><p>选一条喜欢的路，慢慢成为小镇的拿手好戏。</p></div><div class="prestige-pouch">${icon('star',27)}<b>${s.prestige}</b><small>可用声望</small></div></div><div class="research-ledger"><span>已掌握 <b>${s.researched.length} / ${TECHNOLOGY_KEYS.length}</b> 项手艺</span>${this.button('open','quests','做旅程任务，积攒声望',false,'text-button')}</div><div class="research-branches">${BRANCHES.map(([branch,title,subtitle,branchIcon])=>{
+    return `<div class="research-intro"><div><span class="eyebrow">写给明天的小镇</span><h3>好手艺，让梦想生根。</h3><p>选一条喜欢的路，慢慢成为小镇的拿手好戏。</p></div><div class="prestige-pouch">${icon('star',27)}<b>${s.prestige}</b><small>可用声望</small></div></div><div class="research-ledger"><span>已掌握 <b>${s.researched.length} / ${TECHNOLOGY_KEYS.length}</b> 项手艺 · 荣誉 <b>${honourLevelsTaken(s.honours??{})} / ${HONOUR_TRACK_IDS.reduce((n,id)=>n+HONOURS[id].levels.length,0)}</b> 级</span>${this.button('open','quests','做旅程任务，积攒声望',false,'text-button')}</div>${s.researched.length===TECHNOLOGY_KEYS.length?`<p class="research-done">${icon('check',14)} 手艺已经全部学完。往后攒下的声望，就投在下面的「小镇荣誉」里——三条线各八级，一级比一级贵，效果永久。</p>`:''}<div class="research-branches">${BRANCHES.map(([branch,title,subtitle,branchIcon])=>{
       const ids=TECHNOLOGY_KEYS.filter(id=>TECHNOLOGIES[id].branch===branch).sort((a,b)=>TECHNOLOGIES[a].level-TECHNOLOGIES[b].level);
       const keys=CHAINS[branch]??[];
       return `<section class="research-branch ${branch}-branch"><h3>${icon(branchIcon,20)} ${title} <small>${subtitle}</small></h3>${keys.length?chain(keys):''}${ids.map((id,i)=>`${i?`<div class="branch-thread">${icon('chevron',15)}</div>`:''}${node(id)}`).join('')}</section>`;
@@ -506,7 +510,7 @@ export class GameUI {
         ${next&&row.unlocked?this.button('deepen-honour',row.id,`${next.note} · ${next.cost}`,!affordable,'small-button'):''}
       </article>`;
     };
-    return `<section class="honour-section"><h3>${icon('star',20)} 小镇荣誉 <small>把攒下的声望，变成留得下的东西</small></h3>
+    return `<section class="honour-section" id="honours"><h3>${icon('star',20)} 小镇荣誉 <small>把攒下的声望，变成留得下的东西</small></h3>
       <p class="muted">声望不只是研究的手续费。每一条荣誉都能再做几级，一级比一级贵，效果永久保留。</p>
       <div class="honour-list">${rows.map(card).join('')}</div>
       <div class="research-ledger"><span>已投入 <b>${spent}</b> 级荣誉</span></div></section>`;

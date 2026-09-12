@@ -198,6 +198,25 @@ export function honourCommunity(progress: HonourProgress): number {
   return honourTotal(progress, 'welcome');
 }
 
+/**
+ * How many tracks the town could deepen right now — unlocked, not finished, and payable.
+ * This is what drives the "there is something in here" badge on the dock, so it has to be
+ * cheap and pure: the interface calls it on every frame, and the obvious alternative
+ * (`observe()`) recomputes needs and re-runs every progress pass.
+ */
+export function affordableHonours(progress: HonourProgress, prestige: number, level: number): number {
+  return HONOUR_TRACK_IDS.filter(id => {
+    if (level < HONOURS[id].unlockLevel) return false;
+    const next = nextHonourLevel(progress, id);
+    return next !== null && prestige >= next.cost;
+  }).length;
+}
+
+/** Every track's levels taken together, for the header line. */
+export function honourLevelsTaken(progress: HonourProgress): number {
+  return HONOUR_TRACK_IDS.reduce((total, id) => total + honourLevel(progress, id), 0);
+}
+
 /** Everything each track currently gives, for the interface. */
 export function honourSummary(progress: HonourProgress): { id: HonourTrackId; level: number; max: number; earned: number; next: HonourOffer | null }[] {
   return HONOUR_TRACK_IDS.map(id => {
