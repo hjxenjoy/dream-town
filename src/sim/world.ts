@@ -566,17 +566,17 @@ export class SimWorld {
     const track = HONOURS[id];
     if (!track) return this.fail('没有这项荣誉。', 'UNKNOWN_HONOUR');
     if (this.state.level < track.unlockLevel) return this.fail(`小镇达到 ${track.unlockLevel} 级之后，邻居才会认这份荣誉。`, 'HONOUR_LOCKED');
-    const level = nextHonourLevel(this.state.honours ?? {}, id);
-    if (!level) return this.fail(`「${track.name}」已经做到头了。`, 'HONOUR_COMPLETE');
-    if (this.state.prestige < level.cost) return this.fail(`还需要 ${level.cost - this.state.prestige} 点声望。`, 'INSUFFICIENT_PRESTIGE');
+    const offer = nextHonourLevel(this.state.honours ?? {}, id);
+    if (!offer) return this.fail(`「${track.name}」已经做到头了。`, 'HONOUR_COMPLETE');
+    if (this.state.prestige < offer.cost) return this.fail(`还需要 ${offer.cost - this.state.prestige} 点声望。`, 'INSUFFICIENT_PRESTIGE');
 
-    this.state.prestige -= level.cost;
+    this.state.prestige -= offer.cost;
     const honours = this.state.honours ?? (this.state.honours = {});
     honours[id] = honourLevel(honours, id) + 1;
     // Capacity is a stored figure, so the one effect that changes it is applied on purchase.
-    if (id === 'granary') this.state.capacity += level.value;
+    if (id === 'granary') this.state.capacity += offer.value;
     this.updateNeeds();
-    return this.success(`${track.name}第 ${honours[id]} 级：${level.note}。`);
+    return this.success(`${track.name}第 ${honours[id]} 级：${offer.note}。`);
   }
 
   isUnlocked(kind: BuildingKind): boolean {

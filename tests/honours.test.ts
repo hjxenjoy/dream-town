@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { GAME_DAY_SECONDS, RESOURCE_KEYS, TECHNOLOGIES, TECHNOLOGY_KEYS } from '../src/sim/data.ts';
-import { HONOURS, HONOUR_TRACK_IDS, honourCapacity, honourCommunity, honourCycleFactor, honourLevel, honourSpent, honourSummary, nextHonourLevel } from '../src/sim/honours.ts';
+import { HONOURS, HONOUR_COST_BASE, HONOUR_COST_GROWTH, HONOUR_TRACK_IDS, honourCapacity, honourCommunity, honourCycleFactor, honourLevel, honourLevelCost, honourSpent, honourSummary, nextHonourLevel } from '../src/sim/honours.ts';
 import { ACHIEVEMENTS } from '../src/sim/achievements.ts';
 import { COLLECTIONS, COLLECTION_IDS } from '../src/sim/collections.ts';
 import { STORIES } from '../src/sim/stories.ts';
@@ -30,11 +30,12 @@ test('every honour track is well formed and its price rises', () => {
     assert.ok(Number.isInteger(track.unlockLevel) && track.unlockLevel > 0, `${id} opens at a real level`);
     assert.ok(track.unit.length > 0, `${id} says what it is measured in`);
     let previous = 0;
-    for (const level of track.levels) {
-      assert.ok(level.cost > previous, `${id} costs more each level: ${level.cost} after ${previous}`);
+    for (const [index, level] of track.levels.entries()) {
+      const cost = honourLevelCost(index);
+      assert.ok(cost > previous, `${id} costs more each level: ${cost} after ${previous}`);
       assert.ok(level.value > 0, `${id} gives something at every level`);
       assert.ok(level.note.length > 0, `${id} describes what the town did`);
-      previous = level.cost;
+      previous = cost;
     }
   }
   // Distinct names, so the panel never shows two of the same thing.
@@ -46,7 +47,7 @@ test('the honours are priced against the standing the town actually earns', () =
   // sink the standing that everything else pays becomes inert. The sink must be able to
   // absorb a completionist's surplus, and must not be so cheap that it is bought out at once.
   const research = TECHNOLOGY_KEYS.reduce((total, id) => total + TECHNOLOGIES[id].prestige, 0);
-  const sink = HONOUR_TRACK_IDS.reduce((total, id) => total + HONOURS[id].levels.reduce((sum, level) => sum + level.cost, 0), 0);
+  const sink = HONOUR_TRACK_IDS.reduce((total, id) => total + HONOURS[id].levels.reduce((sum, _level, index) => sum + honourLevelCost(index), 0), 0);
   const supply = ACHIEVEMENTS.reduce((total, entry) => total + entry.prestige, 0)
     + COLLECTION_IDS.reduce((total, id) => total + COLLECTIONS[id].tiers.reduce((sum, _tier, index) => sum + 4 * (index + 1), 0), 0)
     + STORIES.reduce((total, story) => total + story.stages.reduce((sum, stage) => sum + Math.max(0, ...stage.choices.map(choice => choice.effect.prestige ?? 0)), 0), 0);
@@ -55,6 +56,83 @@ test('the honours are priced against the standing the town actually earns', () =
   assert.ok(sink <= supply * 2, `and does not dwarf it: ${sink} of ${supply}`);
   // Research must still be a real price, not a rounding error next to the sink.
   assert.ok(research >= sink * 0.3, `research still matters: ${research} against a ${sink} sink`);
+});
+
+test('the price curve is geometric, as the idle-game cost model prescribes', () => {
+  // Pecorella ("The Math of Idle Games", GDC Europe 2016): a generator's price grows
+  // exponentially while its output grows only linearly — cost(n) = base * growth^n against
+  // output(n) = value * n. The widening gap between the two is what makes "when do I stop"
+  // a real decision instead of a formality. Cookie Clicker uses 1.15 per purchase with a flat
+  // +1% per prestige level; four levels need a steeper ratio to reach the same effect.
+  const costs = HONOURS.granary.levels.map((_level, index) => honourLevelCost(index));
+  assert.equal(costs.join(','), '6,9,13,18', 'the curve reproduces the published table');
+  assert.equal(HONOUR_COST_BASE, 6);
+  assert.equal(HONOUR_COST_GROWTH, 1.45);
+
+  // Geometrically: each level is dearer than the last by close to the same factor, and the
+  // last level costs several times the first.
+  const ratios = costs.slice(1).map((cost, index) => cost / costs[index]!);
+  for (const ratio of ratios) assert.ok(Math.abs(ratio - HONOUR_COST_GROWTH) < 0.12, `step ratio ${ratio} tracks the growth rate`);
+  assert.ok(Math.min(...ratios) > 1, 'the price never stops rising');
+  assert.ok(costs[costs.length - 1]! >= costs[0]! * 2.5, `the last level is a real step up: ${costs[0]} → ${costs[costs.length - 1]}`);
+
+  // Linearly: the effect does not grow with the price, so value per point spent falls.
+  const values = HONOURS.granary.levels.map(level => level.value);
+  assert.equal(new Set(values).size, 1, 'every level gives the same flat amount');
+  const perPoint = costs.map((cost, index) => values[index]! / cost);
+  for (let index = 1; index < perPoint.length; index++) {
+    assert.ok(perPoint[index]! < perPoint[index - 1]!, `level ${index + 1} buys less per point than level ${index}`);
+  }
+
+  // Every track follows the same curve, so their prices are comparable.
+  for (const id of HONOUR_TRACK_IDS) {
+    assert.equal(HONOURS[id].levels.length, HONOURS.granary.levels.length, `${id} has the same number of levels`);
+    assert.equal(nextHonourLevel({}, id)!.cost, costs[0], `${id} opens at the base price`);
+    assert.equal(honourSpent({ [id]: HONOURS[id].levels.length }), costs.reduce((a, b) => a + b, 0));
+  }
+  // A complete track costs the same as any other, so no track is cheaper to finish.
+  const totals = HONOUR_TRACK_IDS.map(id => honourSpent({ [id]: HONOURS[id].levels.length }));
+  assert.equal(new Set(totals).size, 1, `all tracks cost the same to finish: ${totals.join(',')}`);
+});
+
+test('no track is imperceptible, and none dominates the others', () => {
+  // The source article warns about both failure modes directly: an option whose benefit the
+  // player cannot feel "doesn't seem worth purchasing", and an option that is always the best
+  // "removes any interesting decisions". Both would turn a three-way choice into a fake one.
+  // Baselines are the measured values from a developed town, not the starting ones.
+  const CAPACITY_BASELINE = 240;   // starting and typical warehouse capacity
+  const COMMUNITY_BASELINE = 35;   // measured community capacity in a developed town (30–46)
+  const full = (id: (typeof HONOUR_TRACK_IDS)[number]) => honourSpent({ [id]: HONOURS[id].levels.length });
+  assert.equal(full('granary'), full('craft'), 'the three tracks cost the same to complete');
+  assert.equal(full('craft'), full('welcome'));
+
+  const share = {
+    // Storage: the whole bonus as a fraction of the capacity it sits on top of.
+    granary: honourCapacity({ granary: HONOURS.granary.levels.length }) / CAPACITY_BASELINE,
+    // Throughput: shortening a cycle by p% raises output by 1/(1-p) - 1, which is how a player
+    // actually feels it.
+    craft: 1 / honourCycleFactor({ craft: HONOURS.craft.levels.length }) - 1,
+    welcome: honourCommunity({ welcome: HONOURS.welcome.levels.length }) / COMMUNITY_BASELINE,
+  };
+
+  // Perceptible: the smallest real cycle is 30s, so a track worth under ~8% of its baseline
+  // would move it by a second or two per cycle — technically there, practically invisible.
+  for (const [id, value] of Object.entries(share)) {
+    assert.ok(value >= 0.10, `${id} is worth at least a tenth of its baseline: ${(value * 100).toFixed(1)}%`);
+  }
+  // Comparable: none is so strong that the others become pointless. A factor of two still
+  // leaves a genuine choice, because the three relieve different bottlenecks.
+  const values = Object.values(share);
+  assert.ok(Math.max(...values) / Math.min(...values) < 2.2, `the tracks are within one band: ${values.map(v => (v * 100).toFixed(0) + '%').join(' / ')}`);
+
+  // And they relieve three different pressures, which is what makes the choice situational
+  // rather than a ranking: storage, throughput, and room for people.
+  assert.ok(honourCapacity({ granary: 1 }) > 0, 'granary relieves storage');
+  assert.ok(honourCycleFactor({ craft: 1 }) < 1, 'craft relieves throughput');
+  assert.ok(honourCommunity({ welcome: 1 }) > 0, 'welcome relieves the community ceiling');
+  assert.equal(honourCapacity({ craft: 4 }), 0, 'and no track secretly does another one\'s job');
+  assert.equal(honourCommunity({ craft: 4 }), 0);
+  assert.equal(honourCycleFactor({ granary: 4 }), 1);
 });
 
 test('a track cannot be deepened before its level, and nothing changes when refused', () => {
@@ -78,7 +156,7 @@ test('each deepening costs exactly the listed price and records the level', () =
   for (const [index, level] of HONOURS.granary.levels.entries()) {
     const result = w.deepenHonour('granary');
     assert.equal(result.ok, true, result.message);
-    expected -= level.cost;
+    expected -= honourLevelCost(index);
     assert.equal(w.state.prestige, expected, `level ${index + 1} charged ${level.cost}`);
     assert.equal(honourLevel(w.state.honours!, 'granary'), index + 1);
   }
@@ -97,7 +175,7 @@ test('too little standing is refused without spending any', () => {
   assert.equal(refused.code, 'INSUFFICIENT_PRESTIGE');
   assert.equal(JSON.stringify(w.state), before, 'nothing is spent, not even partially');
   // With exactly enough it goes through.
-  w.state.prestige = HONOURS.granary.levels[0]!.cost;
+  w.state.prestige = honourLevelCost(0);
   assert.equal(w.deepenHonour('granary').ok, true);
   assert.equal(w.state.prestige, 0);
 });
@@ -188,9 +266,9 @@ test('the tool surface reports each track with its price and effect', () => {
   assert.equal(craft.unlockLevel, HONOURS.craft.unlockLevel);
   assert.ok(craft.level <= craft.max, 'the bought level can never exceed the track');
   assert.equal(craft.max, HONOURS.craft.levels.length);
-  assert.equal(craft.next!.cost, HONOURS.craft.levels[1]!.cost);
+  assert.equal(craft.next!.cost, honourLevelCost(1));
   assert.ok(craft.earned > 0, 'what it has given so far is reported');
-  assert.equal(honourSpent(w.state.honours!), HONOURS.craft.levels[0]!.cost, 'and so is what it cost');
+  assert.equal(honourSpent(w.state.honours!), honourLevelCost(0), 'and so is what it cost');
   for (const row of rows) assert.ok(row.name.length > 0 && row.unit.length > 0);
 });
 
@@ -212,7 +290,7 @@ test('honours are optional depth: every effect is bounded and the town runs with
   const w = town(12, 100000);
   for (const id of HONOUR_TRACK_IDS) for (let i = 0; i < HONOURS[id].levels.length; i++) w.deepenHonour(id);
   // Even bought out entirely, the stacked bonuses stay modest.
-  assert.ok(honourCycleFactor(w.state.honours!) >= 0.9, 'production time falls by less than a tenth');
+  assert.ok(honourCycleFactor(w.state.honours!) >= 0.85, 'production time falls by less than a sixth');
   assert.ok(w.state.capacity <= 240 + 40, `capacity grows by at most the listed amount: ${w.state.capacity}`);
   assert.ok(honourCommunity(w.state.honours!) <= 12, 'the community widens by a bounded amount');
   // And a town that spends nothing behaves exactly as before.
