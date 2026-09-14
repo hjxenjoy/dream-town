@@ -39,7 +39,7 @@ export const PARTS: Record<PartOfDay, PartDefinition> = {
   night: { name: '夜里', note: '灯火稀疏，大家都歇下了。' },
   morning: { name: '清晨', note: '街上刚醒，作坊陆续生火。' },
   work: { name: '白天', note: '作坊开着，工匠们各自忙活。' },
-  evening: { name: '傍晚', note: '下手了，人们顺着路回家。' },
+  evening: { name: '傍晚', note: '下工了，人们顺着路回家。' },
 };
 
 /** Hours since the town was founded, as a decimal (13.5 is half past one in the afternoon). */

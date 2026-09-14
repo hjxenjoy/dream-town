@@ -1,10 +1,10 @@
 /** Short names for the two construction materials, used in costs and refusals. */
 export const RESOURCE_LABELS: Record<'wood' | 'stone', string> = { wood: '木材', stone: '石料' };
 
-export type Resource = 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage';
+export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage';
 export type ResourceMap = Record<Resource, number>;
 export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
-export type BuildingKind = 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'flowercart' | 'picniccorner' | 'harvestpile';
+export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile';
 
 export interface BuildingDefinition {
   name: string;
@@ -17,6 +17,7 @@ export interface BuildingDefinition {
   technology?: TechnologyId;
   materials?: Partial<ResourceMap>;
   cycle?: number;
+  autoCollect?: boolean;
   input?: Partial<ResourceMap>;
   output?: Partial<ResourceMap>;
   workers?: number;
@@ -24,6 +25,10 @@ export interface BuildingDefinition {
   housing?: number;
   populationCap?: number;
   services?: number;
+  /** Residents this building keeps well, at one per resident. */
+  health?: number;
+  /** Households this building gives a settled, believing life to. */
+  faith?: number;
   waterRadius?: number;
   fireRadius?: number;
   preserveWood?: boolean;
@@ -31,12 +36,18 @@ export interface BuildingDefinition {
 
 /** The same definitions drive the simulation, catalog and tool descriptions. */
 export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
+  flowernursery:{name:'四季花圃',description:'自动培育并收好花束，为花色养成留下一份积累。',category:'production',cost:360,wood:12,stone:4,frame:null,cycle:65,output:{flowers:3},workers:1,environment:4,autoCollect:true},
+  orchardhouse:{name:'果园小屋',description:'照看一片小果园，自动采收鲜果，供果酱坊加工。',category:'production',cost:480,wood:16,stone:6,frame:null,cycle:75,output:{fruit:5},workers:1,autoCollect:true},
+  chickencoop:{name:'咯咯鸡舍',description:'自动用一袋饲料照顾鸡群，收好三枚鸡蛋；没有饲料时歇一歇。',category:'production',cost:300,wood:12,stone:3,frame:null,cycle:45,input:{feed:1},output:{eggs:3},workers:1,autoCollect:true},
+  jamkitchen:{name:'甜果果酱坊',description:'自动将三份鲜果熬成两罐果酱。果酱为邻居添一份闲适，也可出售。',category:'production',cost:620,wood:18,stone:12,frame:null,cycle:55,input:{fruit:3},output:{jam:2},workers:1,autoCollect:true},
+  teahouse:{name:'河畔茶屋',description:'邻居歇脚聊天的地方，每级提供六个社区名额与十点服务。',category:'services',cost:720,wood:18,stone:10,frame:null,populationCap:6,services:10,environment:5},
+  homestead:{name:'花窗农庄',description:'带庭院、花窗与晾衣角的农庄住宅，每级提供十个床位。',category:'homes',cost:680,wood:20,stone:12,frame:null,housing:10,environment:5},
   mine: { name: '赤岩矿场', description: '循着山石里的赤色纹路，每轮开采 5 份矿石。冶炼产业从这里起步。', category: 'production', cost: 520, wood: 14, stone: 12, frame: 0, technology: 'mining', cycle: 38, output: { ore: 5 }, workers: 2 },
   kiln: { name: '松烟炭窑', description: '将 2 份木材烧成 2 份木炭，自动保留建造用木材，为炉火准备燃料。', category: 'production', cost: 380, wood: 12, stone: 10, frame: 1, technology: 'mining', cycle: 32, input: { wood: 2 }, output: { charcoal: 2 }, workers: 1, preserveWood: true },
   smelter: { name: '炉光冶炼坊', description: '用 5 份矿石与 2 份木炭冶炼 1 块金属锭，点亮小镇的工业梦想。', category: 'production', cost: 860, wood: 18, stone: 24, materials: { materials: 3 }, frame: 2, technology: 'metallurgy', cycle: 60, input: { ore: 5, charcoal: 2 }, output: { ingot: 1 }, workers: 2 },
   smithy: { name: '叮当铁匠铺', description: '将 1 块金属锭和 2 块木板打造成 2 套工具。工具可出口，也用于研究精工技术。', category: 'production', cost: 920, wood: 20, stone: 18, materials: { materials: 3 }, frame: 3, technology: 'metallurgy', cycle: 48, input: { ingot: 1, plank: 2 }, output: { tools: 2 }, workers: 2 },
   feedmill: { name: '谷穗饲料坊', description: '将 3 份小麦配成 4 袋饲料，给牧场的小羊准备一顿饱饭。', category: 'production', cost: 340, wood: 12, stone: 6, frame: 4, technology: 'husbandry', cycle: 28, input: { wheat: 3 }, output: { feed: 4 }, workers: 1 },
-  pasture: { name: '绵绵牧场', description: '照顾小羊，每轮消耗 2 袋饲料，剪下 3 团柔软羊毛。', category: 'production', cost: 460, wood: 18, stone: 6, frame: 5, technology: 'husbandry', cycle: 40, input: { feed: 2 }, output: { wool: 3 }, workers: 1 },
+  pasture: { name: '绵绵牧场', description: '先用 2 袋口粮照料小羊 120 秒，成年后每轮用 2 袋饲料产出 3 团羊毛，自动收好。', category: 'production', cost: 460, wood: 18, stone: 6, frame: 5, technology: 'husbandry', cycle: 40, input: { feed: 2 }, output: { wool: 3 }, workers: 1, autoCollect: true },
   weaver: { name: '蓝梭织布坊', description: '把 3 团羊毛织成 2 卷布料，接着交给裁缝，或用于改良仓储。', category: 'production', cost: 640, wood: 20, stone: 12, materials: { materials: 2 }, frame: 6, technology: 'tailoring', cycle: 42, input: { wool: 3 }, output: { cloth: 2 }, workers: 2 },
   tailor: { name: '暖衣裁缝铺', description: '用 2 卷布料缝制 2 件衣物，让小镇的手艺走进邻居的生活。', category: 'production', cost: 760, wood: 18, stone: 14, materials: { materials: 2 }, frame: 7, technology: 'tailoring', cycle: 48, input: { cloth: 2 }, output: { clothing: 2 }, workers: 2 },
   farmhouse: { name: '田园小院', description: '带小庭院的乡间住宅，每级提供 8 个床位与 3 点环境值。适合低密度的田园街区。', category: 'homes', cost: 460, wood: 14, stone: 8, frame: null, housing: 8, environment: 3 },
@@ -47,8 +58,9 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
   fishpond: { name: '碧水养鱼场', description: '用 3 袋饲料养出 8 条鲜鱼，四季稳定供应口粮，让麦田也能养活更多邻居。', category: 'production', cost: 580, wood: 14, stone: 10, frame: null, technology: 'husbandry', cycle: 40, input: { feed: 3 }, output: { fish: 8 }, workers: 1 },
   brickworks: { name: '窑火建材坊', description: '将 6 份石料和 1 份木炭制成 1 包建材，补充商队带回的物资，支持住宅与市政扩建。', category: 'production', cost: 980, wood: 14, stone: 24, frame: null, technology: 'mining', cycle: 65, input: { stone: 6, charcoal: 1 }, output: { materials: 1 }, workers: 2 },
   school: { name: '晨读小学', description: '铃声响起，孩子们有了课堂。每级增加 12 位社区人口名额与 18 点社区服务。', category: 'services', cost: 1100, wood: 20, stone: 18, materials: { materials: 5 }, frame: null, populationCap: 12, services: 18 },
-  clinic: { name: '安心诊所', description: '照顾邻居的日常健康。每级增加 10 位社区人口名额与 25 点社区服务。', category: 'services', cost: 900, wood: 12, stone: 20, materials: { materials: 4 }, frame: null, populationCap: 10, services: 25 },
+  clinic: { name: '安心诊所', description: '照顾邻居的日常健康。每级让 10 位居民康健，并增加 10 位社区人口名额与 25 点社区服务。', category: 'services', cost: 900, wood: 12, stone: 20, materials: { materials: 4 }, frame: null, populationCap: 10, services: 25, health: 10 },
   theatre: { name: '星幕小剧院', description: '灯光与戏剧丰富夜晚。每级增加 16 位社区人口名额、30 点社区服务与 5 点环境值。', category: 'services', cost: 1800, wood: 24, stone: 28, materials: { materials: 8 }, frame: null, technology: 'civics', populationCap: 16, services: 30, environment: 5 },
+  chapel: { name: '河畔小教堂', description: '钟声安顿人心。每级为 14 户邻居带来信仰与安定的生活，并增加 8 位社区人口名额。', category: 'services', cost: 1500, wood: 22, stone: 26, materials: { materials: 6 }, frame: null, populationCap: 8, faith: 14 },
   watertower: { name: '蓝顶供水塔', description: '为半径 7 格内的住宅供水，每次升级扩大 1 格，适合扩张中的住宅区。', category: 'services', cost: 780, wood: 10, stone: 24, materials: { materials: 3 }, frame: null, waterRadius: 7 },
   firestation: { name: '赤砖消防站', description: '守护半径 7 格内的建筑，每次升级扩大 1 格，让工业区也能安心生产。', category: 'services', cost: 1050, wood: 16, stone: 24, materials: { materials: 4 }, frame: null, technology: 'metallurgy', fireRadius: 7 },
   cottage: { name: '林间小屋', description: '温暖的新家，提供 6 个床位。居民幸福、粮食充足时会迎来新邻居。', category: 'homes', cost: 320, wood: 12, stone: 5, frame: 0, housing: 6 },
@@ -83,7 +95,7 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
   barrels: { name: '橡木酒桶', description: '两只旧木桶，摆在酒坊和市集旁正合适。环境 +4。', category: 'decoration', cost: 75, wood: 5, stone: 1, frame: null, environment: 4 },
   anvil: { name: '旧铁砧', description: '退役的铁砧与木墩，铁匠铺门口的老伙计。环境 +5。', category: 'decoration', cost: 90, wood: 2, stone: 3, frame: null, environment: 5 },
   signflags: { name: '彩旗招牌', description: '挂着彩旗的木招牌，让街口一眼就认得出。环境 +6。', category: 'decoration', cost: 105, wood: 5, stone: 1, frame: null, environment: 6 },
-  cowbarn: { name: '青草牛舍', description: '用 2 袋饲料养出一桶鲜奶，乳品手艺从这里开始。', category: 'production', cost: 520, wood: 16, stone: 8, frame: null, technology: 'husbandry', cycle: 34, input: { feed: 2 }, output: { milk: 4 }, workers: 1 },
+  cowbarn: { name: '青草牛舍', description: '先用 2 袋口粮照料小牛 150 秒，成年后每轮用 2 袋饲料产出 4 份鲜奶，自动收好。', category: 'production', cost: 520, wood: 16, stone: 8, frame: null, technology: 'husbandry', cycle: 34, input: { feed: 2 }, output: { milk: 4 }, workers: 1, autoCollect: true },
   dairy: { name: '山泉奶坊', description: '把 4 桶鲜奶做成 2 块奶酪，存放越久越值钱。', category: 'production', cost: 780, wood: 18, stone: 14, materials: { materials: 2 }, technology: 'husbandry', frame: null, cycle: 42, input: { milk: 4 }, output: { cheese: 2 }, workers: 2 },
   apiary: { name: '百花蜂场', description: '沿着花田放蜂箱，每轮自然采集 3 罐蜂蜜，不需要原料。', category: 'production', cost: 360, wood: 12, stone: 4, frame: null, technology: 'husbandry', cycle: 30, output: { honey: 3 }, workers: 1 },
   vineyard: { name: '南坡葡萄园', description: '向阳的坡地适合种葡萄，每轮自然结出 6 串。', category: 'production', cost: 460, wood: 14, stone: 6, frame: null, technology: 'viniculture', cycle: 38, output: { grape: 6 }, workers: 1 },
@@ -96,6 +108,7 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
 };
 
 export const RESOURCES: Record<Resource, { name: string; icon: string; sellPrice: number }> = {
+  flowers:{name:'花束',icon:'flowers',sellPrice:6},fruit:{name:'鲜果',icon:'fruit',sellPrice:4},eggs:{name:'鸡蛋',icon:'eggs',sellPrice:5},jam:{name:'果酱',icon:'jam',sellPrice:10},
   ore: { name: '矿石', icon: 'ore', sellPrice: 5 },
   charcoal: { name: '木炭', icon: 'charcoal', sellPrice: 7 },
   ingot: { name: '金属锭', icon: 'ingot', sellPrice: 60 },
@@ -120,7 +133,7 @@ export const RESOURCES: Record<Resource, { name: string; icon: string; sellPrice
   vintage: { name: '陈年佳酿', icon: 'vintage', sellPrice: 60 },
 };
 
-export const RESOURCE_KEYS = ['wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage'] as Resource[];
+export const RESOURCE_KEYS = ['flowers','fruit','eggs','jam','wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage'] as Resource[];
 export const BUILDING_KEYS = Object.keys(BUILDINGS) as BuildingKind[];
 export { MAP_SIZE } from './terrain.ts';
 export const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
@@ -132,10 +145,137 @@ export const TAX_RATES = [0, 5, 10, 15, 20] as const;
 export const TAX_NAMES = ['免税', '轻税', '均衡', '高税', '重税'] as const;
 export const SEASON_NAMES = { spring: '春日', summer: '盛夏', autumn: '金秋', winter: '冬日' } as const;
 
+/**
+ * Bulk commissions: the periodic, multi-good order that 《06》§1 designed as a step above the
+ * ordinary board. One arrives every eight game days once the town is big enough to fill it,
+ * and asking for several kinds at volume makes it a job rather than a formality.
+ */
+export const BULK_ORDER_INTERVAL = GAME_DAY_SECONDS * 8;
+/**
+ * How long a commission waits before the trading company withdraws it.
+ *
+ * A commission cannot be cancelled, and only one is on the board at a time, so a request the
+ * town cannot actually fill — because residents wear more clothes than its tailors sew, because
+ * a chain is short of workers, or because of some recipe added later — would sit there forever
+ * and block every later commission. Rather than trying to predict each way a good can turn out
+ * to be unreachable, the board is allowed to clear itself: after three intervals the company
+ * takes its business elsewhere. Bounded failure beats an unbounded assumption.
+ */
+export const BULK_ORDER_PATIENCE = BULK_ORDER_INTERVAL * 3;
+export const BULK_ORDER_UNLOCK_LEVEL = 6;
+/**
+ * Pays a little better per item than an ordinary order (2.8×) and clearly worse than a
+ * caravan run (4.4×), so filling it is a good use of a surplus but never the best one.
+ */
+export const BULK_ORDER_RATIO = 3.2;
+/**
+ * The smallest amount a commission asks of each good.
+ *
+ * It is also the floor a town must be able to *stock* before a good is eligible: workshops rest
+ * once a good reaches its stock target, which is fixed by how much warehouse space the town
+ * has, so a small town cannot accumulate 8 of anything whose target is lower — and a commission
+ * naming such a good could never be filled. See `generateBulkOrder`.
+ */
+export const BULK_ORDER_MIN = 8;
+
+/**
+ * A town kept well recovers faster from anything that hurts its mood: good health buys back
+ * part of the tax penalty a high rate would otherwise cost, which is the concrete decision
+ * 《05》's L4 layer was meant to feed.
+ */
+export const HEALTH_TAX_RELIEF = 0.4;
+
+/**
+ * Hazard resistance bought by looking after people. At full health repairs are cheaper, at
+ * none they cost what they always did — so a town without a clinic is exactly where it was,
+ * not worse off. Capped well below 1 so a well-run town still has to pay for its mistakes.
+ */
+export const HEALTH_REPAIR_RELIEF = 0.3;
+
 export function emptyResources(): ResourceMap {
-  return { ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0 };
+  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0 };
 }
 
+/**
+ * How many residents one unit of finished goods serves each day. Rations already work this
+ * way; these two finish the layers the design calls 温饱 and 小康, so the deepest chains have
+ * somewhere to go besides the market and the caravan.
+ */
+export const CLOTHING_RESIDENTS_PER_UNIT = 8;
+export const LUXURY_RESIDENTS_PER_UNIT = 10;
+
+/** Enjoyed by residents, drawn cheapest first so a rare vintage is left for trade. */
+export const LEISURE_GOODS: Resource[] = ['jam', 'honey', 'cheese', 'wine', 'vintage'];
+
+/**
+ * The most happiness a well-dressed, well-supplied town gains. It is a bonus and never a
+ * penalty: a town without clothes is exactly where it was, not below it.
+ */
+export const CARE_BONUS = 8;
+
+/** What one day of getting dressed and enjoying a little costs a town of this size. */
+export function dailyGoods(population: number): { clothing: number; luxury: number } {
+  const people = Math.max(0, Math.floor(population));
+  return { clothing: Math.ceil(people / CLOTHING_RESIDENTS_PER_UNIT), luxury: Math.ceil(people / LUXURY_RESIDENTS_PER_UNIT) };
+}
+
+/**
+ * How well the town keeps its people in clothes and small comforts, 0–100, each measured
+ * against a three-day reserve — the same shape as rations, so one number still answers
+ * "am I stocked?".
+ */
+export function careNeeds(resources: ResourceMap, population: number): { comfort: number; leisure: number } {
+  const goods = dailyGoods(population);
+  const luxury = LEISURE_GOODS.reduce((total, key) => total + resources[key], 0);
+  // Both are measured against a three-day reserve, the same shape rations already use.
+  const comfort = Math.min(100, Math.max(0, resources.clothing / Math.max(1, goods.clothing * 3) * 100));
+  const leisure = Math.min(100, Math.max(0, luxury / Math.max(1, goods.luxury * 3) * 100));
+  return { comfort, leisure };
+}
+
+
+/**
+ * How much dearer than the town's own selling price the traveller's market is, per unit.
+ *
+ * Steep on purpose: like the emergency repair price, this is a way out of a shortage, never a
+ * way to make a living. It must also clear the best-paying thing a good can be turned into, so
+ * that a purchase can never be laundered into profit — see MARKET_GOODS for why that bound is
+ * met structurally rather than by this number alone.
+ */
+export const MARKET_MARKUP = 18;
+
+/**
+ * Goods that nothing else in the town consumes — the finished articles a trading company
+ * would actually order.
+ *
+ * Derived from the recipe book rather than listed by hand, because the distinction matters:
+ * anything consumed by a downstream workshop (wool, cloth, flour, planks…) is drained as fast
+ * as it is made by a town that is still working toward its stock targets, so an order asking
+ * for those in bulk could be structurally impossible to fill. Terminal goods are never
+ * drained, so stockpiling them always works.
+ */
+export const TERMINAL_GOODS: Resource[] = RESOURCE_KEYS.filter(key =>
+  key !== 'materials' && !BUILDING_KEYS.some(kind => (BUILDINGS[kind].input?.[key] ?? 0) > 0));
+
+/**
+ * What the traveller's market will sell in — the same finished articles a trading company
+ * orders, because those are the only goods a purchase cannot be turned into profit with.
+ *
+ * This started as the opposite: raw materials and intermediates, which is the more obvious
+ * thing for a market to stock. It was a money press. A bought input is not worth its shelf
+ * price to a town that can process it, and workshops multiply their output by level — at level
+ * three the wheat-to-clothing chain amplifies a purchase by **x266**, against a markup of 18.
+ * A price high enough to cover that (over 500 coins for a single wheat) would make the feature
+ * pointless, and any price-based guard can be defeated again the next time a recipe or a level
+ * curve changes. Selling only goods that nothing consumes removes the loop by construction:
+ * their amplification is exactly 1, so the markup only has to beat resale, the caravan and the
+ * order board — all of which pay well under 18x.
+ *
+ * It also happens to be what the original design asked for: 《03》 describes the market as
+ * buying scarce *tools*, not raw materials. A town that is short of an ingredient builds the
+ * workshop that makes it; that is the game.
+ */
+export const MARKET_GOODS: Resource[] = TERMINAL_GOODS;
 
 export type TechnologyId = 'mining' | 'metallurgy' | 'husbandry' | 'tailoring' | 'viniculture' | 'efficiency' | 'logistics' | 'civics';
 export interface TechnologyDefinition {
@@ -163,7 +303,7 @@ export const TECHNOLOGIES: Record<TechnologyId, TechnologyDefinition> = {
 export const TECHNOLOGY_KEYS = Object.keys(TECHNOLOGIES) as TechnologyId[];
 export const INDUSTRY_KINDS: BuildingKind[] = ['mine', 'kiln', 'smelter', 'smithy', 'feedmill', 'pasture', 'weaver', 'tailor'];
 // Stable source-to-product order used by offline settlement.
-export const PRODUCTION_SEQUENCE: BuildingKind[] = ['lumber', 'forester', 'quarry', 'farm', 'fishery', 'apiary', 'vineyard', 'mine', 'kiln', 'sawmill', 'windmill', 'feedmill', 'fishpond', 'bakery', 'pasture', 'cowbarn', 'smelter', 'brickworks', 'dairy', 'weaver', 'winery', 'smithy', 'cellar', 'tailor'];
+export const PRODUCTION_SEQUENCE: BuildingKind[] = ['flowernursery','orchardhouse','jamkitchen','lumber', 'forester', 'quarry', 'farm', 'fishery', 'apiary', 'vineyard', 'mine', 'kiln', 'sawmill', 'windmill', 'feedmill', 'chickencoop', 'fishpond', 'bakery', 'pasture', 'cowbarn', 'smelter', 'brickworks', 'dairy', 'weaver', 'winery', 'smithy', 'cellar', 'tailor'];
 export const INDUSTRY_FRAMES = {
   mine: { x: 0, y: 0, w: 440, h: 435 }, kiln: { x: 443, y: 0, w: 440, h: 435 },
   smelter: { x: 888, y: 0, w: 441, h: 439 }, smithy: { x: 1332, y: 0, w: 442, h: 435 },

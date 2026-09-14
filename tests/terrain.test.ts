@@ -9,7 +9,7 @@ test('the expanded valley has buildable areas in all four districts and on both 
   for(let x=1;x<=46;x++)for(let y=1;y<=46;y++)if(terrainAt(x,y)==='land')counts[districtAt(x,y)]++;
   for(const id of DISTRICT_KEYS)assert.ok(counts[id]>256,`${id} is larger than the previous entire town`);
   assert.ok(Object.values(counts).reduce((a,b)=>a+b,0)>1800);
-  assert.equal(terrainAt(46,40),'land');assert.equal(terrainAt(48,40),'outside');
+  assert.equal(terrainAt(46,40),'land');assert.equal(terrainAt(65,40),'outside');
 });
 
 test('the river is continuous, with two reserved bridge crossings and northern mountains',()=>{
@@ -19,7 +19,7 @@ test('the river is continuous, with two reserved bridge crossings and northern m
 
 test('construction and relocation reject water, bridges and peaks without charging or losing progress',()=>{
   const world=new SimWorld(),building=world.state.buildings.find(b=>b.kind==='cottage')!;
-  for(const [x,y] of [[22,25],[Math.round(riverX(15)),15],[35,3],[0,3],[47,40]]){
+  for(const [x,y] of [[22,25],[Math.round(riverX(15)),15],[35,3],[0,3],[65,40]]){
     const before=JSON.stringify(world.state);
     assert.equal(world.build('garden',x,y).ok,false);assert.equal(world.moveBuilding(building.id,x,y).ok,false);
     assert.equal(JSON.stringify(world.state),before);

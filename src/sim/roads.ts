@@ -1,4 +1,4 @@
-import { ROADS, terrainAt } from './terrain.ts';
+import { ROADS, terrainAt, PLAYABLE_SIZE } from './terrain.ts';
 export type RoadKind = 'dirt' | 'gravel' | 'stone';
 export interface Tile { x:number; y:number }
 export interface Road extends Tile { kind:RoadKind }
@@ -9,7 +9,7 @@ export const ROAD_TYPES:Record<RoadKind,{name:string;coins:number;stone:number;r
 };
 export const tileKey=(p:Tile)=>`${p.x},${p.y}`;
 export function roadLine(a:Tile,b:Tile):Tile[]{
-  if(![a.x,a.y,b.x,b.y].every(Number.isInteger)||[a.x,a.y,b.x,b.y].some(n=>n<1||n>46))return [];
+  if(![a.x,a.y,b.x,b.y].every(Number.isInteger)||[a.x,a.y,b.x,b.y].some(n=>n<1||n>PLAYABLE_SIZE))return [];
   const tiles=[{...a}];let x=a.x,y=a.y;
   while(x!==b.x){x+=Math.sign(b.x-x);tiles.push({x,y});}
   while(y!==b.y){y+=Math.sign(b.y-y);tiles.push({x,y});}

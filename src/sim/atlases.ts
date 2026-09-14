@@ -1,4 +1,9 @@
+import herdCatalog from '../../public/assets/herd-growth-frames.json' with { type: 'json' };
+import livingFarmCatalog from '../../public/assets/living-farm-frames.json' with { type: 'json' };
+import homesteadCatalog from '../../public/assets/homestead-frames.json' with { type: 'json' };
+import growingCatalog from '../../public/assets/crops-growing-frames.json' with { type: 'json' };
 import caravanCatalog from '../../public/assets/caravan-frames.json' with { type: 'json' };
+import chapelCatalog from '../../public/assets/chapel-frames.json' with { type: 'json' };
 import citizensCatalog from '../../public/assets/citizens-actions-frames.json' with { type: 'json' };
 import disastersCatalog from '../../public/assets/disasters-frames.json' with { type: 'json' };
 import housingCatalog from '../../public/assets/housing-levels-frames.json' with { type: 'json' };
@@ -18,6 +23,10 @@ export interface SpriteFrame { x: number; y: number; w: number; h: number; clip?
  * reads, so the two can never disagree about where a sprite lives.
  */
 export const GENERATED_ATLASES = {
+  'living-farm':livingFarmCatalog,
+  'herd-growth':herdCatalog,
+  homestead:homesteadCatalog,
+  'crops-growing': growingCatalog,
   disasters: disastersCatalog,
   'citizens-actions': citizensCatalog,
   caravan: caravanCatalog,
@@ -28,6 +37,8 @@ export const GENERATED_ATLASES = {
   'housing-levels': housingCatalog,
   pets: petsCatalog,
   'machine-layers': machineCatalog,
+  // The chapel: a single-sprite atlas delivered after the main batch, for the L4 building.
+  chapel: chapelCatalog,
 } as const;
 
 export type GeneratedAtlas = keyof typeof GENERATED_ATLASES;
@@ -44,6 +55,7 @@ export function atlasSize(atlas: GeneratedAtlas): { width: number; height: numbe
 export const GENERATED_ATLAS_KEYS = Object.keys(GENERATED_ATLASES) as GeneratedAtlas[];
 
 const CATALOG_BY_KIND: Partial<Record<BuildingKind, GeneratedAtlas>> = {
+  flowernursery:'homestead',orchardhouse:'homestead',chickencoop:'homestead',jamkitchen:'homestead',teahouse:'homestead',homestead:'homestead',
   // Street decorations, added in the second asset batch.
   flowerbox: 'street-decor', trellis: 'street-decor', archlights: 'street-decor',
   boardwalk: 'street-decor', railing: 'street-decor', parasol: 'street-decor',
@@ -54,6 +66,8 @@ const CATALOG_BY_KIND: Partial<Record<BuildingKind, GeneratedAtlas>> = {
   // Dairy, honey and wine industries.
   cowbarn: 'industry2', dairy: 'industry2', apiary: 'industry2',
   vineyard: 'industry2', winery: 'industry2', cellar: 'industry2',
+  // The chapel, from its own single-sprite atlas.
+  chapel: 'chapel',
 };
 
 const FRAME_BY_KIND: Partial<Record<BuildingKind, string>> = {

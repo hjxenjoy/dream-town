@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { BRIDGES, DISTRICTS, DISTRICT_KEYS, iso, riverX } from '../sim/terrain';
+import { PLAYABLE_SIZE, MAP_SIZE, BRIDGES, DISTRICTS, DISTRICT_KEYS, iso, riverX } from '../sim/terrain';
 import { drawFrameWidth } from './atlasSprite';
 
 /** Land, river and crossings use the same coordinates as the simulation. */
@@ -21,7 +21,7 @@ export function drawValley(scene:Phaser.Scene) {
   scene.add.tileSprite(0,1200,28000,28000,'meadow-soil').setDepth(-1100);
   // Warm clay clearings, stony soil and mossy meadows give each district its own ground.
   for(let i=0;i<145;i++){
-    const x=2+random(i*11)*44,y=2+random(i*11+1)*44;
+    const x=2+random(i*11)*(PLAYABLE_SIZE-2),y=2+random(i*11+1)*(PLAYABLE_SIZE-2);
     if(Math.abs(x-riverX(y))<3)continue;
     const p=iso(x,y),radius=40+random(i*11+2)*120;
     const soil=x>28&&y<18?0x9c9980:y>22&&x<20?0xae955d:0xc3b87a;
@@ -78,9 +78,9 @@ export function drawValley(scene:Phaser.Scene) {
   // Peaks are on unbuildable terrain; the broad foothills in front remain usable for mines.
   for(const [x,y,w] of [[31,3,660],[36,3,770],[41,4,710],[46,8,680],[46,14,620]])scenic('peak',x,y,w);
   for(const [x,y,w] of [[29,5,370],[39,5,330],[43,13,330]])scenic('orehill',x,y,w);
-  for(let i=0;i<82;i++){
+  for(let i=0;i<Math.ceil(MAP_SIZE/2.3)*4;i++){
     const side=i%4,t=1+Math.floor(i/4)*2.3;
-    const x=side===0?-1.7:side===1?49.3:t,y=side===2?-1.7:side===3?49.3:t;
+    const x=side===0?-1.7:side===1?MAP_SIZE+1.3:t,y=side===2?-1.7:side===3?MAP_SIZE+1.3:t;
     if(Math.abs(x-riverX(y))<3)continue;
     scenic(i%3?'pines':'grove',x,y,220+random(i+3000)*160);
   }

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { residentMotion } from '../sim/visualMotion';
 import { TownCrowd } from '../sim/crowd';
 import { PETS } from '../sim/pets';
 import { atlasFrames } from '../sim/atlases';
@@ -23,6 +24,8 @@ export class Residents {
   crowd=new TownCrowd();
   private sprites:Phaser.GameObjects.Image[]=[];
   private shadows:Phaser.GameObjects.Ellipse[]=[];
+  private freightSprites:Phaser.GameObjects.Image[]=[];
+  private freightShadows:Phaser.GameObjects.Ellipse[]=[];
   private petSprites:Phaser.GameObjects.Image[]=[];
   private petShadows:Phaser.GameObjects.Ellipse[]=[];
   constructor(private scene:Phaser.Scene){
@@ -34,16 +37,18 @@ export class Residents {
   }
   sync(world:SimWorld){
     this.crowd.sync(world.state.buildings,world.state.roads??[],world.state.population,world.state.buildings.map(b=>b.kind),world.state.gameTime);
+    this.crowd.syncFreight(world.freightRoutes());
     this.crowd.syncPets(world.state.pets??[]);
   }
-  update(time:number,delta:number){
+  update(time:number,delta:number,reduced=false){
     this.crowd.tick(Math.min(delta,.2));
     while(this.sprites.length>this.crowd.walkers.length){this.sprites.pop()!.destroy();this.shadows.pop()!.destroy();}
     this.crowd.walkers.forEach((w,i)=>{
       let sprite=this.sprites[i];
       if(!sprite){this.shadows.push(this.scene.add.ellipse(0,0,14,6,0x425138,.23));sprite=this.scene.add.image(0,0,'citizens',`${w.style}-0`).setOrigin(.5,.95);this.sprites.push(sprite);}
       const p=iso(w.x,w.y),screenX=w.headingX-w.headingY,screenY=w.headingX+w.headingY;
-      const step=w.walking&&delta>0?Math.floor(time/280+i)%2:0;
+      const motion=residentMotion(time,i,delta,w.walking,w.task==='work',reduced);
+      const step=motion.frame;
       if(w.task==='carry'||w.task==='work'){
         // Hauling and working come from the action atlas: eight columns per resident,
         // front then back, two frames each. Resting at home uses the walking atlas, because
@@ -55,9 +60,26 @@ export class Residents {
         const pose=screenY<0?2:0;
         drawFrameWidth(sprite,'citizens',`${w.style}-${pose+step}`,walkerWidth(i));
       }
-      sprite.setFlipX(screenX<0).setPosition(p.x,p.y+(w.walking&&delta>0?Math.sin(time/140+i)*.6:0)).setDepth(p.y+6);
-      if(w.relocated){w.relocated=false;sprite.setAlpha(0);this.scene.tweens.add({targets:sprite,alpha:1,duration:300});}
+      sprite.setFlipX(screenX<0).setPosition(p.x,p.y+motion.bob).setDepth(p.y+6);
+      if(w.relocated){w.relocated=false;if(!reduced){sprite.setAlpha(0);this.scene.tweens.add({targets:sprite,alpha:1,duration:300});}}
       this.shadows[i].setPosition(p.x,p.y).setDepth(p.y-1);
+    });
+    // Carriers are residents too: same sprite, same hauling pose, drawn between walkers and pets.
+    while(this.freightSprites.length>this.crowd.freight.length){this.freightSprites.pop()!.destroy();this.freightShadows.pop()!.destroy();}
+    this.crowd.freight.forEach((w,i)=>{
+      let sprite=this.freightSprites[i];
+      if(!sprite){this.freightShadows.push(this.scene.add.ellipse(0,0,14,6,0x425138,.23));sprite=this.scene.add.image(0,0,'citizens-actions','gardener-carry-front-0').setOrigin(.5,.95);this.freightSprites.push(sprite);}
+      const p=iso(w.x,w.y),screenX=w.headingX-w.headingY,screenY=w.headingX+w.headingY;
+      const motion=residentMotion(time,i,delta,w.walking,w.task==='work',reduced);
+      const step=motion.frame;
+      // The carrier keeps its own look, like the commuters above: deriving it from the array
+      // index would make a carrier change person whenever the list of loads shifts.
+      const persona=NEIGHBOUR_STYLE[w.style]??'gardener';
+      const facing=screenY<0?'back':'front';
+      drawFrameScale(sprite,'citizens-actions',`${persona}-carry-${facing}-${step}`,ACTION_SCALE);
+      sprite.setFlipX(screenX<0).setPosition(p.x,p.y+motion.bob).setDepth(p.y+6);
+      if(w.relocated){w.relocated=false;if(!reduced){sprite.setAlpha(0);this.scene.tweens.add({targets:sprite,alpha:1,duration:300});}}
+      this.freightShadows[i].setPosition(p.x,p.y).setDepth(p.y-1);
     });
     while(this.petSprites.length>this.crowd.pets.length){this.petSprites.pop()!.destroy();this.petShadows.pop()!.destroy();}
     this.crowd.pets.forEach((pet,i)=>{
@@ -69,7 +91,7 @@ export class Residents {
       }
       const p=iso(pet.x,pet.y),screenX=pet.headingX-pet.headingY,screenY=pet.headingX+pet.headingY;
       const facing=screenY<0?'back':'front';
-      const step=pet.walking&&delta>0?Math.floor(time/300+i)%2:0;
+      const step=residentMotion(time,i,delta,pet.walking,false,reduced).frame;
       drawFrameWidth(sprite,'pets',PETS[pet.kind].frames[facing][step],PET_SIZE);
       sprite.setFlipX(screenX<0).setPosition(p.x,p.y).setDepth(p.y+4);
       this.petShadows[i].setPosition(p.x,p.y).setDepth(p.y-1);

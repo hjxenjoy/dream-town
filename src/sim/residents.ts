@@ -53,7 +53,7 @@ export function namedResidentCount(population: number): number {
  * over position-sorted buildings, so the same town always yields the same neighbours.
  */
 export function residentRoster(buildings: Building[], population: number): ResidentRecord[] {
-  const homes = buildings.filter(b => (b.kind === 'cottage' || b.kind === 'farmhouse' || b.kind === 'rowhouse' || b.kind === 'apartment'))
+  const homes = buildings.filter(b => !!BUILDINGS[b.kind].housing)
     .sort((a, b) => a.y - b.y || a.x - b.x);
   return NEIGHBOURS.slice(0, namedResidentCount(population)).map((definition, index) => {
     const home = homes[index % Math.max(1, homes.length)];

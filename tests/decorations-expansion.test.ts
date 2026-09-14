@@ -127,9 +127,9 @@ test('the build catalog grows by twelve decorations without disturbing existing 
   // Adding kinds must not rename or reorder what a save already refers to.
   assert.equal(BUILDINGS.cottage.name,'林间小屋');
   assert.equal(BUILDINGS.windmill.cycle,28);
-  // 41 base buildings, plus the street decorations, the dairy/wine industries and the
-  // street-style ornaments.
-  assert.equal(Object.keys(BUILDINGS).length,62,'41 base + 12 decorations + 6 dairy/wine + 3 ornaments');
+  // 41 base buildings, plus the street decorations, the dairy/wine industries, the
+  // street-style ornaments, and the chapel added for the faith layer.
+  assert.equal(Object.keys(BUILDINGS).length,69,'41 base + 12 decorations + 6 dairy/wine + 3 ornaments + 1 chapel + 6 homestead buildings');
   assert.equal(Object.keys(BUILDINGS).filter(kind=>BUILDINGS[kind as keyof typeof BUILDINGS].category==='decoration').length,24,'nine trees and garden pieces plus twelve street decorations plus three ornaments');
   // The ornaments are awarded by collecting a street style, never by research.
   assert.deepEqual(ORNAMENT_KINDS.filter(kind=>BUILDINGS[kind]).sort(),['flowercart','harvestpile','picniccorner']);

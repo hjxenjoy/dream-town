@@ -1,4 +1,8 @@
 const paths: Record<string, string> = {
+ eggs:'<ellipse cx="12" cy="13" rx="7" ry="9"/>',
+ fruit:'<path d="M12 7C3 2 1 12 6 19c3 4 5 1 6 1s3 3 6-1c5-7 3-17-6-12Zm0 0c0-4 3-5 5-5"/>',
+ flowers:'<path d="m8 21 4-9 4 9M5 17l7 3 7-3"/><circle cx="8" cy="8" r="4"/><circle cx="16" cy="8" r="4"/>',
+ jam:'<path d="M7 5h10v4l2 3v9H5v-9l2-3ZM6 2h12v3H6Z"/><path d="M8 14h8v4H8Z"/>',
   road:'<path d="M5 21 9 3m6 0 4 18M12 4v3m0 4v3m0 4v3"/>',
   harvest:'<path d="M3 11h18l-3 10H6L3 11Zm3 0 6-8 6 8M9 15v3m6-3v3"/>',
 

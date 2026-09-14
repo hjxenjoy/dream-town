@@ -1,6 +1,8 @@
 import type { BuildingKind } from './data.ts';
 
-export const MAP_SIZE = 48;
+export const PLAYABLE_SIZE = 64;
+export const LEGACY_SIZE = 46;
+export const MAP_SIZE = PLAYABLE_SIZE + 2;
 export const TILE_W = 116;
 export const TILE_H = 58;
 export const iso = (x:number,y:number) => ({x:(x-y)*TILE_W/2,y:(x+y)*TILE_H/2});
@@ -15,15 +17,15 @@ export const DISTRICTS: Record<District,{name:string;subtitle:string;icon:string
 export const DISTRICT_KEYS = Object.keys(DISTRICTS) as District[];
 export const riverX = (y:number) => 22 + Math.sin(y/7)*1.7;
 export function terrainAt(x:number,y:number): 'land'|'water'|'bridge'|'mountain'|'outside' {
-  if(!Number.isInteger(x)||!Number.isInteger(y)||x<1||y<1||x>46||y>46)return 'outside';
+  if(!Number.isInteger(x)||!Number.isInteger(y)||x<1||y<1||x>PLAYABLE_SIZE||y>PLAYABLE_SIZE)return 'outside';
   if(Math.abs(x-riverX(y))<1.7)return BRIDGES.some(row=>row===y)?'bridge':'water';
-  if(x>=29&&y<=5 || x>=43&&y<=17)return 'mountain';
+  if(x<=LEGACY_SIZE&&(x>=29&&y<=5 || x>=43&&y<=17))return 'mountain';
   return 'land';
 }
 export const districtAt=(x:number,y:number):District=>x<riverX(y)?(y<21?'residential':'agriculture'):(y<21?'mining':'industry');
 export function preferredDistrict(kind:BuildingKind):District {
   if(['mine','quarry'].includes(kind))return 'mining';
-  if(['farm','windmill','feedmill','pasture','fishpond','cowbarn','dairy','apiary','vineyard','winery','cellar'].includes(kind))return 'agriculture';
+  if(['flowernursery','orchardhouse','chickencoop','jamkitchen','farm','windmill','feedmill','pasture','fishpond','cowbarn','dairy','apiary','vineyard','winery','cellar'].includes(kind))return 'agriculture';
   if(['lumber','kiln','smelter','smithy','weaver','tailor','forester','sawmill','brickworks'].includes(kind))return 'industry';
   return 'residential';
 }

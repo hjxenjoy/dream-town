@@ -1,4 +1,7 @@
-import { CROP_FRAMES, soilLevel } from '../sim/farming';
+import { livestockFrame } from '../sim/livestock';
+import { drawSoilDetails, drawHomeDetails } from './SoilDetails';
+import { REGIONS, type RegionId } from '../sim/regions';
+import { CROP_FRAMES, soilLevel, cropGrowthStage } from '../sim/farming';
 import { TownAtmosphere } from './TownAtmosphere';
 import { DisasterLayer } from './DisasterLayer';
 import { CaravanCart } from './CaravanCart';
@@ -18,14 +21,14 @@ import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
 /** Generated atlases the scene draws. Preloading and frame registration both read this. */
-const SCENE_ATLASES = ['disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions'] as const;
+const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crops-growing','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel'] as const;
 /** On-screen widths for the two farm visuals, which are drawn from generated textures. */
 const CROP_WIDTH = 130;
 const FARM_WIDTH = 116;
 const FARM_HEIGHT = 86;
 
 const deiso = (x: number, y: number) => ({ x: Math.round(x / TILE_W + y / TILE_H), y: Math.round(y / TILE_H - x / TILE_W) });
-type BuildingVisual = { sprite: Phaser.GameObjects.Image; badge: Phaser.GameObjects.Container; progress: Phaser.GameObjects.Graphics; ready: boolean };
+type BuildingVisual = { sprite: Phaser.GameObjects.Image; badge: Phaser.GameObjects.Container; progress: Phaser.GameObjects.Graphics; ready: boolean; soil: Phaser.GameObjects.Graphics; soilLevel: number; homeStyle?: string; companion?: Phaser.GameObjects.Image };
 export class TownScene extends Phaser.Scene {
   world: SimWorld;
   onChoose: (id: string) => void;
@@ -188,13 +191,13 @@ export class TownScene extends Phaser.Scene {
   private spriteWidth(kind:BuildingKind):number {
     if(EXPANSION_SPRITES.some(k=>k===kind))return kind==='watertower'?124:kind==='apartment'?156:160;
     if(DECORATION_SPRITES.some(k=>k===kind))return kind==='bench'?108:kind==='fountain'?108:kind==='gazebo'?126:kind==='flowerarch'?120:170;
-    if(generatedSprite(kind))return kind==='willow'?150:kind==='parasol'?120:kind==='railing'?150:130;
+    if(generatedSprite(kind))return kind==='willow'?150:kind==='parasol'?120:kind==='railing'?150:kind==='chapel'?150:130;
     if(housingLevelFrame(kind,1))return 150;
     return kind==='townhall'?177:kind==='well'?100:kind==='garden'?139:151;
   }
   private syncBuildings(){
     const current=new Set(this.world.state.buildings.map(b=>b.id));
-    this.visuals.forEach((v,id)=>{if(!current.has(id)){v.sprite.destroy();v.badge.destroy();v.progress.destroy();this.visuals.delete(id);}});
+    this.visuals.forEach((v,id)=>{if(!current.has(id)){v.sprite.destroy();v.badge.destroy();v.progress.destroy();v.soil.destroy();v.companion?.destroy();this.visuals.delete(id);}});
     this.running.clear();
     for(const id of this.progressSnapshot.keys())if(!current.has(id))this.progressSnapshot.delete(id);
     for(const b of this.world.state.buildings){
@@ -212,7 +215,8 @@ export class TownScene extends Phaser.Scene {
         const text=this.add.text(0,-3,'✓',{fontSize:'24px',fontStyle:'bold',color:'#658844'}).setOrigin(.5);
         const badge=this.add.container(p.x,p.y-(b.kind==='farm'?sprite.displayHeight*.65:sprite.displayHeight*.7),[bg,text]).setDepth(p.y+220).setSize(44,44).setInteractive({useHandCursor:true}).setData('buildingId',b.id);
         const progress=this.add.graphics().setDepth(p.y+200);
-        v={sprite,badge,progress,ready:false};this.visuals.set(b.id,v);
+        const soil=this.add.graphics();
+        v={sprite,badge,progress,ready:false,soil,soilLevel:0};this.visuals.set(b.id,v);
         this.tweens.add({targets:sprite,alpha:{from:0,to:1},duration:300});
       }
       // Cottage and farmhouse art is per-level, so an upgrade swaps the frame in place.
@@ -225,11 +229,31 @@ export class TownScene extends Phaser.Scene {
       }
       v.sprite.setPosition(p.x,p.y).setDepth(p.y+5);v.badge.setPosition(p.x,p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)).setDepth(p.y+220);v.progress.setDepth(p.y+200);
       if(b.kind==='farm'){
-        const crop=b.crop??'wheat',f=CROP_FRAMES[crop];
-        if(b.ready||b.progress>.7){drawFrameWidth(v.sprite,'crops',crop,CROP_WIDTH);v.sprite.setOrigin(.5,f.anchor);if(!b.ready)v.sprite.setTint(0xc3d995);else v.sprite.clearTint();}
-        // farm0/farm1 are single-frame textures generated at runtime, so sizing them
+        const level=soilLevel(b.tended).level;
+        if(v.soilLevel!==level){drawSoilDetails(v.soil,level);v.soilLevel=level;}
+        v.soil.setPosition(p.x,p.y).setDepth(p.y+6).setAlpha(b.id===this.moveId?.28:b.paused?.65:1);
+        const crop=b.crop??'wheat',f=CROP_FRAMES[crop],stage=cropGrowthStage(b.progress,b.ready,b.fallow);
+        if(stage==='ready'||stage==='ripening'){drawFrameWidth(v.sprite,'crops',crop,CROP_WIDTH);v.sprite.setOrigin(.5,f.anchor);if(!b.ready)v.sprite.setTint(0xc3d995);else v.sprite.clearTint();}
+        else if(stage==='growing'||stage==='sprouting'&&(crop==='apple'||crop==='grape')){
+          const growing=GENERATED_ATLASES['crops-growing'].frames[crop];
+          drawFrameWidth(v.sprite,'crops-growing',crop,CROP_WIDTH);v.sprite.setOrigin(.5,growing.anchor).clearTint();
+        }
+        // farm0 is a single-frame texture generated at runtime, so sizing it
         // once is correct: there is no other frame whose dimensions could disagree.
-        else{v.sprite.setTexture(b.progress>.22?'farm1':'farm0').setOrigin(.5,.65).setDisplaySize(FARM_WIDTH,FARM_HEIGHT);v.sprite.setTint(soilLevel(b.tended).level>2?0xf6e6ae:0xffffff);}
+        else{v.sprite.setTexture('farm0').setOrigin(.5,.65).setDisplaySize(FARM_WIDTH,FARM_HEIGHT);v.sprite.setTint(soilLevel(b.tended).level>2?0xf6e6ae:0xffffff);}
+      }
+      if(BUILDINGS[b.kind].housing){
+        const style=b.homeStyle??'original';
+        if(v.homeStyle!==style){drawHomeDetails(v.soil,style);v.homeStyle=style;}
+        v.soil.setPosition(p.x,p.y).setDepth(p.y+6).setVisible(!b.damaged).setAlpha(b.id===this.moveId?.28:1);
+      }
+      if(b.kind==='orchardhouse'||livestockFrame(b)){
+        const orchard=b.kind==='orchardhouse';
+        const frame=orchard?(b.ready||b.progress>=.72?'tree-fruit':b.progress>=.3?'tree-blossom':'tree-leaves'):livestockFrame(b)!;
+        const herd=b.kind==='pasture'||b.kind==='cowbarn',atlas=herd?'herd-growth':'living-farm';
+        if(!v.companion)v.companion=this.add.image(p.x,p.y,atlas,frame).setOrigin(.5,.93);
+        drawFrameWidth(v.companion,atlas,frame,herd?atlasFrames('herd-growth')[frame].w*.12:orchard?78:48);
+        v.companion.setPosition(p.x+(orchard?30:16),p.y+17).setDepth(p.y+7).setVisible(!b.damaged).setAlpha(b.id===this.moveId?.28:b.paused?.65:1);
       }
       v.badge.setVisible(b.ready||!!b.damaged);const text=v.badge.list[1] as Phaser.GameObjects.Text;
       text.setText(b.damaged?'!':'✓').setColor(b.damaged?'#bc6643':'#658844');
@@ -275,14 +299,14 @@ export class TownScene extends Phaser.Scene {
     this.onRoadHint(!valid?'路线有建筑、河道或山峰，请换一个终点':this.roadStart?`${quote.changed} 格 · ${quote.coins} 金币 / ${quote.stone} 石料 · 点击终点确认`:'点起点，再点终点 · 同一格点两次可单格操作');
   }
   setMoveMode(id:string){const b=this.world.state.buildings.find(b=>b.id===id);if(!b)return;this.setBuildMode(b.kind);this.moveId=id;this.paintPlacementGrid();this.syncBuildings();this.updateGhost(this.input.activePointer);}
-  focusDistrict(key:District|'overview'){
+  focusDistrict(key:District|RegionId|'overview'){
     if(!this.ready)return;
-    if(key==='overview'){this.cameras.main.setZoom(Math.min(this.scale.width/5700,(this.scale.height-160)/2900));this.cameras.main.centerOn(0,1350);return;}
-    const d=DISTRICTS[key],p=iso(d.x,d.y);this.cameras.main.setZoom(this.scale.width<650?.66:.85);if(this.reducedMotion())this.cameras.main.centerOn(p.x,p.y-45);else this.cameras.main.pan(p.x,p.y-45,650,'Sine.easeInOut');
+    if(key==='overview'){this.cameras.main.setZoom(Math.min(this.scale.width/(MAP_SIZE*TILE_W+132),(this.scale.height-160)/(MAP_SIZE*TILE_H+116)));this.cameras.main.centerOn(0,MAP_SIZE*TILE_H/2);return;}
+    const d=key in REGIONS?REGIONS[key as RegionId]:DISTRICTS[key as District],p=iso(d.x,d.y);this.cameras.main.setZoom(this.scale.width<650?.66:.85);if(this.reducedMotion())this.cameras.main.centerOn(p.x,p.y-45);else this.cameras.main.pan(p.x,p.y-45,650,'Sine.easeInOut');
   }
   select(id:string|null){this.selectedId=id;if(this.ready)this.drawSelection();}
   focusBuilding(id:string){const b=this.world.state.buildings.find(b=>b.id===id);if(b&&this.ready){const p=iso(b.x,b.y);if(this.reducedMotion())this.cameras.main.centerOn(p.x+80,p.y-10);else this.cameras.main.pan(p.x+80,p.y-10,600,'Sine.easeInOut');this.select(id);}}
-  private minimumZoom(){return Math.min(.22,Math.max(.06,Math.min(this.scale.width/5700,(this.scale.height-160)/2900)));}
+  private minimumZoom(){return Math.min(.22,Math.max(.06,Math.min(this.scale.width/(MAP_SIZE*TILE_W+132),(this.scale.height-160)/(MAP_SIZE*TILE_H+116))));}
   zoomBy(delta:number){if(this.ready)this.cameras.main.setZoom(Phaser.Math.Clamp(this.cameras.main.zoom+delta,this.minimumZoom(),1.8));}
   resetCamera(){const w=this.scale.width;this.cameras.main.setZoom(w<650?.62:Math.min(.85,w/1550));const p=iso(12,12);this.cameras.main.centerOn(p.x,p.y-70);}
   reducedMotion(){return this.world.state.settings.reducedMotion??window.matchMedia('(prefers-reduced-motion: reduce)').matches;}
@@ -324,14 +348,21 @@ export class TownScene extends Phaser.Scene {
     camera.scrollX=center.x-camera.width/2;camera.scrollY=center.y-camera.height/2;
     if(time-this.syncAt>200){this.syncBuildings();this.syncAt=time;this.onViewport(this.cameras.main.midPoint.x,this.cameras.main.midPoint.y,this.cameras.main.zoom);}
     if(this.buildKind)this.updateGhost(this.input.activePointer);
-    this.residents.update(time,this.game.loop.delta/1000*this.simulationSpeed);
     const reduced=this.reducedMotion();
+    this.residents.update(time,this.game.loop.delta/1000*this.simulationSpeed,reduced);
     this.disasterLayer.sync(this.world.state.buildings,time,reduced);
     this.caravanCart.sync(this.world,time,reduced);
     this.seasonalProps.sync(this.world);
     this.machineLayer.sync(this.world.state.buildings,this.running,this.game.loop.delta*(this.simulationSpeed>0?1:0),reduced);
     this.atmosphere.update(this.game.loop.delta*(this.simulationSpeed>0?1:0),this.world.state.buildings,this.running,this.world.state.festivalUntil>this.world.state.gameTime,reduced);
     if(!reduced&&this.simulationSpeed>0)this.visuals.forEach((v,id)=>{if(v.ready){const b=this.world.state.buildings.find(b=>b.id===id)!;const p=iso(b.x,b.y);v.badge.y=p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)+Math.sin(time/430)*3;}});
+    for(const b of this.world.state.buildings){
+      const companion=this.visuals.get(b.id)?.companion;
+      if(!companion)continue;
+      const active=!reduced&&this.simulationSpeed>0&&!b.paused&&!b.damaged;
+      // Subtle foliage sway and a slow peck, always reset when motion is disabled.
+      companion.setAngle(active?Math.sin(time/(b.kind==='orchardhouse'?1400:650)+b.x)*.9:0);
+    }
     if(this.lastSeason!==this.world.state.season){this.lastSeason=this.world.state.season;this.ground.setAlpha(this.lastSeason==='winter'?.78:1);}
   }
 }

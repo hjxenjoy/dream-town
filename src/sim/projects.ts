@@ -1,4 +1,5 @@
 import { BUILDINGS, type BuildingKind, type ResourceMap } from './data.ts';
+import { LOCAL_SUPPLY_RANGE, supplyHauls } from './layout.ts';
 import type { SimState } from './world.ts';
 
 export const PROJECT_IDS = ['garden', 'craft', 'harbor'] as const;
@@ -15,8 +16,8 @@ export const PROJECTS: Record<ProjectId, {name:string;resident:string;icon:strin
   ]},
   craft:{name:'河谷匠人街',resident:'阿岳 · 铁匠师傅',icon:'tools',description:'让原料、工坊和消防形成一片真正运转的产业区。',title:'精工之乡',perk:'所有工坊生产时间永久减少 5%',stages:[
     {name:'从一根原木开始',story:'「木料和木板分开供应，才能留出余力做更精细的活。」',requirements:[{metric:'timber',label:'原木生产点',target:1,tip:'准备一座伐木屋或木工坊。',category:'production'},{metric:'sawmill',label:'河谷锯木厂',target:1,tip:'完成采矿研究后建造锯木厂。',category:'production'}],contribution:{plank:16}},
-    {name:'成为彼此的邻居',story:'「炉子旁有炭窑，铁匠身边有锯木厂，手艺人也需要好邻居。」',requirements:[{metric:'links',label:'就近配套的加工坊',target:3,tip:'加工坊 5 格内有产出其原料的建筑；每座加工坊计一次。',category:'production'}],contribution:{ingot:6,tools:8}},
-    {name:'长明的炉火',story:'「六家工坊协作，还有人守望炉火，这就是我们的匠人街。」',requirements:[{metric:'links',label:'就近配套的加工坊',target:6,tip:'搬迁工坊，使供应原料的建筑与加工坊相距不超过 5 格。',category:'production'},{metric:'protectedProduction',label:'消防覆盖的生产建筑',target:6,tip:'用消防站或瞭望塔覆盖生产区，升级可以扩大范围。',category:'services'}],contribution:{tools:20,materials:12}},
+    {name:'成为彼此的邻居',story:'「炉子旁有炭窑，铁匠身边有锯木厂，手艺人也需要好邻居。」',requirements:[{metric:'links',label:'就近配套的加工坊',target:3,tip:'原料作坊要在步行 6 格以内——沿着能走的地面算，不是直线；每座加工坊计一次。',category:'production'}],contribution:{ingot:6,tools:8}},
+    {name:'长明的炉火',story:'「六家工坊协作，还有人守望炉火，这就是我们的匠人街。」',requirements:[{metric:'links',label:'就近配套的加工坊',target:6,tip:'搬迁工坊，让原料作坊走到它不超过 6 格；隔着河或绕远路都不算近。',category:'production'},{metric:'protectedProduction',label:'消防覆盖的生产建筑',target:6,tip:'用消防站或瞭望塔覆盖生产区，升级可以扩大范围。',category:'services'}],contribution:{tools:20,materials:12}},
   ]},
   harbor:{name:'丰收与远方',resident:'米洛 · 旅行商人',icon:'caravan',description:'把田野的收获变成餐桌上的安心，再走向河谷外的世界。',title:'丰收之港',perk:'商队旅程永久缩短 10%',stages:[
     {name:'面包的来处',story:'「有麦田、有磨坊，再有一家面包房，才是一顿好早餐的开始。」',requirements:[{metric:'farms',label:'麦田',target:3,tip:'开垦三块麦田。',category:'production'},{metric:'windmill',label:'风车磨坊',target:1,tip:'将小麦加工成面粉。',category:'production'},{metric:'bakery',label:'晨光面包房',target:1,tip:'把面粉烤成口粮。',category:'production'}],contribution:{bread:12,fish:12}},
@@ -42,13 +43,17 @@ export function projectMetrics(state:SimState):Record<ProjectMetric,number> {
   const towers=healthy.filter(b=>BUILDINGS[b.kind].fireRadius);
   const wells=healthy.filter(b=>BUILDINGS[b.kind].waterRadius);
   const near=(a:{x:number;y:number},b:{x:number;y:number},r:number)=>Math.hypot(a.x-b.x,a.y-b.y)<=r;
+  // Every building is passed: damaged ones still block the walk, they simply supply nothing.
+  const hauls=supplyHauls(state.buildings);
   const beds=homes.reduce((n,b)=>n+BUILDINGS[b.kind].housing!*b.level,0);
   const watered=homes.filter(h=>wells.some(w=>near(h,w,BUILDINGS[w.kind].waterRadius!+w.level-1))).reduce((n,b)=>n+BUILDINGS[b.kind].housing!*b.level,0);
   return {
     greenHomes:homes.filter(h=>greenery.some(g=>near(h,g,3))).length,
     water:beds?Math.floor(watered/beds*100):0,civic:count('school','clinic'),population:state.population,
     timber:count('forester','lumber'),sawmill:count('sawmill'),
-    links:producers.filter(b=>Object.keys(BUILDINGS[b.kind].input??{}).some(k=>producers.some(a=>a.id!==b.id&&near(a,b,5)&&(BUILDINGS[a.kind].output?.[k as keyof ResourceMap]??0)>0))).length,
+    // The 匠人街 checklist counts exactly the workshops the proximity bonus pays out to:
+    // same predicate, same range, so the tick on the card and the effect are one fact.
+    links:producers.filter(b=>(hauls.get(b.id) ?? Infinity) < LOCAL_SUPPLY_RANGE).length,
     protectedProduction:producers.filter(b=>towers.some(t=>near(b,t,BUILDINGS[t.kind].fireRadius!+t.level-1))).length,
     farms:count('farm'),windmill:count('windmill'),bakery:count('bakery'),fishpond:count('fishpond'),
     foodDays:Math.floor((state.resources.bread+state.resources.fish)/Math.max(1,Math.ceil(state.population/4))),caravans:state.stats.caravansCompleted,

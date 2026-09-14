@@ -1,9 +1,16 @@
+import { RARE_REWARDS, rareCount, rareOrnamentUnlocked, rareStyleRequirement } from './rareRewards.ts';
+import { raiseChicks, livestockSpec } from './livestock.ts';
+import { growOrchards, recordOrchard } from './orchard.ts';
+import { growHomes, HOME_STYLES, type HomeStyle } from './homeGrowth.ts';
+import { REGIONS, REGION_IDS, regionAt, validRegions, type RegionId } from './regions.ts';
 import { CROPS, CROP_IDS, freshFarming, validFarming, gardenLevel, soilLevel, harvestQuote, type CropId, type CropHarvest, type FarmingState } from './farming.ts';
 import { PROJECT_IDS, PROJECTS, freshProjects, validProjects, projectMetrics, hasProjectTitle, type ProjectId, type ProjectState } from './projects.ts';
 import { stockTargets, woodReserve } from './economy.ts';
+import { LOCAL_SUPPLY_RANGE, supplyFactor, supplyHauls } from './layout.ts';
 import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type RoadKind, type Tile } from './roads.ts';
+import { TownNavigation } from './navigation.ts';
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
-import { BUILDINGS, BUILDING_KEYS, CARAVAN_CARGO, CARAVAN_DURATION, GAME_DAY_SECONDS, MAP_SIZE, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TECHNOLOGY_KEYS, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId } from './data.ts';
+import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, GAME_DAY_SECONDS, LEISURE_GOODS, MAP_SIZE, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId } from './data.ts';
 import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, canStrike, damageCeiling, disasterOf, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
@@ -38,6 +45,12 @@ export interface Building {
   staffing?: number;
   crop?: CropId;
   nextCrop?: CropId;
+  animalAge?: number;
+  chickFeedPaid?: boolean;
+  treeAge?: number;
+  orchardHarvests?: number;
+  livedSeconds?: number;
+  homeStyle?: HomeStyle;
   tended?: number;
   fallow?: boolean;
   cropHarvest?: CropHarvest;
@@ -51,6 +64,10 @@ export interface Order {
   rewardCoins: number;
   rewardXp: number;
   cooldownUntil?: number;
+  /** A bulk commission: several goods at volume, and replaced on its own schedule. */
+  bulk?: boolean;
+  /** When the trading company gives up and withdraws it. Only meaningful on a commission. */
+  bulkUntil?: number;
 }
 export interface Caravan {
   status: 'idle' | 'traveling' | 'returned';
@@ -82,6 +99,7 @@ export interface TownLog {
 }
 export interface SimState {
   version: 2;
+  regions?: RegionId[];
   researched: TechnologyId[];
   roads?: Road[];
   projects?: ProjectState;
@@ -104,7 +122,7 @@ export interface SimState {
   caravan: Caravan;
   quests: Quest[];
   season: keyof typeof import('./data.ts').SEASON_NAMES;
-  needs: { food: number; water: number; services: number; environment: number };
+  needs: { food: number; water: number; services: number; environment: number; comfort: number; leisure: number; faith: number; health: number };
   settings: { sound: boolean; disasters: boolean; autoMayor: boolean; reducedMotion?: boolean };
   /** `activities` counts seasonal activities and is absent from saves written before it existed. */
   stats: { collected: number; ordersCompleted: number; buildingsBuilt: number; caravansCompleted: number; coinsEarned: number; festivals: number; repairs: number; toolsProduced: number; clothingProduced: number; activities?: number };
@@ -125,6 +143,8 @@ export interface SimState {
   pets?: PetState[];
   lastMayorAt: number;
   lastDisasterAt: number;
+  /** When the next bulk commission may arrive. Absent on saves written before it existed. */
+  nextBulkOrderAt?: number;
 }
 export type GameState = SimState;
 export interface ActionResult {
@@ -159,6 +179,8 @@ function clamp(value: number, min: number, max: number): number { return Math.ma
 function finite(value: unknown): value is number { return typeof value === 'number' && Number.isFinite(value); }
 function nonnegative(value: unknown): value is number { return finite(value) && value >= 0; }
 function whole(value: unknown): value is number { return nonnegative(value) && Number.isInteger(value); }
+/** Whether two resolved doorways are the same patch of ground. */
+function sameTile(a: Tile | null, b: Tile | null): boolean { return a !== null && b !== null && a.x === b.x && a.y === b.y; }
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null && !Array.isArray(value); }
 function resourceLabel(items: Partial<ResourceMap>): string { return RESOURCE_KEYS.filter(key => (items[key] ?? 0) > 0).map(key => `${RESOURCES[key].name} ×${items[key]}`).join('、'); }
 
@@ -198,11 +220,13 @@ export function createInitialState(now = Date.now()): SimState {
       { id: 'festival', title: '今夜有好心情', description: '举办 1 场邻里庆典', target: 1, progress: 0, rewardCoins: 120, rewardXp: 40, rewardPrestige: 2, claimed: false },
       ...expansionQuests(),
     ],
-    season: 'spring', needs: { food: 100, water: 100, services: 90, environment: 75 },
+    season: 'spring', needs: { food: 100, water: 100, services: 90, environment: 75, comfort: 0, leisure: 0, faith: 0, health: 0 },
     settings: { sound: true, disasters: false, autoMayor: false },
     stats: { collected: 0, ordersCompleted: 0, buildingsBuilt: 0, caravansCompleted: 0, coinsEarned: 0, festivals: 0, repairs: 0, toolsProduced: 0, clothingProduced: 0 },
     logs: [{ id: 'log-1', time: 0, message: '欢迎来到青岚小镇。麦田已经成熟，新的故事正等你开始。', type: 'info' }],
     nextId: 100, festivalUntil: 0, lastMayorAt: 0, lastDisasterAt: 0,
+    // The first commission is due once the town reaches the unlock level, not before.
+    nextBulkOrderAt: BULK_ORDER_UNLOCK_LEVEL * 140,
   };
 }
 
@@ -257,6 +281,7 @@ const STAT_COUNTERS = ['collected', 'ordersCompleted', 'buildingsBuilt', 'carava
 /** Strict boundary for imports: reject corrupt data instead of replacing a good save. */
 export function validateSave(value: unknown): value is SimState {
   if (!isRecord(value) || value.version !== 2) return false;
+  if (value.regions !== undefined && !validRegions(value.regions)) return false;
   if (value.farming !== undefined && !validFarming(value.farming)) return false;
   if (value.projects !== undefined && !validProjects(value.projects)) return false;
   if (!Array.isArray(value.researched) || value.researched.some(id => !TECHNOLOGY_KEYS.includes(id)) || new Set(value.researched).size !== value.researched.length) return false;
@@ -277,6 +302,14 @@ export function validateSave(value: unknown): value is SimState {
     if (['crop','nextCrop','tended','fallow','cropHarvest'].some(key=>building[key]!==undefined)&&building.kind!=='farm') return false;
     for (const field of ['crop','nextCrop']) if(building[field]!==undefined&&(!CROP_IDS.includes(building[field] as CropId)||CROPS[building[field] as CropId].level>gardenLevel((value.farming as FarmingState|undefined)?.xp??0).level))return false;
     if(building.tended!==undefined&&!whole(building.tended))return false;
+    if(building.animalAge!==undefined&&(!livestockSpec(building.kind as BuildingKind)||!nonnegative(building.animalAge)||building.animalAge>livestockSpec(building.kind as BuildingKind)!.seconds))return false;
+    if(building.chickFeedPaid!==undefined&&(!livestockSpec(building.kind as BuildingKind)||typeof building.chickFeedPaid!=='boolean'))return false;
+    if(building.animalAge!==undefined&&building.animalAge>0&&building.animalAge<(livestockSpec(building.kind as BuildingKind)?.seconds??0)&&building.chickFeedPaid!==true)return false;
+    if(building.treeAge!==undefined&&(building.kind!=='orchardhouse'||!nonnegative(building.treeAge)||building.treeAge>31536000))return false;
+    if(building.orchardHarvests!==undefined&&(building.kind!=='orchardhouse'||!whole(building.orchardHarvests)||building.orchardHarvests>1000000))return false;
+    if(building.livedSeconds!==undefined&&(!BUILDINGS[building.kind as BuildingKind].housing||!nonnegative(building.livedSeconds)||building.livedSeconds>3600))return false;
+    if(building.homeStyle!==undefined&&(!BUILDINGS[building.kind as BuildingKind].housing||!Object.hasOwn(HOME_STYLES,String(building.homeStyle))||(building.livedSeconds??0)<HOME_STYLES[building.homeStyle as HomeStyle].seconds))return false;
+    if(building.homeStyle!==undefined&&rareCount(value.farming as FarmingState|undefined)<rareStyleRequirement(String(building.homeStyle)))return false;
     if(building.fallow!==undefined&&typeof building.fallow!=='boolean')return false;
     if(building.cropHarvest!==undefined){const h=building.cropHarvest;if(!isRecord(h)||!building.ready||h.crop!==building.crop||h.crop==='wheat'||!CROP_IDS.includes(h.crop as CropId)||!whole(h.quantity)||h.quantity<1||typeof h.rare!=='boolean'||sum(building.stock as Partial<ResourceMap>)>0)return false;}
     if(building.kind==='farm'&&building.crop&&building.crop!=='wheat'&&building.ready&&building.cropHarvest===undefined)return false;
@@ -313,7 +346,9 @@ export function validateSave(value: unknown): value is SimState {
     }
   }
   if (assignedWorkers > value.population) return false;
-  for (const order of value.orders) if (!isRecord(order) || typeof order.id !== 'string' || typeof order.npc !== 'string' || typeof order.title !== 'string' || !validItems(order.items) || !whole(order.rewardCoins) || !whole(order.rewardXp) || (order.cooldownUntil !== undefined && !nonnegative(order.cooldownUntil))) return false;
+  for (const order of value.orders) if (!isRecord(order) || typeof order.id !== 'string' || typeof order.npc !== 'string' || typeof order.title !== 'string' || !validItems(order.items) || !whole(order.rewardCoins) || !whole(order.rewardXp) || (order.cooldownUntil !== undefined && !nonnegative(order.cooldownUntil)) || (order.bulkUntil !== undefined && !nonnegative(order.bulkUntil)) || (order.bulk !== undefined && typeof order.bulk !== 'boolean')) return false;
+  // Absent on saves written before bulk commissions, so only its type is checked.
+  if (value.nextBulkOrderAt !== undefined && !nonnegative(value.nextBulkOrderAt)) return false;
   for (const quest of value.quests) if (!isRecord(quest) || typeof quest.id !== 'string' || typeof quest.title !== 'string' || typeof quest.description !== 'string' || !whole(quest.target) || !whole(quest.progress) || !whole(quest.rewardCoins) || !whole(quest.rewardXp) || !whole(quest.rewardPrestige) || typeof quest.claimed !== 'boolean') return false;
   if (!isRecord(value.caravan) || !['idle', 'traveling', 'returned'].includes(value.caravan.status as string) || !validItems(value.caravan.cargo) || ['returnAt', 'duration', 'rewardCoins', 'rewardMaterials', 'trips'].some(key => !nonnegative((value.caravan as Record<string, unknown>)[key]))) return false;
   if (value.caravan.destination !== undefined && !DESTINATION_IDS.includes(value.caravan.destination as DestinationId)) return false;
@@ -365,6 +400,12 @@ export function validateSave(value: unknown): value is SimState {
     }
   }
   if (!isRecord(value.needs) || ['food', 'water', 'services', 'environment'].some(key => !nonnegative((value.needs as Record<string, unknown>)[key]) || Number((value.needs as Record<string, unknown>)[key]) > 100)) return false;
+  // Absent on saves written before the town kept clothes and comforts. They stay optional so
+  // an older save still loads; the constructor fills them and the next tick recomputes them.
+  for (const key of ['comfort', 'leisure', 'faith', 'health'] as const) {
+    const care = (value.needs as Record<string, unknown>)[key];
+    if (care !== undefined && (!nonnegative(care) || Number(care) > 100)) return false;
+  }
   if (!isRecord(value.stats) || STAT_COUNTERS.some(key => !whole((value.stats as Record<string, unknown>)[key]))) return false;
   // Absent on saves written before seasonal activities were counted, so only its type is checked.
   if (value.stats.activities !== undefined && !whole(value.stats.activities)) return false;
@@ -378,10 +419,21 @@ export class SimWorld {
     const restored = state === undefined ? createInitialState() : migrateSave(state);
     if (!restored) throw new Error('存档格式无效，原存档未被修改。');
     this.state = restored;
+    this.state.regions ??= [];
+    for(const tile of [...this.state.buildings,...(this.state.roads??[])]){
+      const region=regionAt(tile.x,tile.y);
+      if(region&&!this.state.regions.includes(region))this.state.regions.push(region);
+    }
     this.state.projects ??= freshProjects();
     this.state.farming ??= freshFarming();
     this.state.achievements ??= [];
     this.state.stats.activities ??= 0;
+    this.state.needs.comfort ??= 0;
+    this.state.needs.leisure ??= 0;
+    this.state.needs.faith ??= 0;
+    this.state.needs.health ??= 0;
+    // A save from before commissions existed simply waits one interval for its first one.
+    this.state.nextBulkOrderAt ??= this.state.gameTime + BULK_ORDER_INTERVAL;
     this.state.caravan.destination ??= 'valley';
     this.state.collections ??= {};
     this.state.stories ??= {};
@@ -501,11 +553,13 @@ export class SimWorld {
    * asks the same question, so what it shows and what the simulation accepts never differ.
    */
   ornamentLock(kind: BuildingKind): string | null {
+    if(rareOrnamentUnlocked(kind,this.state.farming))return null;
     const ornament = ornamentRequirement(kind);
     if (!ornament || (this.state.collections?.[ornament.id] ?? 0) >= ornament.tier) return null;
     const style = COLLECTIONS[ornament.id];
     const tier = style.tiers[ornament.tier - 1]!;
-    return `「${BUILDINGS[kind].name}」是${style.name}的纪念摆件：先让「${tier.name}」成形（一处 ${tier.need} 件、${tier.distinct} 种）。`;
+    const rareReward=RARE_REWARDS.find(r=>'kind' in r&&r.kind===kind);
+    return `「${BUILDINGS[kind].name}」是${style.name}的纪念摆件：先让「${tier.name}」成形（一处 ${tier.need} 件、${tier.distinct} 种）。${rareReward?`也可累计 ${rareReward.count} 次珍品收获开放（已有 ${rareCount(this.state.farming)} 次）。`:''}`;
   }
 
   /**
@@ -624,8 +678,21 @@ export class SimWorld {
     return this.success(`已掌握「${definition.name}」！${finished ? '手艺已经全部学完，下面是留住声望的地方。' : definition.unlocks.length ? '新的工坊蓝图已收入建造目录。' : definition.description}`, { coins: -definition.coins });
   }
 
+  regionIssue(x:number,y:number):string|null {
+    const id=regionAt(x,y);
+    return id&&!this.state.regions?.includes(id)?`先在河谷地图开放「${REGIONS[id].name}」，小镇 ${REGIONS[id].level} 级即可免费开放。`:null;
+  }
+  openRegion(id:RegionId):ActionResult {
+    if(!REGION_IDS.includes(id))return this.fail('没有这片新区。','UNKNOWN_REGION');
+    if(this.state.regions?.includes(id))return this.fail('这片新区已经开放。','REGION_OPEN');
+    if(this.state.level<REGIONS[id].level)return this.fail(`小镇 ${REGIONS[id].level} 级即可开放${REGIONS[id].name}。`,'REGION_LOCKED');
+    (this.state.regions??=[]).push(id);
+    return this.success(`${REGIONS[id].name}已经开放，慢慢布置喜欢的生活吧。`);
+  }
+
   placementIssue(x:number,y:number,movingId?:string): {code:string;message:string}|null {
     if(!whole(x)||!whole(y)||x<1||y<1||x>=MAP_SIZE-1||y>=MAP_SIZE-1)return {code:'INVALID_TILE',message:'请选择小镇范围内的空地。'};
+    const region=this.regionIssue(x,y);if(region)return {code:'REGION_LOCKED',message:region};
     const terrain=terrainReason(x,y);
     if(terrain)return {code:'INVALID_TERRAIN',message:terrain};
     if(this.roadAt(x,y))return {code:'ROAD_OCCUPIED',message:'这里是道路，建筑和树木不能占用路面。请选择旁边空地，或先移除这段道路。'};
@@ -649,7 +716,7 @@ export class SimWorld {
     if (!this.has(materials)) return this.fail(`建造需要${resourceLabel(materials)}。`, 'INSUFFICIENT_RESOURCES');
     this.state.coins -= definition.cost; this.deduct(materials);
     const availableWorkers = Math.max(0, this.state.population - this.assignedWorkers());
-    const building: Building = { id: this.id('building'), kind, x, y, level: 1, progress: 0, ready: false, paused: false, stock: {}, workers: Math.min(definition.workers ?? 0, availableWorkers) };
+    const building: Building = { ...(livestockSpec(kind)?{animalAge:0}:{}), id: this.id('building'), kind, x, y, level: 1, progress: 0, ready: false, paused: false, stock: {}, workers: Math.min(definition.workers ?? 0, availableWorkers) };
     this.state.buildings.push(building); this.state.stats.buildingsBuilt++;
     if (kind === 'warehouse') this.state.capacity += this.warehouseIncrement();
     this.earn(0, 15); this.updateNeeds();
@@ -666,6 +733,22 @@ export class SimWorld {
     return this.success(`${BUILDINGS[building.kind].name}已搬到${DISTRICTS[districtAt(x,y)].name}，生产进度与物资已保留。`,{buildingId:id});
   }
 
+  moveBuildings(ids:string[],dx:number,dy:number):ActionResult {
+    if(!ids.length||new Set(ids).size!==ids.length||!Number.isSafeInteger(dx)||!Number.isSafeInteger(dy)||(!dx&&!dy))return this.fail('请选择建筑和移动方向。','INVALID_GROUP');
+    const selected=new Set(ids),group=this.state.buildings.filter(b=>selected.has(b.id));
+    if(group.length!==ids.length)return this.fail('选中的建筑已发生变化，请重新选择。','BUILDING_NOT_FOUND');
+    const occupied=new Set(this.state.buildings.filter(b=>!selected.has(b.id)).map(b=>`${b.x},${b.y}`));
+    for(const b of group){
+      const x=b.x+dx,y=b.y+dy,reason=terrainReason(x,y)||this.regionIssue(x,y);
+      if(reason)return this.fail(reason,'INVALID_DESTINATION');
+      if(this.roadAt(x,y)||occupied.has(`${x},${y}`))return this.fail('整组目标位置有道路或其他建筑，请换个方向。','TILE_OCCUPIED');
+    }
+    this.state.layoutUndo=this.state.buildings.map(({id,x,y})=>({id,x,y}));
+    for(const b of group){b.x+=dx;b.y+=dy;}
+    this.updateNeeds();
+    return this.success(`已一起移动 ${group.length} 座建筑，等级、库存与生产进度全部保留。`);
+  }
+
   arrangeDistricts():ActionResult {
     // Keep homes and services together, then distribute workshops into their suggested districts.
     const occupied=new Set(this.state.buildings.filter(b=>preferredDistrict(b.kind)==='residential').map(b=>`${b.x},${b.y}`));
@@ -675,7 +758,7 @@ export class SimWorld {
       const center=DISTRICTS[district];
       const choices:{x:number;y:number;distance:number}[]=[];
       for(let x=2;x<MAP_SIZE-2;x++)for(let y=2;y<MAP_SIZE-2;y++){
-        if(terrainAt(x,y)!=='land'||districtAt(x,y)!==district||occupied.has(`${x},${y}`)||this.roadAt(x,y))continue;
+        if(this.regionIssue(x,y)||terrainAt(x,y)!=='land'||districtAt(x,y)!==district||occupied.has(`${x},${y}`)||this.roadAt(x,y))continue;
         choices.push({x,y,distance:Math.hypot(x-center.x,y-center.y)+(x%2===0&&y%2===0?0:4)});
       }
       choices.sort((a,b)=>a.distance-b.distance||a.y-b.y||a.x-b.x);
@@ -702,6 +785,7 @@ export class SimWorld {
     if(kind!=='remove'&&!Object.hasOwn(ROAD_TYPES,kind))return this.fail('没有这种路面。','INVALID_ROAD');
     const tiles=roadLine(a,b);if(!tiles.length)return this.fail('请在河谷内选择道路起点和终点。','INVALID_TILE');
     for(const t of tiles){
+      const locked=this.regionIssue(t.x,t.y);if(locked&&kind!=='remove')return this.fail(locked,'REGION_LOCKED');
       if(terrainAt(t.x,t.y)==='bridge')continue;
       if(terrainReason(t.x,t.y))return this.fail('路线经过河道或山峰，请沿河岸或已有桥梁规划。','INVALID_TERRAIN');
       if(this.state.buildings.some(v=>v.x===t.x&&v.y===t.y))return this.fail('路线经过建筑，请绕开建筑再铺设。','TILE_OCCUPIED');
@@ -814,6 +898,17 @@ export class SimWorld {
     return this.success(`已拆除${definition.name}，回收 ${coins} 金币及部分材料。`, { coins, items: refund, buildingId: id });
   }
 
+  setHomeStyle(id: string, style: string): ActionResult {
+    const b=this.state.buildings.find(b=>b.id===id);
+    if(!b||!BUILDINGS[b.kind].housing)return this.fail('请选择一座住宅。','NOT_HOME');
+    if(!Object.hasOwn(HOME_STYLES,style))return this.fail('没有这种住宅外观。','INVALID_STYLE');
+    if((b.livedSeconds??0)<HOME_STYLES[style as HomeStyle].seconds)return this.fail('邻居住久一些就会自然开放。','STYLE_LOCKED');
+    const rareNeed=rareStyleRequirement(style);
+    if(rareCount(this.state.farming)<rareNeed)return this.fail(`累计 ${rareNeed} 次珍品收获即可开放。`,'STYLE_LOCKED');
+    b.homeStyle=style as HomeStyle;
+    return this.success('住宅外观已换好。',{buildingId:id});
+  }
+
   toggleProduction(id: string): ActionResult {
     const building = this.state.buildings.find(candidate => candidate.id === id);
     if (!building) return this.fail('没有找到这座建筑。', 'BUILDING_NOT_FOUND');
@@ -857,6 +952,12 @@ export class SimWorld {
     if ((order.cooldownUntil ?? 0) > this.state.gameTime) return this.fail('新订单还在路上。', 'ORDER_COOLDOWN');
     if (!this.has(order.items)) return this.fail(`还没备齐${resourceLabel(order.items)}，去工坊看看吧。`, 'INSUFFICIENT_RESOURCES');
     this.deduct(order.items); this.earn(order.rewardCoins, order.rewardXp); this.state.stats.ordersCompleted++;
+    // A bulk commission is not part of the rolling board: it leaves once filled and the next
+    // one arrives on its own schedule, so the board does not refill with a permanent extra slot.
+    if (order.bulk) {
+      this.state.orders.splice(index, 1);
+      return this.success(`大单交付完成！「${order.title}」带来 ${order.rewardCoins} 金币与 ${order.rewardXp} 经验。`, { coins: order.rewardCoins, xp: order.rewardXp });
+    }
     this.state.orders[index] = this.generateOrder();
     return this.success(`已交付「${order.title}」，获得 ${order.rewardCoins} 金币。`, { coins: order.rewardCoins, xp: order.rewardXp });
   }
@@ -864,6 +965,7 @@ export class SimWorld {
   cancelOrder(id: string): ActionResult {
     const index = this.state.orders.findIndex(order => order.id === id);
     if (index < 0) return this.fail('没有找到这笔订单。', 'ORDER_NOT_FOUND');
+    if (this.state.orders[index].bulk) return this.fail('这是远方商会的大单，不能取消；备齐物资再交付。', 'BULK_ORDER_LOCKED');
     if ((this.state.orders[index].cooldownUntil ?? 0) > this.state.gameTime) return this.fail('商人正在准备新订单。', 'ORDER_COOLDOWN');
     const replacement = this.generateOrder();
     replacement.cooldownUntil = this.state.gameTime + 60;
@@ -1078,7 +1180,11 @@ export class SimWorld {
       stone: Math.max(0, cost.stone - this.state.resources.stone),
     };
     const premium = bought.wood * BUY_IN_PRICE.wood + bought.stone * BUY_IN_PRICE.stone;
-    return { coins: cost.coins + premium, wood: cost.wood - bought.wood, stone: cost.stone - bought.stone, bought };
+    // A healthy town gets the work done for less, and one doctor short pays the old price.
+    // Only the labour charge shrinks; bought-in materials are never discounted, so the
+    // emergency safety valve from 《15》 still costs what it costs.
+    const billed = Math.ceil(cost.coins * (1 - this.state.needs.health / 100 * HEALTH_REPAIR_RELIEF));
+    return { coins: billed + premium, wood: cost.wood - bought.wood, stone: cost.stone - bought.stone, bought };
   }
 
   repair(id: string): ActionResult {
@@ -1181,13 +1287,32 @@ export class SimWorld {
     this.state.needs.water = homes.length ? watered.reduce((n, b) => n + BUILDINGS[b.kind].housing! * b.level, 0) / this.housingCapacity() * 100 : 0;
     this.state.needs.services = clamp(this.state.buildings.filter(building => BUILDINGS[building.kind].services && !building.damaged).reduce((total, building) => total + building.level * BUILDINGS[building.kind].services!, 10), 0, 100);
     this.state.needs.environment = clamp(60 + this.state.buildings.filter(building => !building.damaged).reduce((total, building) => total + building.level * (BUILDINGS[building.kind].environment ?? 0), 0) + collectionEnvironment(this.state.collections ?? {}) + storyEnvironment(this.state.stories ?? {}), 0, 100);
+    const care = careNeeds(this.state.resources, this.state.population);
+    this.state.needs.comfort = care.comfort;
+    this.state.needs.leisure = care.leisure;
+    // Faith and health are counted in residents served, against the people living here.
+    const served = (field: 'faith' | 'health') => this.state.buildings
+      .filter(building => !building.damaged)
+      .reduce((total, building) => total + (BUILDINGS[building.kind][field] ?? 0) * building.level, 0);
+    const souls = Math.max(1, this.state.population);
+    this.state.needs.faith = clamp(served('faith') / souls * 100, 0, 100);
+    this.state.needs.health = clamp(served('health') / souls * 100, 0, 100);
   }
   private targetHappiness(): number {
     const needs = this.state.needs;
     const basePenalty = [-5, 0, 6, 12, 20][this.state.taxRate];
     const penalty = basePenalty > 0 && this.state.researched.includes('civics') ? basePenalty / 2 : basePenalty;
     const damage = this.state.buildings.filter(building => building.damaged).length * 5;
-    return clamp(needs.food * 0.4 + needs.water * 0.25 + needs.services * 0.2 + needs.environment * 0.15 - penalty - damage + (this.state.festivalUntil > this.state.gameTime ? 12 : 0) + (this.activityActive() ? ACTIVITY_HAPPINESS : 0), 10, 100);
+    // Clothes and small comforts only ever add. The base four needs still decide the town's
+    // mood exactly as before, so a town that cannot make these goods is not worse off than
+    // it was — the deepest chains stay an opportunity rather than a treadmill.
+    const care = (needs.comfort + needs.leisure) / 200 * CARE_BONUS;
+    // A settled town carries a heavy tax more gracefully: good health and a believing
+    // congregation buy back part of the penalty. Both only ever reduce a cost, so a town
+    // without a chapel or clinic keeps exactly the mood it had before this layer existed.
+    const relief = needs.health / 100 * HEALTH_TAX_RELIEF + needs.faith / 100 * HEALTH_TAX_RELIEF;
+    const softened = penalty > 0 ? penalty * (1 - Math.min(0.8, relief)) : penalty;
+    return clamp(needs.food * 0.4 + needs.water * 0.25 + needs.services * 0.2 + needs.environment * 0.15 - softened - damage + care + (this.state.festivalUntil > this.state.gameTime ? 12 : 0) + (this.activityActive() ? ACTIVITY_HAPPINESS : 0), 10, 100);
   }
   private taxPerDay(happiness = this.state.happiness): number {
     if (this.state.needs.food <= 0 || happiness < 25) return 0;
@@ -1199,6 +1324,36 @@ export class SimWorld {
   }
   stockTargets(): ResourceMap { return stockTargets(this.state); }
   woodReserve(): number { return woodReserve(this.state); }
+
+  /**
+   * Coins the market asks for one unit in, or null when it does not trade that good.
+   *
+   * One straightforward multiple of the selling price. There used to be a second branch here
+   * quoting timber and stone at the repair emergency price, but the market no longer trades
+   * raw materials at all, so it could never be reached.
+   */
+  marketPrice(resource: Resource): number | null {
+    return MARKET_GOODS.includes(resource) ? RESOURCES[resource].sellPrice * MARKET_MARKUP : null;
+  }
+
+  /**
+   * Bring goods in from outside. The price is a multiple of what the town would get selling
+   * them, so this shortens a wait at a real cost and can never be turned into income.
+   */
+  buyResource(resource: Resource, amount: number): ActionResult {
+    const unit = this.marketPrice(resource);
+    if (unit === null) return this.fail('集市不做这项买卖。', 'NOT_TRADED');
+    if (!whole(amount) || amount < 1 || amount > 999) return this.fail('进货数量要在 1 到 999 之间。', 'INVALID_AMOUNT');
+    if (!this.state.buildings.some(building => building.kind === 'market' && !building.damaged)) return this.fail('需要一座可用的集市才能进货。', 'MARKET_REQUIRED');
+    const coins = unit * amount;
+    if (this.state.coins < coins) return this.fail(`买进 ${amount} 份${RESOURCES[resource].name}需要 ${coins} 金币。`, 'INSUFFICIENT_GOLD');
+    if (this.room() < amount) return this.fail(`仓库只剩 ${this.room()} 格，先腾出仓位再进货。`, 'WAREHOUSE_FULL');
+    // Deliberately not earn(): a purchase is not income, and must not count toward earnings.
+    this.state.coins -= coins;
+    this.state.resources[resource] += amount;
+    this.updateNeeds();
+    return this.success(`从集市买进 ${amount} 份${RESOURCES[resource].name}，花费 ${coins} 金币。`, { coins: -coins, items: { [resource]: amount } });
+  }
 
   surplusQuote(): { items: Partial<ResourceMap>; quantity: number; coins: number } {
     const targets = this.stockTargets(); const items: Partial<ResourceMap> = {};
@@ -1273,15 +1428,154 @@ export class SimWorld {
     if (growth > 0 && this.state.capacity - sum(levels) < growth) return 'warehouse';
     return null;
   }
-  private cycleTime(building: Building): number {
+  /**
+   * Walking distance to the nearest producer of each workshop's ingredients, keyed by building.
+   *
+   * Recomputing this on every call would run a breadth-first sweep per resource per tick, which
+   * is far too much work, so the result is cached against the town's layout: buildings and roads
+   * are the only things that can change a haul, and moving one rebuilds the cache on next use.
+   */
+  private supplyHaulCache?: { signature: string; hauls: Map<string, number> };
+  private supplyHauls(): Map<string, number> {
+    const roads = this.state.roads ?? [];
+    // The crop is part of the identity: a field switched from wheat to apples stops supplying
+    // the mill beside it, and a signature that ignored the crop would keep paying the bonus.
+    const signature = this.state.buildings.map(building => `${building.id}:${building.kind}:${building.x},${building.y}:${building.damaged ? 'broken' : 'well'}:${building.crop ?? ''}`).join('|')
+      + ';' + roads.map(tileKey).join('|');
+    if (this.supplyHaulCache?.signature !== signature) {
+      this.supplyHaulCache = { signature, hauls: supplyHauls(this.state.buildings, roads) };
+    }
+    return this.supplyHaulCache.hauls;
+  }
+  /** How far this workshop's ingredients travel, or Infinity when nothing reaches it. */
+  private haulOf(building: Building, hauls: Map<string, number>): number {
+    return hauls.get(building.id) ?? Infinity;
+  }
+  /** The cycle-time multiplier a haul of this length earns, for the interface to state. */
+  supplyFactorAt(distance: number): number {
+    return supplyFactor(distance);
+  }
+  /**
+   * The loads being carried right now: one entry per supplied workshop, giving the workshop
+   * its ingredients come from. The map draws a resident walking each of these, so the bonus is
+   * something the player can watch rather than only read.
+   *
+   * Capped, because a large town has far more links than anyone needs to see at once.
+   */
+  freightRoutes(limit = 6): { from: { x: number; y: number }; to: { x: number; y: number }; kind: BuildingKind }[] {
+    const hauls = this.supplyHauls();
+    const standing = this.state.buildings.filter(building => !building.damaged);
+    const navigation = new TownNavigation(standing, this.state.roads ?? []);
+    const routes: { from: { x: number; y: number }; to: { x: number; y: number }; kind: BuildingKind }[] = [];
+    for (const building of standing) {
+      if (routes.length >= limit) break;
+      const haul = this.haulOf(building, hauls);
+      if (!Number.isFinite(haul) || haul >= LOCAL_SUPPLY_RANGE) continue;
+      const supplier = this.nearestSupplier(building, standing);
+      if (!supplier) continue;
+      // Two workshops boxed in so tightly that they share a single patch of open ground have
+      // no journey between them: a carrier would stand on that one tile and flip direction
+      // forever, occupying a slot and twitching in place. Nothing worth drawing is happening,
+      // so no load is sent.
+      if (sameTile(navigation.nearest(supplier), navigation.nearest(building))) continue;
+      routes.push({ from: { x: supplier.x, y: supplier.y }, to: { x: building.x, y: building.y }, kind: building.kind });
+    }
+    return routes;
+  }
+  /** The workshop that actually makes this building's ingredients, and stands closest. */
+  private nearestSupplier(building: Building, standing: Building[]): Building | undefined {
+    const inputs = Object.keys(BUILDINGS[building.kind].input ?? {}) as Resource[];
+    let best: Building | undefined;
+    let bestDistance = Infinity;
+    for (const candidate of standing) {
+      if (candidate.id === building.id) continue;
+      const makes = Object.keys(BUILDINGS[candidate.kind].output ?? {}) as Resource[];
+      if (!makes.some(key => inputs.includes(key))) continue;
+      const distance = Math.hypot(candidate.x - building.x, candidate.y - building.y);
+      if (distance < bestDistance) { bestDistance = distance; best = candidate; }
+    }
+    return best;
+  }
+  private cycleTime(building: Building, hauls: Map<string, number> = this.supplyHauls()): number {
     const definition = BUILDINGS[building.kind];
     const seasonal = building.kind === 'farm' && this.state.season === 'winter' ? 2.5 : building.kind === 'farm' && this.state.season === 'autumn' ? 0.85 : 1;
     const assigned = this.state.buildings.reduce((total, item) => total + (item.paused || item.damaged ? 0 : (item.workers ?? BUILDINGS[item.kind].workers ?? 0)), 0);
     const workforce = assigned > this.state.population ? assigned / Math.max(1, this.state.population) : 1;
     const morale = this.state.happiness < 35 ? 1.5 : 1;
     const staffing = definition.workers ? definition.workers / Math.max(1, building.workers ?? definition.workers) : 1;
-    return (building.kind==='farm'?CROPS[building.crop??'wheat'].cycle:(definition.cycle??1)) * (building.kind==='farm'?1-soilLevel(building.tended).bonus*.04:1) * (this.state.researched.includes('efficiency') ? 0.9 : 1) * honourCycleFactor(this.state.honours ?? {}) * (hasProjectTitle(this.state,'craft')?0.95:1) * seasonal * workforce * staffing * morale * Math.max(0.6, 1 - (building.level - 1) * 0.15);
+    return (building.kind==='farm'?CROPS[building.crop??'wheat'].cycle:(definition.cycle??1)) * (building.kind==='farm'?1-soilLevel(building.tended).bonus*.04:1) * (this.state.researched.includes('efficiency') ? 0.9 : 1) * honourCycleFactor(this.state.honours ?? {}) * (hasProjectTitle(this.state,'craft')?0.95:1) * supplyFactor(this.haulOf(building, hauls)) * seasonal * workforce * staffing * morale * Math.max(0.6, 1 - (building.level - 1) * 0.15);
   }
+  /**
+   * A bulk commission: several goods the town can actually make, at volume. Like every other
+   * order it is filtered through canSupply, so it can never ask for something the town has no
+   * way to produce — and a town that cannot offer at least three kinds gets no commission,
+   * because "a big multi-good job" is the whole point of it.
+   */
+  private generateBulkOrder(): Order {
+    const pool = this.commissionPool();
+    const sequence = this.state.nextId;
+    const count = Math.min(pool.length, 3 + sequence % 2);
+    const items: Partial<ResourceMap> = {};
+    // Consecutive indexes from a rotating start, so the picks are distinct without relying on
+    // a stride that may share a factor with the pool size.
+    for (let i = 0; i < count; i++) {
+      const key = pool[(sequence + i) % pool.length]!;
+      // Never ask for more than the town is holding: the pool guarantees it has at least the
+      // minimum, and the order stays inside that so it can be filled the moment it arrives.
+      items[key] = Math.min(BULK_ORDER_MIN + (sequence + i) % 6, this.state.resources[key]);
+    }
+    const base = RESOURCE_KEYS.reduce((total, key) => total + (items[key] ?? 0) * RESOURCES[key].sellPrice, 0);
+    return {
+      id: this.id('order'), bulk: true,
+      bulkUntil: this.state.gameTime + BULK_ORDER_PATIENCE,
+      npc: '闻书 · 小镇文书', title: '远方商会的大单',
+      items,
+      rewardCoins: Math.round(base * BULK_ORDER_RATIO),
+      rewardXp: 90,
+    };
+  }
+
+  /**
+   * The finished goods a commission may be written for: things the town can make **and is
+   * demonstrably holding** at least a minimum order of right now.
+   *
+   * The second condition is what makes a commission fillable rather than merely possible.
+   * Structural capability is not enough — a town can have a complete tailoring chain and still
+   * never accumulate clothes, because its residents wear them faster than its tailors sew them.
+   * Orders were being written for goods like that, and since a commission cannot be cancelled
+   * it would sit on the board until the company lost patience and withdrew it. Asking only for
+   * what is visibly in the barn is both a guarantee and the natural thing for a trading company
+   * to do: it buys what you have.
+   *
+   * Terminal goods only: see TERMINAL_GOODS. An order for wool or cloth could never be filled
+   * while the weaver and tailor were still consuming them.
+   */
+  private commissionPool(): Resource[] {
+    return TERMINAL_GOODS.filter(key => this.canSupply(key) && this.state.resources[key] >= BULK_ORDER_MIN);
+  }
+
+  /** Places the next bulk commission once the town is large enough to fill a varied one. */
+  private maybeOfferBulkOrder(): void {
+    if (this.state.level < BULK_ORDER_UNLOCK_LEVEL) return;
+    const standing = this.state.orders.find(order => order.bulk);
+    if (standing) {
+      // The company does not wait forever: see BULK_ORDER_PATIENCE. Withdrawing it is what
+      // keeps an unfillable request from blocking the board permanently.
+      if ((standing.bulkUntil ?? Infinity) <= this.state.gameTime) {
+        this.state.orders = this.state.orders.filter(order => order.id !== standing.id);
+        this.state.nextBulkOrderAt = this.state.gameTime + BULK_ORDER_INTERVAL;
+        this.log(`远方商会等不及「${standing.title}」，把这一单撤回去了。`, 'info');
+      }
+      return;
+    }
+    if ((this.state.nextBulkOrderAt ?? 0) > this.state.gameTime) return;
+    // A town with only one or two products has nothing to make a varied order out of.
+    if (this.commissionPool().length < 3) return;
+    this.state.orders.push(this.generateBulkOrder());
+    this.state.nextBulkOrderAt = this.state.gameTime + BULK_ORDER_INTERVAL;
+    this.log('远方商会送来一单大生意，去订单板看看。', 'info');
+  }
+
   private canSupply(resource: Resource, visiting = new Set<Resource>()): boolean {
     if (visiting.has(resource)) return false;
     const next = new Set(visiting).add(resource);
@@ -1309,17 +1603,23 @@ export class SimWorld {
     if (!finite(seconds) || seconds <= 0) return;
     // Headless callers may advance multiple days at once; no caller can jump unbounded time.
     const elapsed = Math.min(seconds, MAX_OFFLINE_SECONDS);
+    growHomes(this.state.buildings,this.state.population,elapsed);
+    growOrchards(this.state.buildings,elapsed);
     const previousTime = this.state.gameTime;
     this.state.gameTime += elapsed;
     this.state.season = (['spring', 'summer', 'autumn', 'winter'] as const)[Math.floor(this.state.gameTime / SEASON_SECONDS) % 4];
     const targets = this.stockTargets();
+    const hauls = this.supplyHauls();
     for (const building of this.state.buildings) {
       const definition = BUILDINGS[building.kind];
+      if(definition.autoCollect&&building.ready&&!building.paused&&!building.damaged)this.collect(building.id);
       if (!definition.cycle || building.ready || building.paused || building.damaged || (definition.workers && building.workers === 0)) continue;
+      const productionElapsed=raiseChicks(building,this.state.resources,elapsed);
+      if(productionElapsed<=0)continue;
       const output = this.productionOutput(building, targets);
       if (this.productionBlock(building, targets)) continue;
-      building.progress = Math.min(1, building.progress + elapsed / this.cycleTime(building));
-      if (building.progress >= 1) { this.deduct(definition.input ?? {}); building.stock = output; building.ready = true;if(building.kind==='farm'&&building.crop&&building.crop!=='wheat')building.cropHarvest=harvestQuote(building.crop,building.level,building.tended??0,Number(building.id.replace(/\D/g,''))||1); }
+      building.progress = Math.min(1, building.progress + productionElapsed / this.cycleTime(building, hauls));
+      if (building.progress >= 1) { recordOrchard(building); this.deduct(definition.input ?? {}); building.stock = output; building.ready = true;if(building.kind==='farm'&&building.crop&&building.crop!=='wheat')building.cropHarvest=harvestQuote(building.crop,building.level,building.tended??0,Number(building.id.replace(/\D/g,''))||1); }
     }
     if (this.state.caravan.status === 'traveling' && this.state.gameTime >= this.state.caravan.returnAt) {
       this.state.caravan.status = 'returned'; this.log('远方传来铃声，商队已经满载归来，去码头迎接他们吧。', 'success');
@@ -1329,6 +1629,7 @@ export class SimWorld {
     const newDays = Math.floor(this.state.gameTime / GAME_DAY_SECONDS) - Math.floor(previousTime / GAME_DAY_SECONDS);
     for (let day = 0; day < newDays; day++) this.settleDay();
     if (this.disasterDue()) this.triggerDisaster();
+    this.maybeOfferBulkOrder();
     this.completeRepairs();this.completeActivities();
     if (this.state.settings.autoMayor && this.state.gameTime - this.state.lastMayorAt >= 5) this.runMayor();
     this.syncProgress();
@@ -1342,6 +1643,13 @@ export class SimWorld {
     let demand = Math.ceil(this.state.population / 4);
     for (const key of ['fish', 'bread'] as const) { const used = Math.min(demand, this.state.resources[key]); this.state.resources[key] -= used; demand -= used; }
     if (this.state.season === 'winter') { const fuel = Math.min(this.state.resources.wood, Math.ceil(this.state.population / 8)); this.state.resources.wood -= fuel; if (fuel === 0) this.state.happiness = Math.max(10, this.state.happiness - 3); }
+    // Worn and enjoyed, not only sold: residents get dressed and share a little every day.
+    // What the town cannot supply is simply not supplied, which is why the two needs below
+    // can never push happiness down.
+    const goods = dailyGoods(this.state.population);
+    this.state.resources.clothing -= Math.min(goods.clothing, this.state.resources.clothing);
+    let enjoyed = goods.luxury;
+    for (const key of LEISURE_GOODS) { if (enjoyed <= 0) break; const used = Math.min(enjoyed, this.state.resources[key]); this.state.resources[key] -= used; enjoyed -= used; }
     this.updateNeeds();
     const tax = this.taxPerDay(); this.earn(tax);
     if (demand > 0) { this.state.happiness = Math.max(10, this.state.happiness - 8); this.log('食物不足，居民有些担忧。收取鲜鱼或烤一些面包吧。', 'warning'); }
@@ -1401,6 +1709,12 @@ export class SimWorld {
     if (this.state.happiness < 60 && this.state.taxRate > 1) { this.setTax(1); this.log('市长助手：居民需要缓一缓，暂时降低税率。', 'mayor'); return; }
     if (this.state.caravan.status === 'returned') { const result = this.dispatchCaravan(); if (result.ok) { this.log('市长助手：商队已经回来了，建材已收入仓库。', 'mayor'); return; } }
     const foodReserve = Math.ceil(this.state.population / 4) * 3;
+    // A bulk commission is worth doing precisely because it is large, so it is considered
+    // before the ordinary board — but it still has to clear the food and timber reserves.
+    const commission = this.state.orders.find(candidate => candidate.bulk && this.has(candidate.items)
+      && this.state.resources.wood - (candidate.items.wood ?? 0) >= this.woodReserve()
+      && this.state.resources.fish + this.state.resources.bread - (candidate.items.fish ?? 0) - (candidate.items.bread ?? 0) >= foodReserve);
+    if (commission) { this.fulfillOrder(commission.id); this.log('市长助手：备齐了口粮与木材，交付远方商会的大单。', 'mayor'); return; }
     const order = this.state.orders.find(candidate => (candidate.cooldownUntil ?? 0) <= this.state.gameTime && this.has(candidate.items) && this.state.resources.wood - (candidate.items.wood ?? 0) >= this.woodReserve() && this.state.resources.fish + this.state.resources.bread - (candidate.items.fish ?? 0) - (candidate.items.bread ?? 0) >= foodReserve);
     if (order) { this.fulfillOrder(order.id); this.log('市长助手：保留三日口粮后，交付一笔邻里订单。', 'mayor'); return; }
     if (this.state.caravan.status === 'idle' && this.has(this.state.caravan.cargo) && this.state.resources.fish + this.state.resources.bread > foodReserve + 11) {
@@ -1435,11 +1749,14 @@ export class SimWorld {
     const elapsed = finite(seconds) ? clamp(seconds, 0, MAX_OFFLINE_SECONDS) : 0;
     const report: OfflineReport = { seconds: elapsed, elapsed, capped: finite(seconds) && seconds > MAX_OFFLINE_SECONDS, produced: emptyResources(), consumed: emptyResources(), coins: 0, tax: 0, caravanReturned: false, happinessChange: 0, farmCoins:0, cropQuantity:0 };
     if (elapsed <= 0) return report;
+    growHomes(this.state.buildings,this.state.population,elapsed);
+    growOrchards(this.state.buildings,elapsed);
     const originalHappiness = this.state.happiness;
     const originalTime = this.state.gameTime;
     // Settle every chain in source-to-product order, independent of building placement order.
     const sequence = PRODUCTION_SEQUENCE;
     const candidates = sequence.flatMap(kind => this.state.buildings.filter(candidate => candidate.kind === kind && !candidate.paused && !candidate.damaged && !(BUILDINGS[kind].workers && candidate.workers === 0)));
+    const hauls = this.supplyHauls();
     for (const building of candidates) {
       const kind = building.kind;
       if(kind==='farm'){
@@ -1452,7 +1769,7 @@ export class SimWorld {
         if(building.ready&&!receive())continue;
         let remaining=elapsed;
         while(remaining>1e-8&&!building.fallow&&!building.ready&&!this.productionBlock(building)){
-          const cycle=this.cycleTime(building),timeToHarvest=(1-building.progress)*cycle;
+          const cycle=this.cycleTime(building,hauls),timeToHarvest=(1-building.progress)*cycle;
           if(timeToHarvest>remaining+1e-8){building.progress+=remaining/cycle;break;}
           remaining=Math.max(0,remaining-timeToHarvest);building.progress=1;building.ready=true;
           if(building.crop&&building.crop!=='wheat'){building.stock={};building.cropHarvest=harvestQuote(building.crop,building.level,building.tended??0,Number(building.id.replace(/\D/g,''))||1);}
@@ -1467,8 +1784,12 @@ export class SimWorld {
         this.state.stats.collected += sum(building.stock); this.trackCrafts(building.stock); building.stock = {}; building.ready = false; building.progress = 0;
       }
       if (building.ready) continue;
-      const cycle = this.cycleTime(building);
-      const totalProgress = elapsed / cycle + building.progress;
+      const feedBefore=this.state.resources.feed;
+      const productionElapsed=raiseChicks(building,this.state.resources,elapsed);
+      report.consumed.feed+=feedBefore-this.state.resources.feed;
+      if(productionElapsed<=0)continue;
+      const cycle = this.cycleTime(building, hauls);
+      const totalProgress = productionElapsed / cycle + building.progress;
       const desired = Math.floor(totalProgress);
       const input = BUILDINGS[kind].input ?? {};
       const output = this.productionOutput(building);
@@ -1480,6 +1801,7 @@ export class SimWorld {
         const used = (input[key] ?? 0) * possible; const made = (output[key] ?? 0) * possible;
         this.state.resources[key] += made - used; report.consumed[key] += used; report.produced[key] += made;
       }
+      recordOrchard(building,possible);
       this.state.stats.collected += sum(output) * possible;
       this.trackCrafts({ tools: (output.tools ?? 0) * possible, clothing: (output.clothing ?? 0) * possible });
       // An unfinished batch cannot accumulate work while ingredients or storage are missing.
@@ -1491,6 +1813,13 @@ export class SimWorld {
     let demand = Math.ceil(this.state.population / 4) * days;
     let fed = 0;
     for (const key of ['fish', 'bread'] as const) { const used = Math.min(demand, this.state.resources[key]); this.state.resources[key] -= used; report.consumed[key] += used; demand -= used; fed += used; }
+    // Clothes are worn and comforts shared over the days that passed, counted into the report
+    // exactly like the rations above so the offline settlement still reconciles every resource.
+    const goods = dailyGoods(this.state.population);
+    const worn = Math.min(goods.clothing * days, this.state.resources.clothing);
+    this.state.resources.clothing -= worn; report.consumed.clothing += worn;
+    let enjoyed = goods.luxury * days;
+    for (const key of LEISURE_GOODS) { if (enjoyed <= 0) break; const used = Math.min(enjoyed, this.state.resources[key]); this.state.resources[key] -= used; report.consumed[key] += used; enjoyed -= used; }
     this.state.gameTime += elapsed;
     this.state.season = (['spring', 'summer', 'autumn', 'winter'] as const)[Math.floor(this.state.gameTime / SEASON_SECONDS) % 4];
     if (this.state.season === 'winter' && days > 0) {
@@ -1500,7 +1829,13 @@ export class SimWorld {
     this.completeRepairs();this.completeActivities();
     this.updateNeeds();
     const shortagePenalty = demand > 0 ? Math.min(18, demand) : 0;
-    this.state.happiness = clamp(originalHappiness - shortagePenalty + (this.state.taxRate === 0 ? Math.min(5, days) : 0), 25, 100);
+    // The town settles on the mood its circumstances actually produce — the same target the
+    // online tick converges to, so taxes, damage, clothes, comforts, faith and health all count
+    // here too — and then the hunger of the days you were away is subtracted from that. The
+    // previous formula only subtracted the shortage, which meant a chapel and clinic bought for
+    // a heavy tax did nothing at all during the eight hours a player is most likely to rely on
+    // them. The +5 for a tax-free town is no longer a special case: it is already in the target.
+    this.state.happiness = clamp(this.targetHappiness() - shortagePenalty, 25, 100);
     const averageHappiness = (originalHappiness + this.state.happiness) / 2;
     const fedDays = days === 0 ? 0 : Math.min(days, fed / Math.max(1, Math.ceil(this.state.population / 4)));
     const tax = Math.floor(fedDays * this.state.population * this.state.taxRate * 3 * averageHappiness / 100);
@@ -1524,6 +1859,7 @@ export class SimWorld {
 
   observe() {
     this.updateNeeds(); this.syncProgress();
+    const hauls = this.supplyHauls();
     return {
       gameTime: this.state.gameTime, season: this.state.season, level: this.state.level,
       clock: { label: clockLabel(this.state.gameTime), day: dayOf(this.state.gameTime), part: partOfDay(this.state.gameTime), partName: PARTS[partOfDay(this.state.gameTime)].name, note: PARTS[partOfDay(this.state.gameTime)].note, untilNextPart: secondsUntilNextPart(this.state.gameTime) },
@@ -1533,6 +1869,8 @@ export class SimWorld {
       map: { size: MAP_SIZE-2, districts: Object.entries(DISTRICTS).map(([id,d])=>({id,...d,buildings:this.state.buildings.filter(b=>districtAt(b.x,b.y)===id).length})) },
       warehouseUsed: sum(this.state.resources), warehouseCapacity: this.state.capacity, warehouseFree: this.room(),
       taxPerDay: this.taxPerDay(), taxRate: this.state.taxRate, needs: clone(this.state.needs),
+      market: MARKET_GOODS.map(key => ({ resource: key, unit: this.marketPrice(key)! })),
+      marketReady: this.state.buildings.some(building => building.kind === 'market' && !building.damaged),
       stockTargets: this.stockTargets(), woodReserve: this.woodReserve(), surplus: this.surplusQuote(),
       farming:this.garden(),
       projects: PROJECT_IDS.map(id=>({id,name:PROJECTS[id].name,title:PROJECTS[id].title,perk:PROJECTS[id].perk,...this.projectStatus(id)})),
@@ -1564,7 +1902,7 @@ export class SimWorld {
         repairingUntil: building.repairingUntil,
         x: building.x, y: building.y,
       })),
-      production: this.state.buildings.filter(building => BUILDINGS[building.kind].cycle).map(building => ({ buildingId: building.id, kind: building.kind, paused: building.paused, ready: building.ready, input: BUILDINGS[building.kind].input ?? {}, output: this.productionOutput(building, this.stockTargets(), false), cycle: this.cycleTime(building), focus: building.productionFocus ?? 'balanced', blocked: this.productionBlock(building) })),
+      production: this.state.buildings.filter(building => BUILDINGS[building.kind].cycle).map(building => ({ buildingId: building.id, kind: building.kind, paused: building.paused, ready: building.ready, input: BUILDINGS[building.kind].input ?? {}, output: this.productionOutput(building, this.stockTargets(), false), cycle: this.cycleTime(building, hauls), haul: Number.isFinite(this.haulOf(building, hauls)) ? Math.round(this.haulOf(building, hauls)) : null, focus: building.productionFocus ?? 'balanced', blocked: this.productionBlock(building) })),
     };
   }
 }

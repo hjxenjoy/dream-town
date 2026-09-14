@@ -3,7 +3,7 @@ import { executeGameTool } from '../src/sim/tools.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
-import { terrainAt, riverX } from '../src/sim/terrain.ts';
+import { terrainAt, riverX, MAP_SIZE, TILE_W, TILE_H } from '../src/sim/terrain.ts';
 import { roadLine, tileKey } from '../src/sim/roads.ts';
 import { TownNavigation } from '../src/sim/navigation.ts';
 import { TownCrowd } from '../src/sim/crowd.ts';
@@ -86,8 +86,9 @@ test('moving crowds stay on traversable cells over time and replan when a buildi
 test('overview camera cannot drift away from the valley at mobile or desktop minimum zoom',()=>{
  for(const [width,height,zoom] of [[390,844,390/5700],[1280,720,560/2900],[1920,1080,.22]])for(const x of [-100000,100000])for(const y of [-100000,100000]){
    const center=valleyCameraCenter(x,y,width,height,zoom),halfX=width/zoom/2,halfY=height/zoom/2;
-   if(halfX>=3300)assert.equal(center.x,0);else {assert.ok(center.x-halfX>=-3300);assert.ok(center.x+halfX<=3300);}
-   if(halfY>=2050)assert.equal(center.y,1450);else{assert.ok(center.y-halfY>=-600);assert.ok(center.y+halfY<=3500);}
+   const limitX=MAP_SIZE*TILE_W/2+516,limitY=MAP_SIZE*TILE_H+716;
+   if(halfX>=limitX)assert.equal(center.x,0);else {assert.ok(center.x-halfX>=-limitX);assert.ok(center.x+halfX<=limitX);}
+   if(halfY>=(limitY+600)/2)assert.equal(center.y,(limitY-600)/2);else{assert.ok(center.y-halfY>=-600);assert.ok(center.y+halfY<=limitY);}
    assert.ok(center.x-halfX>-14000&&center.x+halfX<14000&&center.y-halfY>-12800&&center.y+halfY<15200);
  }
 });

@@ -1,7 +1,8 @@
+import { PLAYABLE_SIZE } from './terrain.ts';
 import { CROP_IDS, type CropId } from './farming.ts';
 import { PROJECT_IDS, type ProjectId } from './projects.ts';
 import type { RoadKind } from './roads.ts';
-import { BUILDING_KEYS, TECHNOLOGY_KEYS, RESOURCE_KEYS, type Resource, type TechnologyId, type BuildingKind } from './data.ts';
+import { BUILDING_KEYS, MARKET_GOODS, TECHNOLOGY_KEYS, RESOURCE_KEYS, type Resource, type TechnologyId, type BuildingKind } from './data.ts';
 import { SimWorld, type ActionResult } from './world.ts';
 
 type Parameters = Record<string, unknown>;
@@ -9,7 +10,7 @@ interface ToolDefinition {
   type: 'function';
   function: { name: string; description: string; parameters: Parameters };
 }
-const coordinate = { type: 'integer', minimum: 1, maximum: 46 };
+const coordinate = { type: 'integer', minimum: 1, maximum: PLAYABLE_SIZE };
 const string = { type: 'string' };
 function tool(name: string, description: string, properties: Parameters = {}, required: string[] = []): ToolDefinition {
   return { type: 'function', function: { name, description, parameters: { type: 'object', properties, required, additionalProperties: false } } };
@@ -24,6 +25,7 @@ export const GAME_TOOLS: ToolDefinition[] = [
   tool('choose_town_project', '选择当前建设方向；可免费切换，保留已完成阶段。', {projectId:{type:'string',enum:PROJECT_IDS}}, ['projectId']),
   tool('complete_town_project', '明确交付当前建设阶段的筹备物资；校验建设条件并保留口粮与木材，不可重复领奖。', {projectId:{type:'string',enum:PROJECT_IDS}}, ['projectId']),
   tool('sell_surplus', '按仓库保留量批量出售富余物资，保留当前订单原料和全部建材包；不传 resource 则出售全部富余种类。', { resource: { type: 'string', enum: RESOURCE_KEYS } }),
+  tool('buy_resource', '从集市买进物资，价格是卖出价的数倍，用于应急；建材包与商队货物不在此列。', { resource: { type: 'string', enum: MARKET_GOODS }, amount: { type: 'integer', minimum: 1, maximum: 999 } }, ['resource', 'amount']),
   tool('collect_all', '一键收取所有可入库的成熟产物，满仓批次留在工坊。'),
   tool('pave_road', '以两个端点铺设转角道路；升级仅补差价，建筑与道路不得重叠。', { x:coordinate,y:coordinate,endX:coordinate,endY:coordinate,surface:{type:'string',enum:['dirt','gravel','stone','remove']} }, ['x','y','endX','endY','surface']),
   tool('research_technology', '消耗声望、金币和材料掌握科技；检查等级、前置科技且不可重复研究。', { technologyId: { type: 'string', enum: TECHNOLOGY_KEYS } }, ['technologyId']),
@@ -43,7 +45,7 @@ export const GAME_TOOLS: ToolDefinition[] = [
   tool('host_festival', '花费180金币举办庆典，提高幸福度；庆典期间不能重复举办。', {}),
   tool('get_town_status', '查询人口、幸福度、资源、仓库、季节、税收和预警。'),
   tool('get_production_flow', '查询生产配方、速度、暂停与缺料/满仓状态。'),
-  tool('get_pending_orders', '查询当前订单的物资要求、奖励和冷却。'),
+  tool('get_pending_orders', '查询当前订单的物资要求、奖励和冷却；bulk 为真的订单是远方商会的大单，不能取消。'),
   tool('get_caravan_routes', '查询已解锁的商队路线、各自货物与是否备齐。'),
   tool('get_disaster_alerts', '查询当前受损建筑及位置。'),
   tool('adopt_pet', '领养一只小动物，它会跟着邻居在小镇里散步。', { kind: { type: 'string', enum: ['cat', 'dog'] } }, ['kind']),
@@ -84,6 +86,7 @@ export function executeGameTool(world: SimWorld, name: string, args: unknown = {
     case 'choose_town_project': return world.chooseProject(values.projectId as ProjectId);
     case 'complete_town_project': return world.completeProject(values.projectId as ProjectId);
     case 'sell_surplus': return world.sellSurplus(values.resource as Resource | undefined);
+    case 'buy_resource': return world.buyResource(values.resource as Resource, values.amount as number);
     case 'collect_all':return world.collectAll();
     case 'pave_road':return world.paveRoad({x:values.x as number,y:values.y as number},{x:values.endX as number,y:values.endY as number},values.surface as RoadKind|'remove');
     case 'research_technology': return world.research(values.technologyId as TechnologyId);

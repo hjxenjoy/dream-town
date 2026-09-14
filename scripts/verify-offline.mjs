@@ -18,11 +18,11 @@ for (const entry of entries) {
   urls.add(entry.url);
   assert(existsSync(resolve('dist', entry.url)), `离线文件缺失：${entry.url}`);
 }
-for (const required of ['index.html','assets/valley-scenery.png','assets/buildings.png','assets/industry.png','assets/citizens.png','assets/decorations.png','assets/town-expansion.png','assets/crops.png','assets/frames.json','favicon.svg','manifest.webmanifest']) {
+for (const required of ['index.html','assets/valley-scenery.png','assets/buildings.png','assets/industry.png','assets/citizens.png','assets/decorations.png','assets/town-expansion.png','assets/herd-growth.webp','assets/herd-growth-frames.json','assets/living-farm.webp', 'assets/living-farm-frames.json', 'assets/homestead.webp','assets/homestead-frames.json','assets/crops.png','assets/crops-growing.webp','assets/crops-growing-frames.json','assets/frames.json','favicon.svg','manifest.webmanifest']) {
   assert(urls.has(required), `游戏必需文件未缓存：${required}`);
 }
 const atlasCatalog = JSON.parse(readFileSync('dist/assets/expansion-assets.json', 'utf8'));
-assert.equal(atlasCatalog.atlases.length, 10, '扩展图集数量不完整');
+assert.equal(atlasCatalog.atlases.length, 11, '扩展图集数量不完整');
 assert(urls.has('asset-preview.html') && urls.has('assets/expansion-assets.json'), '素材册与帧目录必须可离线查看');
 for (const atlas of atlasCatalog.atlases) {
   for (const file of [atlas.image.slice(1), `assets/${atlas.name}-frames.json`, `assets/${atlas.name}-prompts.json`]) assert(urls.has(file), `扩展素材未缓存：${file}`);

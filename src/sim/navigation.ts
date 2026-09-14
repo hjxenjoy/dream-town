@@ -1,4 +1,4 @@
-import { terrainAt } from './terrain.ts';
+import { terrainAt, PLAYABLE_SIZE } from './terrain.ts';
 import { tileKey, type Tile, type Road } from './roads.ts';
 const neighbors=(p:Tile):Tile[]=>[{x:p.x+1,y:p.y},{x:p.x-1,y:p.y},{x:p.x,y:p.y+1},{x:p.x,y:p.y-1}];
 /** Four-neighbor paths never cut diagonally across building corners. */
@@ -8,9 +8,9 @@ export class TownNavigation {
   canWalk(p:Tile){const t=terrainAt(p.x,p.y);return (t==='land'||t==='bridge')&&!this.blocked.has(tileKey(p));}
   entrances(p:Tile){return neighbors(p).filter(n=>this.canWalk(n));}
   nearest(p:Tile):Tile|null{
-    const origin={x:Math.max(1,Math.min(46,Math.round(p.x))),y:Math.max(1,Math.min(46,Math.round(p.y)))};
+    const origin={x:Math.max(1,Math.min(PLAYABLE_SIZE,Math.round(p.x))),y:Math.max(1,Math.min(PLAYABLE_SIZE,Math.round(p.y)))};
     if(this.canWalk(origin))return origin;
-    for(let radius=1;radius<47;radius++)for(let dx=-radius;dx<=radius;dx++)for(const dy of [-radius+Math.abs(dx),radius-Math.abs(dx)]){
+    for(let radius=1;radius<PLAYABLE_SIZE*2;radius++)for(let dx=-radius;dx<=radius;dx++)for(const dy of [-radius+Math.abs(dx),radius-Math.abs(dx)]){
       const t={x:origin.x+dx,y:origin.y+dy};if(this.canWalk(t))return t;
     }
     return null;

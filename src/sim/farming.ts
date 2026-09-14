@@ -24,6 +24,16 @@ export function validFarming(v:unknown):v is FarmingState {
 export function gardenLevel(xp:number){let level=1,left=xp;while(level<30){const need=level*80;if(left<need)break;left-=need;level++;}return {level,progress:left,next:level===30?0:level*80};}
 export function soilLevel(harvests=0){const thresholds=[0,8,24,60,140];let index=0;for(let i=1;i<thresholds.length;i++)if(harvests>=thresholds[i])index=i;return {level:index+1,name:['新垦土地','松软沃土','丰饶良田','金穗田园','传家沃土'][index],harvests,next:thresholds[index+1]??null,bonus:index};}
 export function cropMastery(amount:number){return amount>=1500?'传家品种':amount>=500?'丰收能手':amount>=150?'熟练种植':amount>=30?'初尝收获':amount>0?'初试种植':'等待收获';}
+
+/** The ready flag is authoritative: a full progress bar may still await settlement. */
+export function cropGrowthStage(progress:number, ready:boolean, fallow=false): 'fallow'|'sprouting'|'growing'|'ripening'|'ready' {
+  if(ready)return 'ready';
+  if(fallow)return 'fallow';
+  if(progress>=.72)return 'ripening';
+  if(progress>=.22)return 'growing';
+  return 'sprouting';
+}
+export const CROP_GROWTH_LABELS={fallow:'等待播种',sprouting:'正在萌芽',growing:'枝叶渐丰',ripening:'快成熟了',ready:'可以收获'};
 export function harvestQuote(crop:CropId,buildingLevel:number,harvests:number,seed:number):CropHarvest {
   const def=CROPS[crop],soil=soilLevel(harvests);
   // A deterministic lucky harvest survives refreshes and offline settlement.

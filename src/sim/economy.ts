@@ -4,6 +4,7 @@ import type { SimState } from './world.ts';
 // Reserve most shelf space for construction and food. Intermediates need only a
 // working buffer: more farms should increase throughput, not their share of storage.
 const WEIGHTS: ResourceMap = {
+  flowers:2,fruit:3,eggs:3,jam:2,
   wood: 20, stone: 10, wheat: 8, flour: 5, bread: 8, fish: 8, plank: 10,
   materials: 6, ore: 5, charcoal: 3, ingot: 3, tools: 4, feed: 3, wool: 3, cloth: 3, clothing: 4,
   // Dairy, honey and wine keep smaller working buffers than construction or staple food.

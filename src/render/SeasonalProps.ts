@@ -27,15 +27,14 @@ export class SeasonalProps {
       return;
     }
     const hall = world.state.buildings.find(building => building.kind === 'townhall');
-    if (!hall) return;
+    if (!hall) { this.sprite?.setVisible(false); this.shown = null; return; }
     const asset = SEASONAL_ACTIVITIES[active.season];
-    if (asset.prop === this.shown) return;
     const point = iso(hall.x + 2, hall.y + 1);
     if (!this.sprite) {
       this.sprite = this.scene.add.image(point.x, point.y, 'season-props').setOrigin(.5, .88);
     }
     // Size follows the displayed frame, so a new season's prop is never scaled by the old one.
-    drawFrameWidth(this.sprite, 'season-props', asset.prop, PROP_WIDTH);
+    if (asset.prop !== this.shown) drawFrameWidth(this.sprite, 'season-props', asset.prop, PROP_WIDTH);
     this.sprite.setPosition(point.x, point.y).setDepth(point.y + 6).setVisible(true);
     this.shown = asset.prop;
   }

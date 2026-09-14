@@ -24,7 +24,7 @@ test('fresh start is valid, unique and isolated from caller-owned saves', () => 
 
 test('construction rejects invalid coordinates, occupancy and unaffordable costs atomically', () => {
   const world = new SimWorld();
-  for (const action of [() => world.build('cottage', NaN, 2), () => world.build('cottage', 48, 2), () => world.build('cottage', 8, 7)]) {
+  for (const action of [() => world.build('cottage', NaN, 2), () => world.build('cottage', 65, 2), () => world.build('cottage', 8, 7)]) {
     const before = JSON.stringify(world.state);
     assert.equal(action().ok, false);
     assert.equal(JSON.stringify(world.state), before);

@@ -14,12 +14,16 @@ export interface Walker { x:number;y:number;route:Tile[];step:number;wait:number
   /** The workshop this resident commutes to, and what it makes, so the pose is right. */
   work?:{tile:Tile;kind:BuildingKind};
   /** Why the current trip is happening, which decides the pose on arrival. */
-  heading?:'work'|'home' }
+  heading?:'work'|'home';
+  /** A load being carried between two workshops, with the end it is currently headed for. */
+  freight?:{from:Tile;to:Tile;returning:boolean} }
 /** A pet trails one resident, re-pathing to that resident's tile instead of wandering. */
 export interface PetWalker extends Walker { kind:PetState['kind']; follows:number }
 /** Decorative citizens share the same blocked cells as construction. No straight-line shortcuts. */
 export class TownCrowd {
   walkers:Walker[]=[];
+  /** Residents carrying goods between workshops, one per active load. */
+  freight:Walker[]=[];
   pets:PetWalker[]=[];
   navigation=new TownNavigation([]);
   private signature='';private destinations:Tile[]=[];private trip=0;
@@ -80,6 +84,35 @@ export class TownCrowd {
       if(distance<bestDistance){bestDistance=distance;best=candidate;}
     }
     return best;
+  }
+
+  /**
+   * Keeps one carrier per load the town is actually moving.
+   *
+   * These residents are not commuting: they walk a fixed route from the workshop that makes the
+   * ingredient to the one that consumes it, turn around, and walk back, carrying in both
+   * directions. That is what makes the proximity bonus visible — a haul that has to go around a
+   * building or across a bridge is longer on screen, and a workshop with nothing arriving simply
+   * has no carrier.
+   */
+  syncFreight(routes:readonly {from:Tile;to:Tile}[]){
+    while(this.freight.length>routes.length)this.freight.pop();
+    while(this.freight.length<routes.length){
+      const route=routes[this.freight.length]!;
+      this.freight.push({...route.from,route:[],step:0,wait:this.freight.length*.6,style:this.freight.length%6,headingX:1,headingY:0,walking:false,relocated:false,task:'carry',freight:{from:route.from,to:route.to,returning:false}});
+    }
+    // A load may be re-pointed when the town is rebuilt, so the ends are refreshed every sync.
+    // A carrier stands on the workshop's own tile when it is created, and a building's tile is
+    // not walkable — so anyone not on real ground steps out to the nearest tile before walking.
+    for(const [i,c] of this.freight.entries()){
+      const job=c.freight!;
+      job.from=routes[i]!.from;job.to=routes[i]!.to;
+      if(!this.navigation.canWalk({x:Math.round(c.x),y:Math.round(c.y)})){
+        const ground=this.navigation.nearest(c);
+        if(ground){c.x=ground.x;c.y=ground.y;c.relocated=true;}
+        c.route=[];
+      }
+    }
   }
 
   /** Keeps one walker per adopted pet, each leashed to a resident. */
@@ -144,6 +177,43 @@ export class TownCrowd {
         // What the resident does on arrival: work at the workshop, rest at home, else stroll.
         w.task=w.heading==='work'?'work':w.heading==='home'?'rest':(w.goalKind&&BUILDINGS[w.goalKind].cycle)?'work':'walk';
       }
+    }
+    // Carriers walk their load to the other workshop and turn around, forever.
+    for(const c of this.freight){
+      c.walking=false;
+      const job=c.freight!;
+      const destination=job.returning?job.from:job.to;
+      if(c.wait>0){c.wait-=seconds;continue;}
+      if(!c.route.length){
+        const start={x:Math.round(c.x),y:Math.round(c.y)};
+        // The workshop's own tile holds the building, so the load is walked to its door — the
+        // nearest patch of ground beside it — and the carrier turns around from there.
+        const door=this.navigation.nearest(destination);
+        if(!door){c.wait=1.5;continue;}
+        if(start.x===door.x&&start.y===door.y){
+          // Arrived. Turning round is right when the other end is somewhere else; when both
+          // ends share this single patch of ground there is nowhere to go, so the carrier
+          // settles here rather than twitching between two identical destinations forever.
+          const other=this.navigation.nearest(job.returning?job.to:job.from);
+          if(other&&(other.x!==door.x||other.y!==door.y)){job.returning=!job.returning;c.wait=.7;}
+          else{c.task='work';c.wait=3;}
+          continue;
+        }
+        const route=this.navigation.path(start,door);
+        if(route.length>1){c.route=route;c.step=1;}
+        else{c.wait=1.5;continue;}
+      }
+      c.task='carry';
+      let remaining=seconds*.5;
+      while(remaining>0&&c.step<c.route.length){
+        const target=c.route[c.step];
+        if(!this.navigation.canWalk(target)){c.route=[];break;}
+        const dx=target.x-c.x,dy=target.y-c.y,distance=Math.abs(dx)+Math.abs(dy);
+        c.headingX=Math.sign(dx);c.headingY=Math.sign(dy);c.walking=true;
+        if(remaining>=distance){c.x=target.x;c.y=target.y;remaining-=distance;c.step++;}
+        else{c.x+=dx/distance*remaining;c.y+=dy/distance*remaining;remaining=0;}
+      }
+      if(c.step>=c.route.length){c.route=[];c.wait=.4;}
     }
     // Pets re-path toward the resident they follow, so they always trail someone.
     for(const pet of this.pets){

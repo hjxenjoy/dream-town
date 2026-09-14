@@ -200,6 +200,7 @@ test('feed, pasture, loom and tailor make clothing without a free intermediate r
   const world = prepared(); research(world, 'husbandry', 'tailoring');
   for (const [index, kind] of (['feedmill','pasture','weaver','tailor'] as BuildingKind[]).entries()) {
     const b = construct(world, kind, index + 1);
+    if(kind==='pasture')world.tick(120); // New lambs finish their fed growth before yielding wool.
     world.tick(BUILDINGS[kind].cycle! + 0.1); assert.equal(b.ready, true, kind);
     assert.equal(world.collect(b.id).ok, true); b.paused = true;
   }
@@ -257,6 +258,9 @@ test('logistics expands storage once and keeps warehouse build/upgrade/demolitio
 test('civics halves positive tax penalties and preserves the benefit of zero tax', () => {
   const improved = prepared(); research(improved, 'husbandry', 'tailoring'); improved.state.resources.clothing = 2;
   const regular = new SimWorld(improved.state); research(improved, 'civics');
+  // Studying civics spends the two clothes it costs, so the copied town gives them up as well:
+  // the only difference the assertion is about is how the tax penalty is applied.
+  regular.state.resources.clothing = 0;
   for (const w of [regular, improved]) { w.setTax(4); w.tick(90); }
   assert.ok(Math.abs(improved.state.happiness - regular.state.happiness - 10) < 0.001);
   const zeroA = prepared(), zeroB = prepared(); research(zeroB, 'husbandry', 'tailoring'); zeroB.state.resources.clothing=2; research(zeroB, 'civics');

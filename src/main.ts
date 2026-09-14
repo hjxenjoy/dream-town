@@ -42,7 +42,7 @@ const scene=new TownScene(world,id=>{
   ui.select(id);
 },(kind,x,y)=>{
   const result=act(()=>world.build(kind,x,y),undefined,'build');
-  if(result.ok){ui.cancel();scene.setBuildMode(null);if(result.buildingId){scene.select(result.buildingId);}}
+  if(result.ok){if(!ui.repeatPlacement){ui.cancel();scene.setBuildMode(null);}if(result.buildingId){scene.select(result.buildingId);}}
 });
 
 function act(fn:()=>ActionResult,id?:string,effect=''):ActionResult{
@@ -62,10 +62,11 @@ function act(fn:()=>ActionResult,id?:string,effect=''):ActionResult{
     else if(effect==='project')ui.celebrate('小镇又向梦想靠近一步',result.message);
     else if(effect==='festival')ui.celebrate('今晚，邻居们一起庆祝', '议事厅前洒满彩纸，幸福感会持续一段时间。');
     else if(world.state.level>before.level)ui.celebrate(`青岚小镇 · 等级 ${world.state.level}`, '每一份收获，都在让这里变得更好。');}
-  ui.update();return result;
+  ui.update();if(result.ok)void persist();return result;
 }
 async function persist(slot='autosave',notify=false){
   if(slot==='autosave'&&!autosaveAllowed){if(notify)ui.toast('自动存档已保护，请先导入或读取一份有效存档。',false);return;}
+  ui.setSaveStatus('正在保存…');
   const revision=runtimeRevision;
   const snapshot=structuredClone(world.state);
   const operation=saving.catch(()=>{}).then(()=>saveGame(snapshot,slot));

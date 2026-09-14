@@ -48,6 +48,10 @@ test('every new industry building builds, charges its declared cost and needs it
 test('the dairy chain converts feed to milk to cheese with exact quantities',()=>{
   const w=prepared();
   const barn=add(w,'cowbarn',36),dairy=add(w,'dairy',40);
+  const growthFeed=w.state.resources.feed;
+  w.tick(150);
+  assert.equal(barn.animalAge,150);
+  assert.equal(w.state.resources.feed,growthFeed-2,'calf growth uses its own ration');
   const feed=w.state.resources.feed;
   w.tick(BUILDINGS.cowbarn.cycle+1);
   assert.equal(barn.ready,true,'the barn finishes a batch');
