@@ -3,8 +3,8 @@
   "generator": "built-in image_gen",
   "encoding": "cwebp quality90 alpha_quality100; source resolution retained",
   "pngBytes": 16569437,
-  "webpBytes": 4489412,
-  "activeFrames": 134,
+  "webpBytes": 4717746,
+  "activeFrames": 135,
   "atlases": [
     {
       "name": "disasters",
@@ -3428,6 +3428,59 @@
         "verifyOrphanPixels": 143,
         "minNeighbourGapPixels": 55,
         "maxVisibleRgbDeviationFromSource": 33
+      }
+    },
+    {
+      "name": "chapel",
+      "label": "教堂",
+      "image": "/assets/chapel.webp",
+      "width": 969,
+      "height": 1205,
+      "columns": 1,
+      "rows": 1,
+      "activeFrames": 1,
+      "reservedCells": 0,
+      "requestedCanvas": [
+        1024,
+        1024
+      ],
+      "requestedGrid": [
+        1,
+        1
+      ],
+      "frames": {
+        "chapel": {
+          "x": 0,
+          "y": 0,
+          "w": 969,
+          "h": 1205,
+          "row": 0,
+          "column": 0,
+          "contentBounds": [
+            24,
+            24,
+            945,
+            1181
+          ],
+          "pivot": [
+            492.0,
+            1180.0
+          ],
+          "origin": [
+            0.5,
+            0.86
+          ]
+        }
+      },
+      "prompt": "public/assets/chapel-prompts.json",
+      "qa": {
+        "alphaPreserved": true,
+        "runtimeIntegrated": true,
+        "paddedWithTransparentPixels": [
+          48,
+          48
+        ],
+        "visiblePixelShare": 39.22
       }
     }
   ]

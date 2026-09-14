@@ -1,0 +1,43 @@
+{
+  "image": "/assets/homestead.webp",
+  "width": 1774,
+  "height": 887,
+  "frames": {
+    "flowernursery": {
+      "x": 0,
+      "y": 0,
+      "w": 444,
+      "h": 430
+    },
+    "orchardhouse": {
+      "x": 444,
+      "y": 0,
+      "w": 465,
+      "h": 430
+    },
+    "chickencoop": {
+      "x": 909,
+      "y": 0,
+      "w": 421,
+      "h": 430
+    },
+    "jamkitchen": {
+      "x": 1330,
+      "y": 0,
+      "w": 444,
+      "h": 430
+    },
+    "teahouse": {
+      "x": 0,
+      "y": 430,
+      "w": 444,
+      "h": 457
+    },
+    "homestead": {
+      "x": 444,
+      "y": 430,
+      "w": 470,
+      "h": 457
+    }
+  }
+}

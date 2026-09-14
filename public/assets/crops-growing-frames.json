@@ -1,0 +1,16 @@
+{
+  "image": "/assets/crops-growing.webp",
+  "width": 1254,
+  "height": 1254,
+  "frames": {
+    "wheat": { "x": 0, "y": 0, "w": 425, "h": 410, "anchor": 0.78 },
+    "carrot": { "x": 425, "y": 0, "w": 409, "h": 410, "anchor": 0.78 },
+    "corn": { "x": 834, "y": 0, "w": 420, "h": 410, "anchor": 0.78 },
+    "tomato": { "x": 0, "y": 410, "w": 425, "h": 390, "anchor": 0.76 },
+    "strawberry": { "x": 425, "y": 410, "w": 409, "h": 390, "anchor": 0.76 },
+    "pumpkin": { "x": 834, "y": 410, "w": 420, "h": 390, "anchor": 0.76 },
+    "sunflower": { "x": 0, "y": 800, "w": 425, "h": 454, "anchor": 0.71 },
+    "grape": { "x": 425, "y": 800, "w": 409, "h": 454, "anchor": 0.71 },
+    "apple": { "x": 834, "y": 800, "w": 420, "h": 454, "anchor": 0.71 }
+  }
+}

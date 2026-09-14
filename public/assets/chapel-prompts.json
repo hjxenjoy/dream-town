@@ -1,0 +1,9 @@
+{
+ "generator": "built-in image_gen",
+ "asset": "chapel.webp",
+ "prompt": "Use case: stylized-concept. Asset: ONE single complete church building sprite for a cozy isometric European village game: a small village chapel with warm cream plaster walls, a steep terracotta red tiled gable roof, and a square bell tower on the left side topped with a slender dark spire and a small plain cross. Tall narrow arched windows with soft blue glass, a rounded wooden double door with an arch above it, a tiny bell visible in the tower opening, a few climbing green vines on one wall. Deliberately compact and friendly, the same footprint as a village schoolhouse, NOT a grand cathedral. Composition: the building alone, centred, drawn from the same three-quarter isometric angle used by cozy village builder games, showing two roof planes and the front wall. Complete and fully inside the frame with a small margin on all sides. Absolutely nothing else in the picture: no ground plane, no grass, no path, no shadow, no cast shadow, no other buildings, no people. Scene: fully transparent background, isolated cutout sprite, alpha channel, no backdrop of any kind. Lighting: soft even daylight from the upper left, gentle ambient occlusion in the arches and under the eaves, storybook illustration lighting, no harsh contrast. Style: cozy hand-painted storybook illustration for a village simulation game, soft painterly textures, clean readable silhouette, slightly naive and charming, palette of cream, terracotta, muted blue and sage green, matching a set of pastel countryside buildings with red tiled roofs. Crisp edges suitable for use as a game sprite cutout. No text anywhere.",
+ "aspect_ratio": "1:1",
+ "image_size": "1024x1024",
+ "deliveredSize": "1286x1223",
+ "note": "Generated 2026-09-12 for the L4 chapel. Trimmed and padded by scripts/catalog-chapel.py; art never redrawn or resampled."
+}

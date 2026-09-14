@@ -1,0 +1,5 @@
+{
+  "mode": "built-in imagegen",
+  "status": "Successfully regenerated and integrated; original failed attempts retained in history.",
+  "prompt": "Use case: stylized-concept. Production sprite atlas for cozy hand painted isometric farming game. TRUE transparent RGBA background, no solid backdrop, no gradients, no checkerboard pixels. Wide 2:1 canvas arranged as exactly FOUR columns and TWO rows of equal square cells. Top row only, left to right: one fluffy cream baby lamb, one adult woolly cream sheep, one small cream-and-brown baby calf, one adult cream-and-brown dairy cow. Bottom row entirely empty transparent. Consistent 2:1 isometric overhead camera, animals facing down-left, full bodies and all feet visible. Match warm storybook miniature game sprites, olive countryside palette, detailed soft painted fur, gentle expressive faces, soft lighting from upper left. Each animal strictly contained in its own cell, very wide transparent margins on all sides; no grass tile, no fences, no labels, no text, no halos. Sheep and cow visibly larger than babies. Actual alpha transparency mandatory."
+}
