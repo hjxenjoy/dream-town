@@ -1,3 +1,4 @@
+import { RegionLayer } from './RegionLayer';
 import { livestockFrame } from '../sim/livestock';
 import { drawSoilDetails, drawHomeDetails } from './SoilDetails';
 import { REGIONS, type RegionId } from '../sim/regions';
@@ -38,6 +39,8 @@ export class TownScene extends Phaser.Scene {
   selectedId: string | null = null;
   ready = false;
   private ground!: Phaser.GameObjects.Graphics;
+  private regionLayer?:RegionLayer;
+  onOpenMap:()=>void=()=>{};
   moveId:string|null=null;
   onMove:(id:string,x:number,y:number)=>void=()=>{};
   onViewport:(x:number,y:number,zoom:number)=>void=()=>{};
@@ -196,6 +199,8 @@ export class TownScene extends Phaser.Scene {
     return kind==='townhall'?177:kind==='well'?100:kind==='garden'?139:151;
   }
   private syncBuildings(){
+    this.regionLayer??=new RegionLayer(this,()=>this.onOpenMap());
+    this.regionLayer.sync(this.world.state.regions??[],this.world.state.level);
     const current=new Set(this.world.state.buildings.map(b=>b.id));
     this.visuals.forEach((v,id)=>{if(!current.has(id)){v.sprite.destroy();v.badge.destroy();v.progress.destroy();v.soil.destroy();v.companion?.destroy();this.visuals.delete(id);}});
     this.running.clear();
@@ -292,11 +297,11 @@ export class TownScene extends Phaser.Scene {
   private previewRoad(pointer:Phaser.Input.Pointer){
     if(!this.roadMode)return;
     const p=this.cameras.main.getWorldPoint(pointer.x,pointer.y),end=deiso(p.x,p.y),tiles=roadLine(this.roadStart??end,end);
-    const valid=tiles.length>0&&tiles.every(t=>(terrainAt(t.x,t.y)==='land'||terrainAt(t.x,t.y)==='bridge')&&!this.world.state.buildings.some(b=>b.x===t.x&&b.y===t.y));
+    const valid=tiles.length>0&&tiles.every(t=>(terrainAt(t.x,t.y)==='land'||terrainAt(t.x,t.y)==='bridge')&&(this.roadMode==='remove'||!this.world.regionIssue(t.x,t.y))&&!this.world.state.buildings.some(b=>b.x===t.x&&b.y===t.y));
     this.highlight.clear();
     for(const t of tiles){const p=iso(t.x,t.y);this.diamond(this.highlight,p.x,p.y,valid?0xe8d9a0:0xdd7757,.55,valid?0xffedb7:0xffb096,1,.94);}
     const quote=roadQuote(this.world.state.roads??[],tiles.filter(t=>terrainAt(t.x,t.y)==='land'),this.roadMode);
-    this.onRoadHint(!valid?'路线有建筑、河道或山峰，请换一个终点':this.roadStart?`${quote.changed} 格 · ${quote.coins} 金币 / ${quote.stone} 石料 · 点击终点确认`:'点起点，再点终点 · 同一格点两次可单格操作');
+    this.onRoadHint(!valid?'路线经过建筑、河道、山峰或未开放区域，请换一个终点':this.roadStart?`${quote.changed} 格 · ${quote.coins} 金币 / ${quote.stone} 石料 · 点击终点确认`:'点起点，再点终点 · 同一格点两次可单格操作');
   }
   setMoveMode(id:string){const b=this.world.state.buildings.find(b=>b.id===id);if(!b)return;this.setBuildMode(b.kind);this.moveId=id;this.paintPlacementGrid();this.syncBuildings();this.updateGhost(this.input.activePointer);}
   focusDistrict(key:District|RegionId|'overview'){

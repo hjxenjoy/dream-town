@@ -45,6 +45,8 @@ const scene=new TownScene(world,id=>{
   if(result.ok){if(!ui.repeatPlacement){ui.cancel();scene.setBuildMode(null);}if(result.buildingId){scene.select(result.buildingId);}}
 });
 
+scene.onOpenMap=()=>ui.open('map');
+
 function act(fn:()=>ActionResult,id?:string,effect=''):ActionResult{
   const before={resources:{...world.state.resources},coins:world.state.coins,level:world.state.level,garden:gardenLevel(world.state.farming!.xp).level};
   const ready=effect==='harvest'?world.state.buildings.filter(b=>b.ready).map(b=>b.id):[];
