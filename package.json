@@ -7,7 +7,9 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc --noEmit && vite build && node scripts/verify-offline.mjs",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "node --experimental-strip-types --test tests/*.test.ts"
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "scan": "node --experimental-strip-types scripts/scan-care.ts",
+    "scan:tuning": "node --experimental-strip-types scripts/scan-tuning.ts"
   },
   "dependencies": {
     "phaser": "4.2.1",
