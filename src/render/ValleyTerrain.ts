@@ -80,7 +80,9 @@ export function drawValley(scene:Phaser.Scene) {
   for(const [x,y,w] of [[29,5,370],[39,5,330],[43,13,330]])scenic('orehill',x,y,w);
   for(let i=0;i<Math.ceil(MAP_SIZE/2.3)*4;i++){
     const side=i%4,t=1+Math.floor(i/4)*2.3;
-    const x=side===0?-1.7:side===1?MAP_SIZE+1.3:t,y=side===2?-1.7:side===3?MAP_SIZE+1.3:t;
+    // Wide tree canopies extend several isometric cells above their bases.
+    // Keep the whole belt outside the last buildable row, not just its trunks.
+    const x=side===0?-6:side===1?MAP_SIZE+5:t,y=side===2?-6:side===3?MAP_SIZE+5:t;
     if(Math.abs(x-riverX(y))<3)continue;
     scenic(i%3?'pines':'grove',x,y,220+random(i+3000)*160);
   }

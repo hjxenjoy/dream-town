@@ -249,7 +249,8 @@ export class TownScene extends Phaser.Scene {
       }
       if(BUILDINGS[b.kind].housing){
         const style=b.homeStyle??'original';
-        if(v.homeStyle!==style){drawHomeDetails(v.soil,style);v.homeStyle=style;}
+        const appearanceKey=`${style}:${b.level}`;
+        if(v.homeStyle!==appearanceKey){drawHomeDetails(v.soil,style,v.sprite.displayWidth,v.sprite.displayHeight);v.homeStyle=appearanceKey;}
         v.soil.setPosition(p.x,p.y).setDepth(p.y+6).setVisible(!b.damaged).setAlpha(b.id===this.moveId?.28:1);
       }
       if(b.kind==='orchardhouse'||livestockFrame(b)){

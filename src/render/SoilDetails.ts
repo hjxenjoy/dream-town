@@ -31,12 +31,27 @@ export function drawSoilDetails(g: Phaser.GameObjects.Graphics, level: number) {
   }
 }
 
-export function drawHomeDetails(g: Phaser.GameObjects.Graphics, style: string) {
+export function drawHomeDetails(g: Phaser.GameObjects.Graphics, style: string, width=150, height=150) {
   g.clear();
   if (style === 'original') return;
   const mint=style==='mint',rose=style==='rose',harvest=style==='harvest';
   if(mint)style='courtyard';
   if(rose||harvest)style='flowers';
+  if(style==='flowers'&&!harvest){
+    // Attach flower boxes to the lower facade; size follows the current house frame.
+    for(const [x,y,slope] of [[-width*.12,-height*.32,.35],[width*.20,-height*.24,-.35]]){
+      const box=width*.11;
+      g.fillStyle(rose?0xa76570:0x946a44);g.beginPath();
+      g.moveTo(x-box/2,y);g.lineTo(x+box/2,y+slope*box);g.lineTo(x+box/2,y+slope*box+5);g.lineTo(x-box/2,y+5);g.closePath();g.fillPath();
+      g.lineStyle(1,0xe4c995);g.lineBetween(x-box/2,y,x+box/2,y+slope*box);
+      for(const offset of [-.35,0,.35]){
+        const fx=x+box*offset,fy=y+slope*box*(offset+.5)-2;
+        g.fillStyle(0x66874a);g.fillEllipse(fx,fy,7,5);
+        g.fillStyle(rose?0xda7395:0xf2c582);g.fillCircle(fx,fy-2,2.7);
+        g.fillStyle(0xffedd2);g.fillCircle(fx,fy-2,.9);
+      }
+    }
+  }
   if (style === 'flowers' || style === 'courtyard') {
     for (const x of [-39, 32]) {
       g.fillStyle(mint?0x7caa98:rose?0xba7b83:0x916641); g.fillRoundedRect(x - 7, 0, 14, 7, 2);
