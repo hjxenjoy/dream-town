@@ -1424,6 +1424,12 @@
       "profile": "bell",
       "runtimeIntegrated": false
     },
+    "castle": {
+      "url": "/assets/expansion-2026-09/audio/castle.wav",
+      "source": "existing",
+      "profile": "castle",
+      "runtimeIntegrated": false
+    },
     "barracks": {
       "url": "/assets/accessories-2026-09/audio/barracks.wav",
       "source": "new",
@@ -1743,7 +1749,7 @@
       "runtimeIntegrated": false
     }
   },
-  "buildingCount": 80,
+  "buildingCount": 81,
   "existingReused": 5,
   "newTracks": 74
 }
