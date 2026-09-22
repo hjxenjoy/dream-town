@@ -14,6 +14,8 @@ const WEIGHTS: ResourceMap = {
   // Hops buffer like cane; beer is a finished drink and keeps a slightly larger one, since
   // the tavern draws on it every day.
   hops: 3, beer: 4,
+  // Meat buffers like the other intermediates; sausages are served, so they hold a little more.
+  meat: 3, sausages: 3,
 };
 
 export function stockTargets(state: SimState): ResourceMap {

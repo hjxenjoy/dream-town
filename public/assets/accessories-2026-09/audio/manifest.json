@@ -1125,6 +1125,40 @@
       }
     },
     {
+      "name": "pigfarm",
+      "label": "橡树猪舍 · 低哞与草垫",
+      "url": "/assets/accessories-2026-09/audio/pigfarm.wav",
+      "profile": "cow",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.32
+      }
+    },
+    {
+      "name": "butcher",
+      "label": "街角肉铺 · 机械转动与节律敲击",
+      "url": "/assets/accessories-2026-09/audio/butcher.wav",
+      "profile": "machine",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -10.24
+      }
+    },
+    {
       "name": "sugarmill",
       "label": "老石糖厂 · 机械转动与节律敲击",
       "url": "/assets/accessories-2026-09/audio/sugarmill.wav",
@@ -1637,6 +1671,18 @@
       "profile": "field",
       "runtimeIntegrated": false
     },
+    "pigfarm": {
+      "url": "/assets/accessories-2026-09/audio/pigfarm.wav",
+      "source": "new",
+      "profile": "cow",
+      "runtimeIntegrated": false
+    },
+    "butcher": {
+      "url": "/assets/accessories-2026-09/audio/butcher.wav",
+      "source": "new",
+      "profile": "machine",
+      "runtimeIntegrated": false
+    },
     "sugarmill": {
       "url": "/assets/accessories-2026-09/audio/sugarmill.wav",
       "source": "new",
@@ -1668,7 +1714,7 @@
       "runtimeIntegrated": false
     }
   },
-  "buildingCount": 76,
+  "buildingCount": 78,
   "existingReused": 5,
-  "newTracks": 71
+  "newTracks": 73
 }
