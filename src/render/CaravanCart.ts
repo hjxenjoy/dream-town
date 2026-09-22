@@ -42,8 +42,16 @@ export class CaravanCart {
     }
   }
 
+  /**
+   * Creates a cart and RETAINS it under its id, the way `MachineLayer.create` retains its parts.
+   * A factory that returns without storing leaves the pool permanently empty: the retire loop
+   * below then has nothing to clean up, and a fresh sprite is leaked every frame — one per cart
+   * per frame, each left behind wherever it was last drawn.
+   */
   private createCart(id: string): Cart {
-    return { sprite: this.scene.add.image(0, 0, 'caravan').setOrigin(.5, .88), route: [], signature: '' };
+    const cart: Cart = { sprite: this.scene.add.image(0, 0, 'caravan').setOrigin(.5, .88), route: [], signature: '' };
+    this.carts.set(id, cart);
+    return cart;
   }
 
   private syncCart(cart: Cart, caravan: Caravan, buildings: Building[], roads: { x: number; y: number; kind: string }[], townKey: string, gameTime: number, time: number, reduced: boolean): void {

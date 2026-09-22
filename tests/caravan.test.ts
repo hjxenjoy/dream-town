@@ -137,3 +137,32 @@ test('the scene registers caravan frames, so the cart never falls back to the wh
   assert.match(cart,/drawFrameWidth\([\w.]+\.sprite, 'caravan', frame, CART_WIDTH\)/,'the cart sizes each frame it draws');
   assert.equal(cart.includes('setDisplaySize'),false,'sizing never happens once at creation');
 });
+
+/**
+ * A pooled renderer must store what its factory creates. This shipped broken: the cart factory
+ * returned the new cart without putting it in the pool, so the pool stayed empty, the retire
+ * loop had nothing to clean up, and one sprite per cart per frame was leaked for as long as a
+ * caravan travelled. It looked fine from the outside — the newest sprite sat at the right place
+ * — which is exactly why it needed a headless look rather than a green test suite.
+ *
+ * The rule is checked across every pooled renderer, since MachineLayer already does it and the
+ * convention only holds if all of them keep it.
+ */
+test('every pooled renderer retains what its factory creates', () => {
+  const pooled = ['CaravanCart.ts', 'MachineLayer.ts', 'DisasterLayer.ts'];
+  for (const file of pooled) {
+    const source = readFileSync(new URL(`../src/render/${file}`, import.meta.url), 'utf8');
+    // Find the factory methods this file uses to make pool entries.
+    const factories = [...source.matchAll(/private\s+(create\w*|place)\s*\(([^)]*)\)/g)].map(match => match[1]!);
+    // Either this.<pool>.set(...) or a pool handed in as an argument and set on directly:
+    // DisasterLayer.place() takes the pool as a parameter, which is just as correct.
+    const writes = [...source.matchAll(/(?:this\.)?(\w+)\.set\(/g)].map(match => match[1]!);
+    assert.ok(factories.length > 0, `${file} creates pool entries`);
+    assert.ok(writes.length > 0, `${file} stores them back into a pool (found: ${writes.join(', ') || 'nothing'})`);
+  }
+  // And the cart specifically: the id it is stored under must be the one it was created for.
+  const cart = readFileSync(new URL('../src/render/CaravanCart.ts', import.meta.url), 'utf8');
+  const factory = /private createCart\(id: string\): Cart \{([\s\S]*?)\n  \}/.exec(cart)?.[1] ?? '';
+  assert.ok(factory.includes('this.carts.set(id'), 'createCart stores the cart under its own id');
+  assert.ok(/return cart;/.test(factory), 'and still returns it for the caller to position');
+});
