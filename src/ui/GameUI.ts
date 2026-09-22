@@ -36,6 +36,8 @@ export class GameUI {
   private lastPanelRender=0; private saveLabel='已启用自动存档'; private offlineStatus='正在准备离线游玩…'; private offlineReport:OfflineReport|null=null;
   private renderedContext=''; private supplyOrigin:Panel='technology';
   private demolishId:string|null=null; private panelOpener:HTMLElement|null=null; private offlineOpener:HTMLElement|null=null;
+  /** Which caravan slot the panel is editing; null means "whichever is free first". */
+  private caravanSlot:string|null=null;
   constructor(public world:SimWorld,private cb:UICallbacks){
     this.root=document.querySelector('#ui')!;
     this.root.innerHTML=`<div class="vignette"></div><header class="top-hud"><button class="town-identity" data-action="open" data-value="residents" aria-label="查看青岚小镇居民"><span class="level-badge"><span>LV.</span><b id="level">3</b></span><span class="town-name"><small>DREAM TOWN</small><strong>青岚小镇 ${icon('chevron',14)}</strong><span class="xp-track"><i id="xp-progress"></i></span></span></button><div class="resources" id="resources"></div><div class="calendar" id="calendar"></div></header>
@@ -169,8 +171,9 @@ export class GameUI {
       case 'supply':this.supplyResource=value as Resource;if(this.panel!=='supply'){this.supplyOrigin=this.panel;this.open('supply');}else this.renderPanel();return;
       case 'order':this.cb.action(()=>this.world.fulfillOrder(value!));break;
       case 'cancel-order':this.cb.action(()=>this.world.cancelOrder(value!));break;
-      case 'caravan':this.cb.action(()=>this.world.dispatchCaravan(),undefined,'caravan');break;
-      case 'choose-route':this.cb.action(()=>this.world.chooseCaravanDestination(value as DestinationId));break;
+      case 'caravan':this.cb.action(()=>this.world.dispatchCaravan(this.caravanSlot??undefined),this.caravanSlot??undefined,'caravan');break;
+      case 'caravan-slot':this.caravanSlot=value??null;this.renderPanel();return;
+      case 'choose-route':this.cb.action(()=>this.world.chooseCaravanDestination(value as DestinationId,this.caravanSlot??undefined));break;
       case 'story-choice':{const [portrait,choice]=value!.split('|');this.cb.action(()=>this.world.chooseStoryOption(portrait!,choice!));break;}
       case 'deepen-honour':this.cb.action(()=>this.world.deepenHonour(value as HonourTrackId));break;
       case 'tax':this.cb.action(()=>this.world.setTax(Number(value)));break;
@@ -232,7 +235,7 @@ export class GameUI {
     // Each badge answers "is there something in here for me right now?" — a finished goal to
     // claim, a caravan to meet, or standing the town can spend. Two of these were wired to a
     // constant zero, so the dock had the machinery and said nothing with it.
-    const badges:Record<string,number>={quests:s.quests.filter(q=>!q.claimed&&q.progress>=q.target).length,caravan:Number(s.caravan.status==='returned'),technology:affordableHonours(s.honours??{},s.prestige,s.level)};
+    const badges:Record<string,number>={quests:s.quests.filter(q=>!q.claimed&&q.progress>=q.target).length,caravan:s.caravans.filter(c=>c.status==='returned').length,technology:affordableHonours(s.honours??{},s.prestige,s.level)};
     for(const [key,n] of Object.entries(badges)){const el=this.root.querySelector(`#badge-${key}`) as HTMLElement;if(!el)continue;el.hidden=!n;el.textContent=String(n);}
     this.root.classList.toggle('panel-open',this.panel!==null);this.root.classList.toggle('building-mode',this.buildKind!==null||this.roadMode!==null);
     void total;
@@ -432,24 +435,42 @@ export class GameUI {
     } else if(this.panel==='orders'){
       content=`<p class="panel-intro">一份小小的心意，让邻里更亲近。</p><div class="orders-list">${s.orders.map((o,i)=>{const cooldown=(o.cooldownUntil||0)>s.gameTime;const can=!cooldown&&Object.entries(o.items).every(([k,v])=>s.resources[k as Resource]>=v!);return `<article class="order-card${o.bulk?' bulk-order':''}"><div class="order-person"><span class="npc-avatar npc-${i%4}">${esc(o.npc.slice(0,1))}</span><div><small>${esc(o.npc)}</small><h3>${esc(o.title)}${o.bulk?' <span class="bulk-tag">大单</span>':''}</h3></div></div>${this.goods(o.items,true)}<div class="order-footer"><span class="reward">${icon('coin',17)} ${o.rewardCoins} <span>${icon('star',14)} ${o.rewardXp}</span></span>${this.button('order',o.id,cooldown?duration(o.cooldownUntil!-s.gameTime):can?'交付订单':'物资不足',!can,`small-button ${can?'':'quiet'}`)}</div>${!cooldown&&!o.bulk?this.button('cancel-order',o.id,'换一份委托',false,'cancel-order'):''}</article>`;}).join('')}</div>`;
     } else if(this.panel==='caravan'){
-      const c=s.caravan,market=s.buildings.some(b=>b.kind==='market'&&!b.damaged),cargoReady=Object.entries(c.cargo).every(([k,v])=>s.resources[k as Resource]>=v!),room=s.capacity-RESOURCE_KEYS.reduce((n,k)=>n+s.resources[k],0);
-      const chosen=destinationOf(c.destination);
+      const slots=this.world.caravanFleet(),capacity=this.world.caravanCapacity(),market=s.buildings.some(b=>b.kind==='market'&&!b.damaged);
+      // The panel edits one slot at a time; default to the first one the player can act on so
+      // the common case (one cart) needs no extra click.
+      const active=slots.find(slot=>slot.id===this.caravanSlot)??slots.find(slot=>slot.status==='returned')??slots[0];
+      if(active&&this.caravanSlot!==active.id)this.caravanSlot=active.id;
+      const chosen=destinationOf(active?.destination);
+      const cargoReady=!!active&&Object.entries(active.cargo).every(([k,v])=>s.resources[k as Resource]>=v!);
+      const room=s.capacity-RESOURCE_KEYS.reduce((n,k)=>n+s.resources[k],0);
+      const marketLevel=Math.max(1,...s.buildings.filter(b=>b.kind==='market').map(b=>b.level));
+      const harbor=!!s.projects?.stages?.harbor&&s.projects.stages.harbor>0;
       const routes=availableDestinations(s.researched);
       const routeCards=routes.map(destination=>{
         const missing=missingCargo(destination,s.resources);
         const short=Object.entries(missing).map(([k,v])=>`缺 ${v} ${RESOURCES[k as Resource].name}`).join('、');
-        const active=destination.id===chosen.id;
-        return `<button class="route-card ${active?'active':''}" data-action="choose-route" data-value="${destination.id}" aria-pressed="${active}" ${c.status==='traveling'?'disabled':''}>
-          <b>${esc(destination.name)}${active?` <span class="route-mark">当前</span>`:''}</b>
+        const mine=slots.filter(slot=>(slot.destination??'valley')===destination.id).length;
+        const isActive=destination.id===chosen.id;
+        return `<button class="route-card ${isActive?'active':''}" data-action="choose-route" data-value="${destination.id}" aria-pressed="${isActive}" ${active?.status==='traveling'?'disabled':''}>
+          <b>${esc(destination.name)}${isActive?` <span class="route-mark">本队</span>`:''}${mine>1?` <span class="route-mark">${mine} 队在跑</span>`:''}</b>
           <small>${esc(destination.description)}</small>
           <span class="route-facts">${Object.entries(destination.cargo).map(([k,v])=>`${v} ${RESOURCES[k as Resource].name}`).join(' · ')}</span>
-          <span class="route-facts">${icon('coin',13)} ${destination.rewardCoins} · ${icon('materials',13)} ${destination.rewardMaterials} 建材 · 约 ${Math.round(caravanDuration(destination,Math.max(1,...s.buildings.filter(b=>b.kind==='market').map(b=>b.level)),!!s.projects?.stages?.harbor&&s.projects.stages.harbor>0))} 秒</span>
+          <span class="route-facts">${icon('coin',13)} ${destination.rewardCoins} · ${icon('materials',13)} ${destination.rewardMaterials} 建材 · 约 ${Math.round(caravanDuration(destination,marketLevel,harbor))} 秒</span>
           <span class="route-cost ${short?'shortage':''}">${short||'货物已备齐'}</span>
         </button>`;
       }).join('');
       const unlocked=destinationIds.filter(id=>!routes.some(r=>r.id===id));
-      content=`<div class="caravan-illustration">${this.art('market')}${icon('caravan',60)}</div><div class="destination-label"><span>青岚小镇</span><i></i>${icon('caravan',24)}<i></i><span>${esc(chosen.name)}</span></div><h3 class="center-title">${c.status==='traveling'?'带着小镇的心意，向远方出发':c.status==='returned'?'远方的礼物，已经到家':`下一趟：${esc(chosen.name)}`}</h3><p class="description centered">${market?'选择路线后装车出发；不同路线走不同的桥，货物与回报也各不相同。':'先建一座集市，才能组织商队。'}</p><div class="section-label">可选路线</div><div class="route-list">${routeCards}${unlocked.map(id=>`<div class="route-card locked"><b>${esc(destinationOf(id).name)}</b><small>研究「${esc(TECHNOLOGIES[DESTINATIONS[id].technology!].name)}」后开放。</small></div>`).join('')}</div><div class="section-label">${c.status==='idle'?'准备装车':'旅途中的物资'}</div>${this.goods(c.cargo,c.status==='idle')}${c.status==='traveling'?`<div class="caravan-progress"><div class="quest-progress"><i style="width:${Math.max(0,Math.min(100,(1-(c.returnAt-s.gameTime)/Math.max(1,c.duration))*100))}%"></i></div><small>前往 ${esc(chosen.name)} · 还需 ${duration(Math.max(0,c.returnAt-s.gameTime))}</small></div>`:''}${c.status==='returned'?`<div class="returned-gift">${icon('box',26)}<div><b>带回 ${c.rewardMaterials} 份建材与 ${c.rewardCoins} 金币</b><small>${room<c.rewardMaterials?'仓位不足，先腾出空间再领取。':'点击下方按钮领取。'}</small></div></div>`:''}${this.button('caravan','',c.status==='traveling'?'商队在路上':c.status==='returned'?'迎接商队 · 领取物资':market&&cargoReady?'装好货物，出发':market?'货物还没备齐':'先建一座集市',!market||(c.status==='idle'&&!cargoReady),'game-button wide')}`;
-
+      // The slot strip only appears once the town can actually run more than one cart.
+      const slotStrip=capacity<=1?'':`<div class="section-label">本镇商队 · ${slots.length} / ${capacity}</div><div class="caravan-slots">${slots.map(slot=>{
+        const destination=destinationOf(slot.destination);
+        const state=slot.status==='traveling'?`在路上 · ${Math.max(0,Math.ceil(slot.returnAt-s.gameTime))} 秒`:slot.status==='returned'?'已归来，等你领取':'待出发';
+        return `<button class="caravan-slot ${slot.id===active?.id?'active':''} ${slot.status}" data-action="caravan-slot" data-value="${slot.id}" aria-pressed="${slot.id===active?.id}"><b>商队 ${slot.id.replace('caravan-','')}</b><small>${esc(destination.name)}</small><span>${state}</span></button>`;
+      }).join('')}</div>`;
+      const waiting=slots.filter(slot=>slot.status==='returned').length;
+      const heading=!market?'先建一座集市，才能组织商队。':active?.status==='traveling'?'带着小镇的心意，向远方出发':active?.status==='returned'?'远方的礼物，已经到家':`商队 ${active?.id.replace('caravan-','')} · 下一趟：${esc(chosen.name)}`;
+      const hint=!market?'集市是小队出发的地方。':capacity<=1?'选择路线后装车出发；不同路线走不同的桥，货物与回报也各不相同。集市升到 2 级就能同时派出第 2 支商队。':`每支商队各自选路线、各自往返，最多同时派出 ${capacity} 支。${waiting>1?`有 ${waiting} 支已经回来了。`:''}`;
+      const gift=active?.status==='returned'?`<div class="returned-gift">${icon('box',26)}<div><b>带回 ${active.rewardMaterials} 份建材与 ${active.rewardCoins} 金币</b><small>${room<active.rewardMaterials?'仓位不足，先腾出空间再领取。':'点击下方按钮领取。'}</small></div></div>`:'';
+      content=`<div class="caravan-illustration">${this.art('market')}${icon('caravan',60)}</div><div class="destination-label"><span>青岚小镇</span><i></i>${icon('caravan',24)}<i></i><span>${esc(chosen.name)}</span></div><h3 class="center-title">${heading}</h3><p class="description centered">${hint}</p>${slotStrip}<div class="section-label">可选路线</div><div class="route-list">${routeCards}${unlocked.map(id=>`<div class="route-card locked"><b>${esc(destinationOf(id).name)}</b><small>研究「${esc(TECHNOLOGIES[DESTINATIONS[id].technology!].name)}」后开放。</small></div>`).join('')}</div>${gift}${this.button('caravan','',!active?'先建一座集市':active.status==='traveling'?'商队在路上':active.status==='returned'?'迎接商队 · 领取物资':market&&cargoReady?'装好货物，出发':market?'货物还没备齐':'先建一座集市',!market||!active||(active.status==='idle'&&!cargoReady),'game-button wide')}`;
     } else if(this.panel==='residents'){
       content=`<div class="residents-summary"><span class="happiness-face">${icon('smile',54)}</span><div><strong>${Math.round(s.happiness)}<small>%</small></strong><span>${s.happiness>=70?'这里是安心的家':'邻居们需要更多照顾'}</span></div></div><div class="people-count"><span>${icon('people',21)} 常住居民 <b>${s.population}</b></span><span>${icon('home',21)} 总床位 <b>${this.world.housingCapacity()}</b></span></div><div class="population-plan"><b>当前可住 ${Math.min(this.world.housingCapacity(),this.world.communityCapacity())} 人</b><span>社区人口名额 ${this.world.communityCapacity()} · 床位 ${this.world.housingCapacity()}</span><p>学校、诊所与剧院增加人口名额；住宅增加床位。幸福度达到 70%、备足三天口粮时，每个游戏日可迎来一位新邻居。</p>${this.button('open','build','建造住宅与市政设施',false,'secondary-button wide')}</div><div class="needs-list">${[['food','食物','bread'],['water','饮水','water'],['services','社区生活','home'],['environment','环境','leaf'],['comfort','衣着','clothing'],['leisure','闲适','heart'],['faith','信仰','spark'],['health','康健','shield']].map(([key,label,ico])=>`<div class="need-row${['comfort','leisure','faith','health'].includes(key)?' bonus':''}"><span>${icon(ico,20)} ${label}</span><div><i style="width:${s.needs[key as keyof typeof s.needs]}%"></i></div><b>${Math.round(s.needs[key as keyof typeof s.needs])}%</b></div>`).join('')}<p class="muted">衣着、闲适、信仰与康健都是额外的关照：备足衣物与点心，让诊所有余力照顾邻居，再有一座教堂，居民会更满足——对重税也更从容；一时没有也不会让心情变差。</p></div>${this.neighbourCard()}${this.activityCard()}${this.petCard()}<div class="section-label">税收政策 <small>多一点关照，多一份长久</small></div><div class="tax-options">${TAX_RATES.map((rate,i)=>this.button('tax',String(i),`<b>${rate}%</b><span>${TAX_NAMES[i]}</span>`,false,`tax-option ${s.taxRate===i?'active':''}`)).join('')}</div><p class="muted">较高的税率会减少幸福度；食物、清水与花园让更多新邻居愿意留下。</p><div class="festival-card"><span>${icon('spark',28)}</span><div><b>今夜，办一场小镇庆典</b><small>短时提升幸福感 · 180 金币</small></div>${this.button('festival','','举办',s.coins<180,'small-button')}</div>`;
     } else if(this.panel==='quests'){

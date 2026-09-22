@@ -59,7 +59,7 @@ test('route geometry follows the town: moving the market changes the start',()=>
 test('the cart parks empty when idle, waits with goods when returned, and drives while away',()=>{
   const w=prepared();
   const route=caravanRoute(w.state.buildings,w.state.roads??[]);
-  const c=w.state.caravan;
+  const c=w.state.caravans[0];
 
   c.status='idle';
   const idle=caravanPose(c,route,w.state.gameTime);
@@ -67,7 +67,7 @@ test('the cart parks empty when idle, waits with goods when returned, and drives
   assert.deepEqual({x:idle.x,y:idle.y},{x:route[0]!.x,y:route[0]!.y},'an idle cart waits at the market');
 
   assert.equal(w.dispatchCaravan().ok,true);
-  const dispatched=w.state.caravan;
+  const dispatched=w.state.caravans[0];
   const start=caravanPose(dispatched,route,w.state.gameTime);
   assert.equal(start.load,'loaded');assert.equal(start.moving,true);assert.equal(start.direction,'out');
   assert.deepEqual({x:start.x,y:start.y},{x:route[0]!.x,y:route[0]!.y},'it sets out from the market entrance');
@@ -83,8 +83,8 @@ test('the cart parks empty when idle, waits with goods when returned, and drives
 
   w.state.gameTime=dispatched.returnAt;
   w.tick(.1);
-  assert.equal(w.state.caravan.status,'returned');
-  const returned=caravanPose(w.state.caravan,route,w.state.gameTime);
+  assert.equal(w.state.caravans[0].status,'returned');
+  const returned=caravanPose(w.state.caravans[0],route,w.state.gameTime);
   assert.equal(returned.load,'unloading');assert.equal(returned.waiting,true);assert.equal(returned.moving,false);
   assert.deepEqual({x:returned.x,y:returned.y},{x:route[0]!.x,y:route[0]!.y},'it is back at the market with goods to hand over');
 });
@@ -93,7 +93,7 @@ test('the cart is always drawn somewhere on its own route while it travels',()=>
   const w=prepared();
   const route=caravanRoute(w.state.buildings,w.state.roads??[]);
   w.dispatchCaravan();
-  const c=w.state.caravan;
+  const c=w.state.caravans[0];
   for(let step=0;step<=20;step++){
     const time=w.state.gameTime+c.duration*(step/20);
     const pose=caravanPose(c,route,time);
@@ -117,8 +117,8 @@ test('dispatching and collecting the caravan leaves the simulation valid and con
   const before=RESOURCE_KEYS.reduce((n,k)=>n+w.state.resources[k],0);
   assert.equal(w.dispatchCaravan().ok,true);
   const dispatched=RESOURCE_KEYS.reduce((n,k)=>n+w.state.resources[k],0);
-  assert.equal(before-dispatched,Object.values(w.state.caravan.cargo).reduce((a,b)=>a+(b??0),0),'exactly the cargo left the warehouse');
-  w.state.gameTime=w.state.caravan.returnAt;
+  assert.equal(before-dispatched,Object.values(w.state.caravans[0].cargo).reduce((a,b)=>a+(b??0),0),'exactly the cargo left the warehouse');
+  w.state.gameTime=w.state.caravans[0].returnAt;
   w.tick(.1);
   assert.equal(w.dispatchCaravan().ok,true);
   assert.equal(validateSave(w.state),true);
@@ -134,6 +134,6 @@ test('the scene registers caravan frames, so the cart never falls back to the wh
   assert.match(scene,/for\(const atlas of SCENE_ATLASES\)\{[\s\S]*?atlasFrames\(atlas\)[\s\S]*?texture\.add\(/,'frames are registered from the catalog for every listed atlas');
   // The cart must set an explicit frame and size it from that frame, every sync.
   const cart=readFileSync(new URL('../src/render/CaravanCart.ts',import.meta.url),'utf8');
-  assert.match(cart,/drawFrameWidth\(this\.sprite, 'caravan', frame, CART_WIDTH\)/,'the cart sizes each frame it draws');
+  assert.match(cart,/drawFrameWidth\([\w.]+\.sprite, 'caravan', frame, CART_WIDTH\)/,'the cart sizes each frame it draws');
   assert.equal(cart.includes('setDisplaySize'),false,'sizing never happens once at creation');
 });

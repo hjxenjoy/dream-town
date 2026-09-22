@@ -15,7 +15,7 @@ import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTE
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
-import { DESTINATION_IDS, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from './destinations.ts';
+import { DESTINATION_IDS, availableDestinations, caravanDuration, caravanSlots, destinationOf, missingCargo, type DestinationId } from './destinations.ts';
 import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, ornamentRequirement, type CollectionId } from './collections.ts';
 import { HONOURS, HONOUR_TRACK_IDS, honourCapacity, honourCommunity, honourCycleFactor, honourLevel, honourLevelsTaken, honourSummary, nextHonourLevel, type HonourTrackId } from './honours.ts';
 import { STORY_PORTRAITS, STORY_STAGES, nextStoryStage, storyChoiceIds, storyEffect, storyEnvironment, storyHistory, type StoryProgress } from './stories.ts';
@@ -70,6 +70,8 @@ export interface Order {
   bulkUntil?: number;
 }
 export interface Caravan {
+  /** Stable per-slot id, so several carts can be told apart in a save and in the panel. */
+  id: string;
   status: 'idle' | 'traveling' | 'returned';
   returnAt: number;
   duration: number;
@@ -77,7 +79,7 @@ export interface Caravan {
   rewardCoins: number;
   rewardMaterials: number;
   trips: number;
-  /** Chosen destination. Absent on saves written before routes were selectable. */
+  /** Chosen destination. Missing only on saves written before routes were selectable. */
   destination?: DestinationId;
 }
 export interface Quest {
@@ -119,7 +121,8 @@ export interface SimState {
   resources: ResourceMap;
   buildings: Building[];
   orders: Order[];
-  caravan: Caravan;
+  /** Every cart the market can run, whether idle, travelling or waiting to be unloaded. */
+  caravans: Caravan[];
   quests: Quest[];
   season: keyof typeof import('./data.ts').SEASON_NAMES;
   needs: { food: number; water: number; services: number; environment: number; comfort: number; leisure: number; faith: number; health: number };
@@ -210,7 +213,7 @@ export function createInitialState(now = Date.now()): SimState {
     taxRate: 1, population: 12, happiness: 86, capacity: 240,
     resources: { ...emptyResources(), wood: 42, stone: 25, wheat: 24, flour: 12, bread: 10, fish: 20, plank: 12, materials: 10 },
     buildings, orders: clone(INITIAL_ORDERS),
-    caravan: { status: 'idle', returnAt: 0, duration: CARAVAN_DURATION, cargo: { ...CARAVAN_CARGO }, rewardCoins: 420, rewardMaterials: 8, trips: 0 },
+    caravans: [newCaravan(0)],
     quests: [
       { id: 'harvest', title: '第一份丰收', description: '收取 12 份新鲜物资', target: 12, progress: 0, rewardCoins: 160, rewardXp: 35, rewardPrestige: 1, claimed: false },
       { id: 'orders', title: '邻里好帮手', description: '完成 3 笔居民订单', target: 3, progress: 0, rewardCoins: 280, rewardXp: 60, rewardPrestige: 2, claimed: false },
@@ -262,6 +265,12 @@ export function migrateSave(value: unknown): SimState | null {
       if (resources[key] === undefined) resources[key] = amount;
     }
     for (const key of STAT_COUNTERS) if (stats[key] === undefined) stats[key] = 0;
+    // Saves written while the town ran a single caravan carry it as one object. Give it the
+    // id its slot now needs; the cart itself — cargo, destination, progress — is left alone.
+    if (topped.caravans === undefined && isRecord(topped.caravan)) {
+      topped.caravans = [{ ...(topped.caravan as Record<string, unknown>), id: 'caravan-1' }];
+    }
+    delete topped.caravan;
     return validateSave(topped) ? topped : null;
   }
   if (value.version !== 1 || !isRecord(value.resources) || !isRecord(value.stats) || !Array.isArray(value.quests)) return null;
@@ -277,6 +286,14 @@ export function migrateSave(value: unknown): SimState | null {
  * counter existed simply lacks it — so the migration tops them up rather than rejecting it.
  */
 const STAT_COUNTERS = ['collected', 'ordersCompleted', 'buildingsBuilt', 'caravansCompleted', 'coinsEarned', 'festivals', 'repairs', 'toolsProduced', 'clothingProduced'] as const;
+
+/** A fresh cart, parked and pointed at the nearest route — the pre-route-select default. */
+function newCaravan(index: number): Caravan {
+  return {
+    id: `caravan-${index + 1}`, status: 'idle', returnAt: 0, duration: CARAVAN_DURATION,
+    cargo: { ...CARAVAN_CARGO }, rewardCoins: 420, rewardMaterials: 8, trips: 0, destination: 'valley',
+  };
+}
 
 /** Strict boundary for imports: reject corrupt data instead of replacing a good save. */
 export function validateSave(value: unknown): value is SimState {
@@ -350,8 +367,15 @@ export function validateSave(value: unknown): value is SimState {
   // Absent on saves written before bulk commissions, so only its type is checked.
   if (value.nextBulkOrderAt !== undefined && !nonnegative(value.nextBulkOrderAt)) return false;
   for (const quest of value.quests) if (!isRecord(quest) || typeof quest.id !== 'string' || typeof quest.title !== 'string' || typeof quest.description !== 'string' || !whole(quest.target) || !whole(quest.progress) || !whole(quest.rewardCoins) || !whole(quest.rewardXp) || !whole(quest.rewardPrestige) || typeof quest.claimed !== 'boolean') return false;
-  if (!isRecord(value.caravan) || !['idle', 'traveling', 'returned'].includes(value.caravan.status as string) || !validItems(value.caravan.cargo) || ['returnAt', 'duration', 'rewardCoins', 'rewardMaterials', 'trips'].some(key => !nonnegative((value.caravan as Record<string, unknown>)[key]))) return false;
-  if (value.caravan.destination !== undefined && !DESTINATION_IDS.includes(value.caravan.destination as DestinationId)) return false;
+  if (!Array.isArray(value.caravans) || value.caravans.length < 1) return false;
+  const caravanIds = new Set<string>();
+  for (const caravan of value.caravans) {
+    if (!isRecord(caravan) || typeof caravan.id !== 'string' || caravanIds.has(caravan.id)) return false;
+    caravanIds.add(caravan.id);
+    if (!['idle', 'traveling', 'returned'].includes(caravan.status as string) || !validItems(caravan.cargo)) return false;
+    if (['returnAt', 'duration', 'rewardCoins', 'rewardMaterials', 'trips'].some(key => !nonnegative((caravan as Record<string, unknown>)[key]))) return false;
+    if (caravan.destination !== undefined && !DESTINATION_IDS.includes(caravan.destination as DestinationId)) return false;
+  }
   if (value.pets !== undefined) {
     if (!Array.isArray(value.pets) || value.pets.length > 6) return false;
     const petIds = new Set<string>();
@@ -434,7 +458,7 @@ export class SimWorld {
     this.state.needs.health ??= 0;
     // A save from before commissions existed simply waits one interval for its first one.
     this.state.nextBulkOrderAt ??= this.state.gameTime + BULK_ORDER_INTERVAL;
-    this.state.caravan.destination ??= 'valley';
+    for (const caravan of this.state.caravans) caravan.destination ??= 'valley';
     this.state.collections ??= {};
     this.state.stories ??= {};
     this.state.honours ??= {};
@@ -973,20 +997,49 @@ export class SimWorld {
     return this.success('订单已取消，1 分钟后会收到新的委托。');
   }
 
-  /** Picks where the next caravan goes. Only possible between trips, and only if unlocked. */
-  chooseCaravanDestination(id: DestinationId): ActionResult {
+  /** How many carts the market can currently run, per `docs/06` §2. */
+  caravanCapacity(): number {
+    const marketLevel = Math.max(0, ...this.state.buildings.filter(building => building.kind === 'market').map(building => building.level));
+    return marketLevel === 0 ? 0 : caravanSlots(marketLevel, this.state.prestige);
+  }
+
+  /**
+   * The slots the player may actually act on. The array is grown to the capacity but never
+   * shrunk: a town that loses a market or standing is not robbed of a cart already on the
+   * road, it simply cannot start another beyond the smaller limit.
+   */
+  caravanFleet(): Caravan[] {
+    const capacity = this.caravanCapacity();
+    while (this.state.caravans.length < capacity) this.state.caravans.push(newCaravan(this.state.caravans.length));
+    return this.state.caravans.slice(0, Math.max(1, capacity));
+  }
+
+  private findCaravan(id?: string): Caravan | undefined {
+    const slots = this.caravanFleet();
+    return id === undefined ? slots.find(caravan => caravan.status === 'idle') ?? slots[0] : slots.find(caravan => caravan.id === id);
+  }
+
+  /** Picks where one caravan goes. Only possible between its trips, and only if unlocked. */
+  chooseCaravanDestination(id: DestinationId, caravanId?: string): ActionResult {
     const options = availableDestinations(this.state.researched);
     const chosen = options.find(destination => destination.id === id);
     if (!chosen) return this.fail('这条路线还没有打听到，先研究对应的手艺吧。', 'DESTINATION_LOCKED');
-    if (this.state.caravan.status === 'traveling') return this.fail('商队还在路上，等它回来再定下一趟。', 'CARAVAN_BUSY');
-    if (this.state.caravan.destination === id) return this.success(`下一趟仍然前往${chosen.name}。`);
-    this.state.caravan.destination = id;
+    const caravan = this.findCaravan(caravanId);
+    if (!caravan) return this.fail('没有这支商队。', 'UNKNOWN_CARAVAN');
+    if (caravan.status === 'traveling') return this.fail('这支商队还在路上，等它回来再定下一趟。', 'CARAVAN_BUSY');
+    if (caravan.destination === id) return this.success(`下一趟仍然前往${chosen.name}。`);
+    caravan.destination = id;
     return this.success(`下一趟商队将前往${chosen.name}：${chosen.description}`);
   }
 
-  dispatchCaravan(): ActionResult {
-    const caravan = this.state.caravan;
-    if (caravan.status === 'traveling') return this.fail('商队正在旅途中，回来后会带给你消息。', 'CARAVAN_BUSY');
+  /**
+   * Sends one caravan out, or unloads it if it has already come back. One action covers both
+   * because the return trip needs no decision: the reward is fixed by the route it took.
+   */
+  dispatchCaravan(caravanId?: string): ActionResult {
+    const caravan = this.findCaravan(caravanId);
+    if (!caravan) return this.fail('需要一座可用的集市来组织商队。', 'MARKET_REQUIRED');
+    if (caravan.status === 'traveling') return this.fail('这支商队正在旅途中，回来后会带给你消息。', 'CARAVAN_BUSY');
     if (caravan.status === 'returned') {
       if (this.room() < caravan.rewardMaterials) return this.fail(`商队带回 ${caravan.rewardMaterials} 份建材，请先为它们腾出仓位。`, 'WAREHOUSE_FULL');
       const coins = caravan.rewardCoins; const items = { materials: caravan.rewardMaterials };
@@ -1621,8 +1674,10 @@ export class SimWorld {
       building.progress = Math.min(1, building.progress + productionElapsed / this.cycleTime(building, hauls));
       if (building.progress >= 1) { recordOrchard(building); this.deduct(definition.input ?? {}); building.stock = output; building.ready = true;if(building.kind==='farm'&&building.crop&&building.crop!=='wheat')building.cropHarvest=harvestQuote(building.crop,building.level,building.tended??0,Number(building.id.replace(/\D/g,''))||1); }
     }
-    if (this.state.caravan.status === 'traveling' && this.state.gameTime >= this.state.caravan.returnAt) {
-      this.state.caravan.status = 'returned'; this.log('远方传来铃声，商队已经满载归来，去码头迎接他们吧。', 'success');
+    for (const caravan of this.caravanFleet()) {
+      if (caravan.status === 'traveling' && this.state.gameTime >= caravan.returnAt) {
+        caravan.status = 'returned'; this.log('远方传来铃声，商队已经满载归来，去码头迎接他们吧。', 'success');
+      }
     }
     this.updateNeeds();
     this.state.happiness = clamp(this.state.happiness + (this.targetHappiness() - this.state.happiness) * Math.min(1, elapsed / 90), 0, 100);
@@ -1707,7 +1762,11 @@ export class SimWorld {
     }
     if (this.state.buildings.some(b => b.ready && sum(b.stock) <= this.room())) this.collectAll();
     if (this.state.happiness < 60 && this.state.taxRate > 1) { this.setTax(1); this.log('市长助手：居民需要缓一缓，暂时降低税率。', 'mayor'); return; }
-    if (this.state.caravan.status === 'returned') { const result = this.dispatchCaravan(); if (result.ok) { this.log('市长助手：商队已经回来了，建材已收入仓库。', 'mayor'); return; } }
+    for (const caravan of this.caravanFleet()) {
+      if (caravan.status !== 'returned') continue;
+      const result = this.dispatchCaravan(caravan.id);
+      if (result.ok) { this.log('市长助手：商队已经回来了，建材已收入仓库。', 'mayor'); return; }
+    }
     const foodReserve = Math.ceil(this.state.population / 4) * 3;
     // A bulk commission is worth doing precisely because it is large, so it is considered
     // before the ordinary board — but it still has to clear the food and timber reserves.
@@ -1717,8 +1776,11 @@ export class SimWorld {
     if (commission) { this.fulfillOrder(commission.id); this.log('市长助手：备齐了口粮与木材，交付远方商会的大单。', 'mayor'); return; }
     const order = this.state.orders.find(candidate => (candidate.cooldownUntil ?? 0) <= this.state.gameTime && this.has(candidate.items) && this.state.resources.wood - (candidate.items.wood ?? 0) >= this.woodReserve() && this.state.resources.fish + this.state.resources.bread - (candidate.items.fish ?? 0) - (candidate.items.bread ?? 0) >= foodReserve);
     if (order) { this.fulfillOrder(order.id); this.log('市长助手：保留三日口粮后，交付一笔邻里订单。', 'mayor'); return; }
-    if (this.state.caravan.status === 'idle' && this.has(this.state.caravan.cargo) && this.state.resources.fish + this.state.resources.bread > foodReserve + 11) {
-      this.dispatchCaravan(); this.log('市长助手：物资充裕，让商队出发换回扩建材料。', 'mayor');
+    // Only one cart is sent per pass: the town should grow its trade, not dump every cargo
+    // at once, and the food check below must be re-evaluated for the next one anyway.
+    const idle = this.caravanFleet().find(caravan => caravan.status === 'idle');
+    if (idle && this.has(idle.cargo) && this.state.resources.fish + this.state.resources.bread > foodReserve + 11) {
+      this.dispatchCaravan(idle.id); this.log('市长助手：物资充裕，让商队出发换回扩建材料。', 'mayor');
     }
   }
 
@@ -1840,7 +1902,9 @@ export class SimWorld {
     const fedDays = days === 0 ? 0 : Math.min(days, fed / Math.max(1, Math.ceil(this.state.population / 4)));
     const tax = Math.floor(fedDays * this.state.population * this.state.taxRate * 3 * averageHappiness / 100);
     this.earn(tax); report.coins = tax+(report.farmCoins??0); report.tax = tax;
-    if (this.state.caravan.status === 'traveling' && this.state.caravan.returnAt <= this.state.gameTime) { this.state.caravan.status = 'returned'; report.caravanReturned = true; }
+    for (const caravan of this.caravanFleet()) {
+      if (caravan.status === 'traveling' && caravan.returnAt <= this.state.gameTime) { caravan.status = 'returned'; report.caravanReturned = true; }
+    }
     report.happinessChange = this.state.happiness - originalHappiness;
     return report;
   }
@@ -1874,7 +1938,7 @@ export class SimWorld {
       stockTargets: this.stockTargets(), woodReserve: this.woodReserve(), surplus: this.surplusQuote(),
       farming:this.garden(),
       projects: PROJECT_IDS.map(id=>({id,name:PROJECTS[id].name,title:PROJECTS[id].title,perk:PROJECTS[id].perk,...this.projectStatus(id)})),
-      resources: { ...this.state.resources }, orders: clone(this.state.orders), caravan: clone(this.state.caravan),
+      resources: { ...this.state.resources }, orders: clone(this.state.orders), caravans: clone(this.caravanFleet()), caravanCapacity: this.caravanCapacity(),
       readyBuildings: this.state.buildings.filter(building => building.ready).map(building => building.id),
       activity: this.activityActive() ? { ...this.state.activity } : null,
       achievements: achievementProgress(this.achievementMetrics(), this.state.achievements ?? []),
@@ -1889,7 +1953,10 @@ export class SimWorld {
       stories: this.neighbourStories(),
       caravanRoutes: availableDestinations(this.state.researched).map(destination => ({
         ...destination,
-        chosen: (this.state.caravan.destination ?? 'valley') === destination.id,
+        // "Chosen" is per slot now, so the route list reports how many carts are pointed at
+        // each one rather than a single town-wide selection.
+        chosen: this.caravanFleet().some(caravan => (caravan.destination ?? 'valley') === destination.id),
+        assigned: this.caravanFleet().filter(caravan => (caravan.destination ?? 'valley') === destination.id).length,
         missing: missingCargo(destination, this.state.resources),
       })),
       pets: (this.state.pets ?? []).map(pet => ({ ...pet, name: PETS[pet.kind].name })),

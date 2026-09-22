@@ -36,8 +36,8 @@ export const GAME_TOOLS: ToolDefinition[] = [
   tool('upgrade_building', '消耗金币和商队建材升级建筑，最高三级。', { x: coordinate, y: coordinate }, ['x', 'y']),
   tool('set_tax_rate', '调整税率，在收入与幸福度间取得平衡。', { level: { type: 'string', enum: ['very_low', 'low', 'medium', 'high', 'extortion'] } }, ['level']),
   tool('fulfill_order', '从仓库交付物资，获得金币与经验。', { orderId: string }, ['orderId']),
-  tool('dispatch_caravan', '派出补给商队前往已选定的目的地；返回后同一工具领取货物。'),
-  tool('choose_caravan_route', '选择下一趟商队的目的地。不同路线货物、时长与回报不同，并走不同的桥。', { destination: { type: 'string', enum: ['valley', 'hilltown', 'rivermouth'] } }, ['destination']),
+  tool('dispatch_caravan', '派出补给商队前往已选定的目的地；返回后同一工具领取货物。', { caravan: { type: 'string' } }),
+  tool('choose_caravan_route', '为某支商队选择下一趟目的地。不同路线货物、时长与回报不同，并走不同的桥。', { destination: { type: 'string', enum: ['valley', 'hilltown', 'rivermouth'] }, caravan: { type: 'string' } }, ['destination']),
   tool('collect_production', '收取成熟农田或已完工工坊的产物。', { buildingId: string }, ['buildingId']),
   tool('set_production_focus', '木工坊可选择 balanced 均衡、wood 木材优先、plank 木板优先；其他工坊恢复默认配方。', { buildingId: string, recipeId: { type: 'string', enum: ['default', 'balanced', 'wood', 'plank', ...BUILDING_KEYS] } }, ['buildingId', 'recipeId']),
   tool('adjust_workforce', '在现有居民范围内安排工坊工人。', { buildingId: string, workerCount: { type: 'integer', minimum: 0, maximum: 2 } }, ['buildingId', 'workerCount']),
@@ -97,8 +97,8 @@ export function executeGameTool(world: SimWorld, name: string, args: unknown = {
     case 'upgrade_building': return world.upgrade(atTile());
     case 'set_tax_rate': return world.setTax(['very_low', 'low', 'medium', 'high', 'extortion'].indexOf(values.level as string));
     case 'fulfill_order': return world.fulfillOrder(values.orderId as string);
-    case 'dispatch_caravan': return world.dispatchCaravan();
-    case 'choose_caravan_route': return world.chooseCaravanDestination(values.destination as 'valley' | 'hilltown' | 'rivermouth');
+    case 'dispatch_caravan': return world.dispatchCaravan(values.caravan === undefined ? undefined : String(values.caravan));
+    case 'choose_caravan_route': return world.chooseCaravanDestination(values.destination as 'valley' | 'hilltown' | 'rivermouth', values.caravan === undefined ? undefined : String(values.caravan));
     case 'collect_production': return world.collect(values.buildingId as string);
     case 'set_production_focus': return world.setProductionFocus(values.buildingId as string, values.recipeId as string);
     case 'adjust_workforce': return world.adjustWorkforce(values.buildingId as string, values.workerCount as number);

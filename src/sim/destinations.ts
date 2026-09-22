@@ -87,3 +87,17 @@ export function missingCargo(
   }
   return missing;
 }
+
+/**
+ * How many caravans the town may run at once, as `docs/06` §2 specifies: the count grows with
+ * the market and with standing, under a hard ceiling of four. Selling the market leaves the
+ * town able to run fewer, but a caravan already on the road is never cancelled by that.
+ */
+export const CARAVAN_SLOT_LIMIT = 4;
+/** Standing needed before the market alone cannot justify one more cart. */
+export const CARAVAN_STANDING_FOR_EXTRA = 40;
+
+export function caravanSlots(marketLevel: number, prestige: number): number {
+  const byMarket = Math.max(1, Math.min(3, marketLevel));
+  return Math.min(CARAVAN_SLOT_LIMIT, byMarket + (prestige >= CARAVAN_STANDING_FOR_EXTRA ? 1 : 0));
+}

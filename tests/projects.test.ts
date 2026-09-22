@@ -72,7 +72,7 @@ test('titles apply exact permanent benefits, including offline production, witho
   assert.equal(w.communityCapacity(),originalCap+12);
   assert.equal(w.observe().production.find(p=>p.buildingId===b.id)!.cycle,originalCycle*.95);
   const market=w.build('market',43,42);assert.equal(market.ok,true);
-  w.dispatchCaravan();assert.equal(w.state.caravan.duration,108);
+  w.dispatchCaravan();assert.equal(w.state.caravans[0].duration,108);
   const restored=new SimWorld(w.state);assert.equal(restored.communityCapacity(),w.communityCapacity());assert.equal(restored.observe().production.find(p=>p.buildingId===b.id)!.cycle,originalCycle*.95);
   for(const building of restored.state.buildings)building.paused=building.id!==b.id;
   restored.state.resources.plank=0;const r=restored.offline(originalCycle*.95+.001);assert.ok(r.produced.plank>=6);

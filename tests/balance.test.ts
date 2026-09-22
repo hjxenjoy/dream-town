@@ -119,7 +119,7 @@ test('a wrecked town recovers: the dead end is gone', () => {
     w.collectAll();
     if (w.state.taxRate > 1) w.setTax(1);
     if (w.state.resources.wood < 4 || w.state.coins < 600) w.sellSurplus();
-    if (w.state.caravan.status === 'returned') w.dispatchCaravan();
+    if (w.state.caravans[0].status === 'returned') w.dispatchCaravan();
   }
   assert.equal(w.state.buildings.some(building => building.damaged), false, 'every building is repaired');
   assert.ok(w.state.happiness > 40, `the town is not miserable: ${Math.round(w.state.happiness)}`);

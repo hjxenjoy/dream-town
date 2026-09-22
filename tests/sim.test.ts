@@ -118,7 +118,7 @@ test('caravan has one outbound trip, returns on time, and pays only on collectio
   assert.equal(world.dispatchCaravan().code, 'CARAVAN_BUSY');
   assert.deepEqual(world.state.resources, cargoAfter);
   world.tick(60); world.tick(60);
-  assert.equal(world.state.caravan.status, 'returned');
+  assert.equal(world.state.caravans[0].status, 'returned');
   const beforeReward = world.state.coins;
   assert.equal(world.dispatchCaravan().ok, true);
   assert.equal(world.state.coins, beforeReward + 420);
@@ -172,7 +172,7 @@ test('offline simulation is capped, returns caravans, preserves residents and st
   assert.equal(report.elapsed, MAX_OFFLINE_SECONDS); assert.equal(report.capped, true);
   // The cap is on how much time is credited, so it is measured from wherever the clock was.
   assert.equal(world.state.gameTime, startedAt + MAX_OFFLINE_SECONDS);
-  assert.equal(report.caravanReturned, true); assert.equal(world.state.caravan.status, 'returned');
+  assert.equal(report.caravanReturned, true); assert.equal(world.state.caravans[0].status, 'returned');
   assert.equal(world.state.population, population);
   assert.equal(world.state.buildings.some(building => building.damaged), false);
   assert.ok(world.state.happiness >= 25);

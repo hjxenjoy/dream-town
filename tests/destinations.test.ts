@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, RESOURCE_KEYS, TECHNOLOGY_KEYS, emptyResources, type Resource } from '../src/sim/data.ts';
-import { DESTINATIONS, DESTINATION_IDS, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from '../src/sim/destinations.ts';
+import { DESTINATIONS, DESTINATION_IDS, CARAVAN_SLOT_LIMIT, CARAVAN_STANDING_FOR_EXTRA, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from '../src/sim/destinations.ts';
 
 /** Reward per item shipped, so a longer route can be shown to be worth it. */
 function rewardRatio(destination: typeof DESTINATIONS.valley): number {
@@ -73,7 +73,7 @@ test('the chosen route decides the cargo, the duration and the reward',()=>{
     assert.equal(w.chooseCaravanDestination(id).ok,true,`${id} is selectable`);
     const dispatched=w.dispatchCaravan();
     assert.equal(dispatched.ok,true,`${id} dispatches: ${dispatched.message}`);
-    const caravan=w.state.caravan;
+    const caravan=w.state.caravans[0];
     assert.equal(caravan.destination,id);
     assert.deepEqual(caravan.cargo,DESTINATIONS[id].cargo,`${id} ships its own cargo`);
     assert.equal(caravan.rewardCoins,DESTINATIONS[id].rewardCoins);
@@ -86,7 +86,7 @@ test('the chosen route decides the cargo, the duration and the reward',()=>{
     }
     // And collecting pays exactly what was promised.
     w.state.gameTime=caravan.returnAt;w.tick(0.1);
-    assert.equal(w.state.caravan.status,'returned');
+    assert.equal(w.state.caravans[0].status,'returned');
     const coins=w.state.coins, materials=w.state.resources.materials;
     assert.equal(w.dispatchCaravan().ok,true);
     assert.equal(w.state.coins,coins+DESTINATIONS[id].rewardCoins,`${id} paid its coins`);
@@ -114,11 +114,11 @@ test('the destination cannot change mid-journey',()=>{
   const w=prepared();
   w.chooseCaravanDestination('valley');
   assert.equal(w.dispatchCaravan().ok,true);
-  const before=JSON.stringify(w.state.caravan);
+  const before=JSON.stringify(w.state.caravans[0]);
   const refused=w.chooseCaravanDestination('rivermouth');
   assert.equal(refused.ok,false);
   assert.equal(refused.code,'CARAVAN_BUSY');
-  assert.equal(JSON.stringify(w.state.caravan),before,'the route is fixed once it sets out');
+  assert.equal(JSON.stringify(w.state.caravans[0]),before,'the route is fixed once it sets out');
 });
 
 test('each destination crosses its own bridge, so the route is visibly different',()=>{
@@ -149,21 +149,117 @@ test('an unknown bridge falls back to the nearest one rather than failing',()=>{
 test('a save from before routes were selectable loads and defaults to the village',()=>{
   const w=prepared();
   const older=structuredClone(w.state) as unknown as Record<string, unknown>;
-  delete (older.caravan as Record<string, unknown>).destination;
+  delete ((older.caravans as Record<string, unknown>[])[0] as Record<string, unknown>).destination;
   assert.equal(validateSave(older),true,'an older save is still valid');
   const restored=new SimWorld(older);
-  assert.equal(restored.state.caravan.destination,'valley','it defaults to the original route');
+  assert.equal(restored.state.caravans[0].destination,'valley','it defaults to the original route');
   assert.equal(restored.dispatchCaravan().ok,true,'and can set out immediately');
+});
+
+test('a save written while the town ran one caravan keeps that cart and gains its slot id',()=>{
+  // The shape changed from one `caravan` object to a `caravans` array. The cart itself —
+  // where it was going, what it carried, how far along it was — must survive untouched.
+  const w=prepared();
+  w.dispatchCaravan();
+  const single=structuredClone(w.state) as unknown as Record<string, unknown>;
+  const cart={...(single.caravans as Record<string, unknown>[])[0] as Record<string, unknown>};
+  delete cart.id;
+  delete single.caravans;
+  single.caravan=cart;
+
+  const restored=new SimWorld(single);
+  assert.equal(restored.state.caravans.length,1,'the single cart becomes the first slot');
+  assert.equal(restored.state.caravans[0].id,'caravan-1');
+  assert.equal(restored.state.caravans[0].status,'traveling','and it is still on the road');
+  assert.equal(restored.state.caravans[0].destination,cart.destination);
+  assert.deepEqual(restored.state.caravans[0].cargo,cart.cargo);
+  assert.equal(restored.state.caravans[0].returnAt,cart.returnAt);
 });
 
 test('a save naming a route that does not exist is refused',()=>{
   const w=prepared();
   const corrupt=structuredClone(w.state) as unknown as Record<string, unknown>;
-  (corrupt.caravan as Record<string, unknown>).destination='moon';
+  ((corrupt.caravans as Record<string, unknown>[])[0] as Record<string, unknown>).destination='moon';
   assert.equal(validateSave(corrupt),false);
   const wrongType=structuredClone(w.state) as unknown as Record<string, unknown>;
-  (wrongType.caravan as Record<string, unknown>).destination=7;
+  ((wrongType.caravans as Record<string, unknown>[])[0] as Record<string, unknown>).destination=7;
   assert.equal(validateSave(wrongType),false);
+});
+
+test('a save with no caravans at all, or two carts sharing an id, is refused',()=>{
+  const w=prepared();
+  const empty=structuredClone(w.state) as unknown as Record<string, unknown>;
+  empty.caravans=[];
+  assert.equal(validateSave(empty),false,'the market always has at least one slot');
+  const duplicated=structuredClone(w.state) as unknown as Record<string, unknown>;
+  duplicated.caravans=[{...w.state.caravans[0]},{...w.state.caravans[0]}];
+  assert.equal(validateSave(duplicated),false,'ids identify slots, so they cannot repeat');
+});
+
+test('the fleet grows with the market and with standing, under a hard ceiling of four',()=>{
+  const w=prepared();
+  const market=w.state.buildings.find(b=>b.kind==='market')!;
+  assert.equal(w.caravanCapacity(),1,'a level-1 market runs one cart');
+  market.level=2;
+  assert.equal(w.caravanCapacity(),2);
+  market.level=3;
+  assert.equal(w.caravanCapacity(),3);
+  w.state.prestige=CARAVAN_STANDING_FOR_EXTRA;
+  assert.equal(w.caravanCapacity(),4,'standing earns the fourth');
+  // The ceiling holds however large the numbers get.
+  market.level=9;
+  w.state.prestige=100000;
+  assert.equal(w.caravanCapacity(),CARAVAN_SLOT_LIMIT);
+  // Damage stops a cart leaving but does not shrink the fleet: the slot is still the town's.
+  market.damaged=true;
+  market.level=1;
+  w.state.prestige=0;
+  assert.equal(w.caravanCapacity(),1);
+  assert.equal(w.dispatchCaravan().ok,false,'a damaged market cannot send anyone out');
+});
+
+test('a fleet is padded to the current capacity but never shrinks below the carts it has',()=>{
+  const w=prepared();
+  const market=w.state.buildings.find(b=>b.kind==='market')!;
+  market.level=3;
+  assert.equal(w.caravanFleet().length,3,'the slots are created on demand');
+  // Losing the market must not delete a cart that already exists — only stop new ones.
+  market.level=1;
+  assert.equal(w.caravanCapacity(),1);
+  assert.equal(w.state.caravans.length,3,'existing carts are kept');
+  assert.equal(w.caravanFleet().length,1,'but only the capacity is actable');
+  assert.equal(validateSave(w.state),true,'and the save still validates');
+});
+
+test('two caravans run the same road independently and are unloaded one at a time',()=>{
+  const w=prepared();
+  const market=w.state.buildings.find(b=>b.kind==='market')!;
+  market.level=2;
+  // Enough of every cargo to load both carts.
+  for(const key of RESOURCE_KEYS) w.state.resources[key]=Math.max(w.state.resources[key],200);
+
+  const [first,second]=w.caravanFleet();
+  assert.equal(w.chooseCaravanDestination('valley',first!.id).ok,true);
+  assert.equal(w.chooseCaravanDestination('valley',second!.id).ok,true);
+  assert.equal(w.dispatchCaravan(first!.id).ok,true);
+  assert.equal(first!.status,'traveling');
+  assert.equal(second!.status,'idle','the second cart is untouched by the first one leaving');
+  // Sent a little later, so the two return times genuinely differ and the test can tell
+  // one cart coming home from both of them coming home at once.
+  w.state.gameTime+=30;
+  assert.equal(w.dispatchCaravan(second!.id).ok,true);
+  assert.equal(second!.status,'traveling','both can be on the road at once');
+  assert.ok(second!.returnAt>first!.returnAt,'the later cart is due back later');
+
+  // The first one home is the first one collectable.
+  w.state.gameTime=first!.returnAt;
+  w.tick(.1);
+  assert.equal(first!.status,'returned');
+  assert.equal(second!.status,'traveling','the other is still away');
+  assert.equal(w.dispatchCaravan(first!.id).ok,true,'collecting the first');
+  assert.equal(first!.status,'idle');
+  assert.equal(second!.status,'traveling','and the second is unaffected');
+  assert.equal(validateSave(w.state),true);
 });
 
 test('a better market shortens every route, and the harbour title shortens them further',()=>{
