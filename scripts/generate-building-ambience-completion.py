@@ -19,19 +19,19 @@ REUSE={'mine','windmill','smithy','bakery','pasture'}
 # Buildings whose sound already shipped under a hyphenated track name in the first pack. The
 # first batch named tracks for the trade ('hunter-lodge'), not for the building id, so a
 # building added later has to say which existing track it is meant to use.
-REUSE_TRACK={'hunterlodge':'hunter-lodge','castle':'castle'}
+REUSE_TRACK={'hunterlodge':'hunter-lodge','castle':'castle','zoogate':'zoo'}
 # Explicit assignments: adding a BuildingKind without a sound is a hard failure.
 GROUPS={
  'leaves':'flowernursery orchardhouse garden oak cherry pine maple flowerarch flowerbox trellis willow vineyard flowercart harvestpile',
  'home':'homestead cottage farmhouse rowhouse apartment',
  'chicken':'chickencoop', 'bubbles':'jamkitchen dairy winery cellar',
- 'crowd':'market teahouse school theatre townhall picniccorner parasol tavern',
+ 'crowd':'market teahouse school theatre townhall picniccorner parasol tavern zooshop',
  'fire':'kiln smelter brickworks', 'wood':'lumber forester warehouse crates barrels',
  'machine':'feedmill weaver tailor sawmill sugarmill butcher',
  'water':'fishpond fishery well watertower fountain dock',
  'quiet':'clinic', 'bell':'chapel firestation firetower',
  'footsteps':'boardwalk bench gazebo', 'cloth':'railing archlights signflags',
- 'metal':'anvil quarry', 'cow':'cowbarn pigfarm', 'bees':'apiary', 'field':'farm canefield hopsfield herbgarden',
+ 'metal':'anvil quarry', 'cow':'cowbarn pigfarm zooenclosure', 'bees':'apiary', 'field':'farm canefield hopsfield herbgarden',
  # Defence: a post is a flag and a distant bell, the barracks adds drill steps, and a wall
  # is masonry in the wind. Assigned on the profile that fits rather than inventing kinds.
  'bell':'chapel firestation firetower guardpost',

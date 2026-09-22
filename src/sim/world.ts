@@ -10,7 +10,7 @@ import { LOCAL_SUPPLY_RANGE, supplyFactor, supplyHauls } from './layout.ts';
 import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type RoadKind, type Tile } from './roads.ts';
 import { TownNavigation } from './navigation.ts';
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
-import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, FOCUS_RECIPES, GAME_DAY_SECONDS, HERB_BOOST, LEISURE_GOODS, MAP_SIZE, TAVERN_GOODS, effectiveRecipe, herbCoverage, herbsPerDay, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId } from './data.ts';
+import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, FOCUS_RECIPES, GAME_DAY_SECONDS, HERB_BOOST, SOUVENIR_SHOP_MULTIPLIER, ZOO_DEFAULT_SPECIES, ZOO_SPECIES, ZOO_SPECIES_NAMES, LEISURE_GOODS, MAP_SIZE, TAVERN_GOODS, effectiveRecipe, herbCoverage, herbsPerDay, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId, type ZooSpecies } from './data.ts';
 import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, canStrike, damageCeiling, disasterOf, raidLoss, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 import { WEATHER, weatherAt, weatherGrowthFactor, weatherRemaining, type WeatherKind } from './weather.ts';
@@ -60,7 +60,7 @@ export interface Building {
    * What a workshop with more than one recipe is set to make. The lumber mill chooses
    * between timber and boards; the winery, per docs/04 §24, brews wine or beer.
    */
-  productionFocus?: 'balanced' | 'wood' | 'plank' | 'wine' | 'beer';
+  productionFocus?: 'balanced' | 'wood' | 'plank' | 'wine' | 'beer' | ZooSpecies;
 }
 export interface Order {
   id: string;
@@ -346,6 +346,7 @@ export function validateSave(value: unknown): value is SimState {
     const FOCUS_BY_KIND: Partial<Record<BuildingKind, readonly string[]>> = {
       lumber: ['balanced', 'wood', 'plank'],
       winery: ['wine', 'beer'],
+      zooenclosure: ['zebra', 'giraffe', 'elephant', 'lion'],
     };
     if (building.productionFocus !== undefined
       && !(FOCUS_BY_KIND[building.kind as BuildingKind] ?? []).includes(building.productionFocus as string)) return false;
@@ -754,6 +755,12 @@ export class SimWorld {
     if (!whole(x) || !whole(y) || x < 1 || y < 1 || x >= MAP_SIZE - 1 || y >= MAP_SIZE - 1) return this.fail('请选择小镇范围内的空地。', 'INVALID_TILE');
     const issue=this.placementIssue(x,y);if(issue)return this.fail(issue.message,issue.code);
     if (kind === 'townhall' && this.state.buildings.some(building => building.kind === kind)) return this.fail('小镇已有议事厅，可以升级现有建筑。', 'UNIQUE_BUILDING');
+    if (kind === 'zoogate' && this.state.buildings.some(building => building.kind === kind)) return this.fail('小镇已有动物园大门，可以升级现有建筑。', 'UNIQUE_BUILDING');
+    // Some buildings wait for the town to grow into them, the same way the honours tracks do.
+    const minLevel = BUILDINGS[kind].minTownLevel;
+    if (minLevel && this.state.level < minLevel) return this.fail(`小镇达到 ${minLevel} 级才能动工。`, 'TOWN_LEVEL_REQUIRED');
+    // The zoo is one place: its enclosures and shop only exist inside a zoo that has a gate.
+    if (BUILDINGS[kind].needsZooGate && !this.state.buildings.some(building => building.kind === 'zoogate')) return this.fail('先在镇外建起动物园大门。', 'ZOO_GATE_REQUIRED');
     if (kind === 'farm' && this.state.buildings.filter(building => building.kind === 'farm').length >= Math.floor(this.state.population / 2) + 2) return this.fail('现有居民能照料的农田已满，迎接新居民后再开垦吧。', 'POPULATION_REQUIRED');
 
     const definition = BUILDINGS[kind];
@@ -762,7 +769,7 @@ export class SimWorld {
     if (!this.has(materials)) return this.fail(`建造需要${resourceLabel(materials)}。`, 'INSUFFICIENT_RESOURCES');
     this.state.coins -= definition.cost; this.deduct(materials);
     const availableWorkers = Math.max(0, this.state.population - this.assignedWorkers());
-    const building: Building = { ...(livestockSpec(kind)?{animalAge:0}:{}), id: this.id('building'), kind, x, y, level: 1, progress: 0, ready: false, paused: false, stock: {}, workers: Math.min(definition.workers ?? 0, availableWorkers) };
+    const building: Building = { ...(livestockSpec(kind)?{animalAge:0}:{}), ...(kind==='zooenclosure'?{productionFocus:ZOO_DEFAULT_SPECIES}:{}), id: this.id('building'), kind, x, y, level: 1, progress: 0, ready: false, paused: false, stock: {}, workers: Math.min(definition.workers ?? 0, availableWorkers) };
     this.state.buildings.push(building); this.state.stats.buildingsBuilt++;
     if (kind === 'warehouse') this.state.capacity += this.warehouseIncrement();
     this.earn(0, 15); this.updateNeeds();
@@ -985,6 +992,12 @@ export class SimWorld {
       building.productionFocus = focus; building.paused = false;
       return this.success(`木工坊已切换为${focus === 'wood' ? '木材优先' : focus === 'plank' ? '木板优先' : '均衡补货'}。已完成的产物保持不变。`, { buildingId: id });
     }
+    // A zoo enclosure houses one species, chosen the same way a workshop chooses a recipe.
+    if (building.kind === 'zooenclosure' && ZOO_SPECIES.includes(recipeId as ZooSpecies)) {
+      if ((building.productionFocus ?? ZOO_DEFAULT_SPECIES) === recipeId && !building.paused) return this.fail('这个展区已经住着这种动物。', 'NO_CHANGE');
+      building.productionFocus = recipeId as ZooSpecies; building.paused = false;
+      return this.success(`展区改成了${ZOO_SPECIES_NAMES[recipeId as ZooSpecies]}。已经收好的纪念品保持不变。`, { buildingId: id });
+    }
     // The winery brews either of the two drinks docs/04 §24 gives it.
     if (building.kind === 'winery' && ['default', 'winery', 'wine', 'beer'].includes(recipeId)) {
       const focus = (recipeId === 'default' || recipeId === 'winery' ? 'wine' : recipeId) as NonNullable<Building['productionFocus']>;
@@ -1200,7 +1213,7 @@ export class SimWorld {
   sell(resource: Resource, amount: number): ActionResult {
     if (!RESOURCE_KEYS.includes(resource) || !whole(amount) || amount <= 0) return this.fail('请选择有效的物资和正整数数量。', 'INVALID_QUANTITY');
     if (this.state.resources[resource] < amount) return this.fail(`${RESOURCES[resource].name}库存不足。`, 'INSUFFICIENT_RESOURCES');
-    const coins = RESOURCES[resource].sellPrice * amount;
+    const coins = this.sellValue(resource) * amount;
     this.state.resources[resource] -= amount; this.earn(coins);
     return this.success(`售出 ${amount} 份${RESOURCES[resource].name}，获得 ${coins} 金币。`, { coins });
   }
@@ -1450,7 +1463,7 @@ export class SimWorld {
       const amount = Math.max(0, this.state.resources[key] - retain);
       if (amount) items[key] = amount;
     }
-    return { items, quantity: sum(items), coins: RESOURCE_KEYS.reduce((n, key) => n + (items[key] ?? 0) * RESOURCES[key].sellPrice, 0) };
+    return { items, quantity: sum(items), coins: RESOURCE_KEYS.reduce((n, key) => n + (items[key] ?? 0) * this.sellValue(key), 0) };
   }
 
   sellSurplus(resource?: Resource): ActionResult {
@@ -1459,7 +1472,7 @@ export class SimWorld {
     const items = resource ? { [resource]: quote.items[resource] ?? 0 } : quote.items;
     const quantity = sum(items);
     if (!quantity) return this.fail('这些物资都在保留量内，暂时没有富余可出售。', 'NO_SURPLUS');
-    const coins = RESOURCE_KEYS.reduce((n, key) => n + (items[key] ?? 0) * RESOURCES[key].sellPrice, 0);
+    const coins = RESOURCE_KEYS.reduce((n, key) => n + (items[key] ?? 0) * this.sellValue(key), 0);
     this.deduct(items); this.earn(coins); this.updateNeeds();
     return this.success(`已出售 ${quantity} 份富余物资，腾出 ${quantity} 格仓位，获得 ${coins} 金币。`, { coins });
   }
@@ -1507,6 +1520,21 @@ export class SimWorld {
   }
 
   /** Whether the town has somewhere to serve a drink, which is what docs/05 §2 asked for. */
+  /** Whether a souvenir shop is standing, which is what makes souvenirs worth more. */
+  private souvenirShopStanding(): boolean {
+    return this.state.buildings.some(building => building.kind === 'zooshop' && !building.damaged);
+  }
+
+  /**
+   * What one of a resource fetches when sold. Only souvenirs are affected, and only while a
+   * shop stands: a shop turns the same morning's work into more money without inventing a
+   * second way for a building to make coins.
+   */
+  sellValue(key: Resource): number {
+    const base = RESOURCES[key].sellPrice;
+    return key === 'souvenir' && this.souvenirShopStanding() ? Math.round(base * SOUVENIR_SHOP_MULTIPLIER) : base;
+  }
+
   /** The weather right now. Derived from the clock, so it needs no save field. */
   weather(): WeatherKind {
     return weatherAt(this.state.season as SeasonKey, this.state.gameTime);
@@ -2077,6 +2105,16 @@ export class SimWorld {
       plague: this.state.plague
         ? { active: true, daysLeft: Math.max(0, Math.ceil((this.state.plague.until - this.state.gameTime) / GAME_DAY_SECONDS)), moodCost: Math.round(this.plagueMoodCost()) }
         : { active: false, daysLeft: 0, moodCost: 0 },
+      zoo: {
+        hasGate: this.state.buildings.some(building => building.kind === 'zoogate'),
+        enclosures: this.state.buildings.filter(building => building.kind === 'zooenclosure').map(building => ({
+          buildingId: building.id,
+          species: building.productionFocus ?? ZOO_DEFAULT_SPECIES,
+          name: ZOO_SPECIES_NAMES[(building.productionFocus ?? ZOO_DEFAULT_SPECIES) as ZooSpecies],
+        })),
+        hasShop: this.souvenirShopStanding(),
+        souvenirValue: this.sellValue('souvenir'),
+      },
       illness: { clinicCoverage: this.state.needs.health, herbCoverage: Math.round(herbCoverage(this.state.resources, this.state.population)) },
       // The one thing the design documents ask of weather: get_town_status() reports it.
       weather: {

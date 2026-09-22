@@ -20,6 +20,8 @@ const WEIGHTS: ResourceMap = {
   herbs: 3,
   // Pelts are a trade good with no workshop consumer, so they hold a modest buffer.
   pelt: 3,
+  // Souvenirs are a trade good, so a modest buffer is enough.
+  souvenir: 3,
 };
 
 export function stockTargets(state: SimState): ResourceMap {

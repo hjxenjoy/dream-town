@@ -1,10 +1,10 @@
 /** Short names for the two construction materials, used in costs and refusals. */
 export const RESOURCE_LABELS: Record<'wood' | 'stone', string> = { wood: '木材', stone: '石料' };
 
-export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage' | 'sugarcane' | 'sugar' | 'hops' | 'beer' | 'meat' | 'sausages' | 'herbs' | 'pelt';
+export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage' | 'sugarcane' | 'sugar' | 'hops' | 'beer' | 'meat' | 'sausages' | 'herbs' | 'pelt' | 'souvenir';
 export type ResourceMap = Record<Resource, number>;
 export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
-export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile' | 'barracks' | 'guardpost' | 'wall' | 'canefield' | 'sugarmill' | 'hopsfield' | 'tavern' | 'pigfarm' | 'butcher' | 'herbgarden' | 'hunterlodge' | 'castle';
+export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile' | 'barracks' | 'guardpost' | 'wall' | 'canefield' | 'sugarmill' | 'hopsfield' | 'tavern' | 'pigfarm' | 'butcher' | 'herbgarden' | 'hunterlodge' | 'castle' | 'zoogate' | 'zooenclosure' | 'zooshop';
 
 export interface BuildingDefinition {
   name: string;
@@ -33,6 +33,10 @@ export interface BuildingDefinition {
   fireRadius?: number;
   /** Tile radius within which a guardpost or barracks turns bandits away. */
   guardRadius?: number;
+  /** Town level a building waits for, the way the honours tracks do. */
+  minTownLevel?: number;
+  /** True when this building cannot be raised until the zoo gate stands. */
+  needsZooGate?: true;
   preserveWood?: boolean;
 }
 
@@ -61,6 +65,11 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
   brickworks: { name: '窑火建材坊', description: '将 6 份石料和 1 份木炭制成 1 包建材，补充商队带回的物资，支持住宅与市政扩建。', category: 'production', cost: 980, wood: 14, stone: 24, frame: null, technology: 'mining', cycle: 65, input: { stone: 6, charcoal: 1 }, output: { materials: 1 }, workers: 2 },
   school: { name: '晨读小学', description: '铃声响起，孩子们有了课堂。每级增加 12 位社区人口名额与 18 点社区服务。', category: 'services', cost: 1100, wood: 20, stone: 18, materials: { materials: 5 }, frame: null, populationCap: 12, services: 18 },
   clinic: { name: '安心诊所', description: '照顾邻居的日常健康。每级让 10 位居民康健，并增加 10 位社区人口名额与 25 点社区服务。', category: 'services', cost: 900, wood: 12, stone: 20, materials: { materials: 4 }, frame: null, populationCap: 10, services: 25, health: 10 },
+  // The zoo: a second line beside the town, per docs/02 §8. The gate is the entrance and the
+  // prerequisite; the enclosures house the animals, which is where the souvenirs come from.
+  zoogate: { name: '青岚动物园', description: '动物园的大门。建起它，镇外才有人来看动物；之后才能修展区与纪念品铺。', category: 'services', cost: 2400, wood: 30, stone: 30, materials: { materials: 10 }, frame: null, technology: 'husbandry', minTownLevel: 12, environment: 8, services: 20 },
+  zooenclosure: { name: '动物展区', description: '一个展区住一种动物。它们每天吃饲料，来参观的人留下纪念品；在「展区住户」里换动物。', category: 'production', cost: 900, wood: 20, stone: 16, materials: { materials: 4 }, frame: null, technology: 'husbandry', cycle: 50, input: { feed: 2 }, output: { souvenir: 3 }, workers: 1, autoCollect: true, needsZooGate: true },
+  zooshop: { name: '纪念品小铺', description: '门口的小铺把纪念品卖出好价钱——只要它开着，每份纪念品都更值钱。', category: 'services', cost: 700, wood: 14, stone: 10, frame: null, technology: 'husbandry', needsZooGate: true, services: 12, environment: 3 },
   tavern: { name: '晚风酒馆', description: '有酒的酒馆才热闹。啤酒会在这里被喝掉，让邻居们多几分好心情；镇上没有酒馆时，啤酒只是能卖的货。', category: 'services', cost: 760, wood: 18, stone: 12, materials: { materials: 2 }, frame: null, technology: 'viniculture', services: 22, populationCap: 4 },
   theatre: { name: '星幕小剧院', description: '灯光与戏剧丰富夜晚。每级增加 16 位社区人口名额、30 点社区服务与 5 点环境值。', category: 'services', cost: 1800, wood: 24, stone: 28, materials: { materials: 8 }, frame: null, technology: 'civics', populationCap: 16, services: 30, environment: 5 },
   chapel: { name: '河畔小教堂', description: '钟声安顿人心。每级为 14 户邻居带来信仰与安定的生活，并增加 8 位社区人口名额。', category: 'services', cost: 1500, wood: 22, stone: 26, materials: { materials: 6 }, frame: null, populationCap: 8, faith: 14 },
@@ -168,9 +177,12 @@ export const RESOURCES: Record<Resource, { name: string; icon: string; sellPrice
   // good, which is exactly the role the competitor teardown describes the lodge as playing
   // early on. Meat from the same hunt does feed the butcher.
   pelt: { name: '皮毛', icon: 'pelt', sellPrice: 10 },
+  // Souvenirs are what the zoo makes. A finished article with no consumer, so the market may
+  // trade them — and a souvenir shop on site makes each one fetch more.
+  souvenir: { name: '纪念品', icon: 'souvenir', sellPrice: 11 },
 };
 
-export const RESOURCE_KEYS = ['flowers','fruit','eggs','jam','wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage', 'sugarcane', 'sugar', 'hops', 'beer', 'meat', 'sausages', 'herbs', 'pelt'] as Resource[];
+export const RESOURCE_KEYS = ['flowers','fruit','eggs','jam','wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage', 'sugarcane', 'sugar', 'hops', 'beer', 'meat', 'sausages', 'herbs', 'pelt', 'souvenir'] as Resource[];
 export const BUILDING_KEYS = Object.keys(BUILDINGS) as BuildingKind[];
 export { MAP_SIZE } from './terrain.ts';
 export const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
@@ -230,7 +242,7 @@ export const HEALTH_TAX_RELIEF = 0.4;
 export const HEALTH_REPAIR_RELIEF = 0.3;
 
 export function emptyResources(): ResourceMap {
-  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0, sugarcane: 0, sugar: 0, hops: 0, beer: 0, meat: 0, sausages: 0, herbs: 0, pelt: 0 };
+  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0, sugarcane: 0, sugar: 0, hops: 0, beer: 0, meat: 0, sausages: 0, herbs: 0, pelt: 0, souvenir: 0 };
 }
 
 /**
@@ -272,6 +284,26 @@ export function herbCoverage(resources: ResourceMap, population: number): number
 export const LEISURE_GOODS: Resource[] = ['jam', 'honey', 'cheese', 'wine', 'vintage'];
 /** Served over a counter rather than kept at home, so it needs a tavern to count. */
 export const TAVERN_GOODS: Resource[] = ['beer', 'sausages'];
+
+/**
+ * What a souvenir fetches when the zoo has a shop on site. Visitors buy at the gate, so a shop
+ * turns the same morning's work into more money — the "配套商铺" docs/02 §8 pairs with the
+ * animals, without inventing a second way for a building to make coins.
+ */
+export const SOUVENIR_SHOP_MULTIPLIER = 1.8;
+
+/**
+ * The animals a zoo enclosure can house, in the order the panel offers them. Each one's
+ * appetite and drawing power live in `FOCUS_RECIPES`, so the enclosure is set up exactly like a
+ * workshop with more than one recipe.
+ */
+export const ZOO_SPECIES = ['zebra', 'giraffe', 'elephant', 'lion'] as const;
+export type ZooSpecies = typeof ZOO_SPECIES[number];
+export const ZOO_SPECIES_NAMES: Record<ZooSpecies, string> = {
+  zebra: '斑马', giraffe: '长颈鹿', elephant: '大象', lion: '狮子',
+};
+/** A new enclosure opens with the hardiest animal rather than standing empty. */
+export const ZOO_DEFAULT_SPECIES: ZooSpecies = 'zebra';
 
 /**
  * The most happiness a well-dressed, well-supplied town gains. It is a bonus and never a
@@ -344,6 +376,14 @@ export const FOCUS_RECIPES: Partial<Record<BuildingKind, Record<string, { input:
   winery: {
     wine: { input: { grape: 6 }, output: { wine: 3 } },
     beer: { input: { hops: 6 }, output: { beer: 3 } },
+  },
+  // A zoo enclosure's species is the same shape of choice as a winery's recipe: one building,
+  // several things it can be set to do. A lion eats more and draws a bigger crowd.
+  zooenclosure: {
+    zebra: { input: { feed: 2 }, output: { souvenir: 3 } },
+    giraffe: { input: { feed: 3 }, output: { souvenir: 4 } },
+    elephant: { input: { feed: 4 }, output: { souvenir: 6 } },
+    lion: { input: { feed: 3 }, output: { souvenir: 5 } },
   },
 };
 

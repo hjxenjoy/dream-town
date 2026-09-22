@@ -75,6 +75,8 @@ const CATALOG_BY_KIND: Partial<Record<BuildingKind, GeneratedAtlas>> = {
   hopsfield: 'production-expansion', tavern: 'production-expansion',
   pigfarm: 'production-expansion', butcher: 'production-expansion', herbgarden: 'production-expansion',
   hunterlodge: 'production-expansion',
+  // The zoo: gate and enclosure from the zoo pack, the shop from the small-accessory pack.
+  zoogate: 'zoo-expansion', zooenclosure: 'zoo-expansion', zooshop: 'small-accessories',
 };
 
 const FRAME_BY_KIND: Partial<Record<BuildingKind, string>> = {
@@ -88,6 +90,7 @@ const FRAME_BY_KIND: Partial<Record<BuildingKind, string>> = {
   canefield: 'sugarcane-field', sugarmill: 'sugar-mill',
   hopsfield: 'hops-field', tavern: 'tavern',
   pigfarm: 'pig-farm', butcher: 'butcher', herbgarden: 'herb-garden', hunterlodge: 'hunter-lodge',
+  zoogate: 'zoo-gate', zooenclosure: 'zoo-enclosure', zooshop: 'zoo-souvenir-shop',
 };
 
 /** Which generated atlas draws this building, and which frame inside it. */

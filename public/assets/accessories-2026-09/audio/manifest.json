@@ -343,6 +343,40 @@
       }
     },
     {
+      "name": "zooenclosure",
+      "label": "动物展区 · 低哞与草垫",
+      "url": "/assets/accessories-2026-09/audio/zooenclosure.wav",
+      "profile": "cow",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.57
+      }
+    },
+    {
+      "name": "zooshop",
+      "label": "纪念品小铺 · 无词人群低语、脚步与杯盏",
+      "url": "/assets/accessories-2026-09/audio/zooshop.wav",
+      "profile": "crowd",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.76
+      }
+    },
+    {
       "name": "tavern",
       "label": "晚风酒馆 · 无词人群低语、脚步与杯盏",
       "url": "/assets/accessories-2026-09/audio/tavern.wav",
@@ -1400,6 +1434,24 @@
       "profile": "quiet",
       "runtimeIntegrated": false
     },
+    "zoogate": {
+      "url": "/assets/expansion-2026-09/audio/zoo.wav",
+      "source": "existing",
+      "profile": "zoo",
+      "runtimeIntegrated": false
+    },
+    "zooenclosure": {
+      "url": "/assets/accessories-2026-09/audio/zooenclosure.wav",
+      "source": "new",
+      "profile": "cow",
+      "runtimeIntegrated": false
+    },
+    "zooshop": {
+      "url": "/assets/accessories-2026-09/audio/zooshop.wav",
+      "source": "new",
+      "profile": "crowd",
+      "runtimeIntegrated": false
+    },
     "tavern": {
       "url": "/assets/accessories-2026-09/audio/tavern.wav",
       "source": "new",
@@ -1749,7 +1801,7 @@
       "runtimeIntegrated": false
     }
   },
-  "buildingCount": 81,
+  "buildingCount": 84,
   "existingReused": 5,
-  "newTracks": 74
+  "newTracks": 76
 }
