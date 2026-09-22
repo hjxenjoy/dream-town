@@ -1,4 +1,5 @@
 import { RARE_REWARDS, rareCount, rareOrnamentUnlocked, rareStyleRequirement } from './rareRewards.ts';
+import { WEEK_SECONDS, allowedTasks, boardComplete, validWeekly, weekBaseline, weekRemaining, weekOf, weeklyBoard, weeklyProgress, type WeeklyTaskName, type WeeklyTaskProgress } from './weekly.ts';
 import { raiseChicks, livestockSpec } from './livestock.ts';
 import { growOrchards, recordOrchard } from './orchard.ts';
 import { growHomes, HOME_STYLES, type HomeStyle } from './homeGrowth.ts';
@@ -16,7 +17,7 @@ import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState
 import { WEATHER, weatherAt, weatherGrowthFactor, weatherRemaining, type WeatherKind } from './weather.ts';
 import { plagueDue, plagueDuration, plagueHappinessCost, plagueSpoilage, type PlagueState } from './plague.ts';
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
-import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
+import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetric, type AchievementMetrics } from './achievements.ts';
 import { noise } from './noise.ts';
 import { DESTINATION_IDS, GUARD_SHARES, MAX_GUARD_COVER, availableDestinations, caravanDuration, caravanSlots, destinationOf, missingCargo, raidChance, tripRaided, type DestinationId } from './destinations.ts';
 import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, ornamentRequirement, type CollectionId } from './collections.ts';
@@ -145,6 +146,16 @@ export interface SimState {
   stats: { collected: number; ordersCompleted: number; buildingsBuilt: number; caravansCompleted: number; coinsEarned: number; festivals: number; repairs: number; toolsProduced: number; clothingProduced: number; activities?: number; miningToolsUsed?: number };
   /** Unlocked achievement ids, in the order they were earned. */
   achievements?: AchievementId[];
+  /**
+   * The week's challenge board. The baseline is the metric snapshot taken when the week opened,
+   * so progress is what the town did this week rather than what it has ever done; `rewarded`
+   * names the week whose board has already paid out.
+   */
+  weekly?: {
+    week: number;
+    baseline: Partial<Record<AchievementMetric, number>>;
+    rewarded: number;
+  };
   /** Street styles collected, and how many tiers of each were banked. */
   collections?: Partial<Record<CollectionId, number>>;
   /** Which story choice each neighbour made, stage by stage. */
@@ -323,6 +334,7 @@ export function validateSave(value: unknown): value is SimState {
   if (value.regions !== undefined && !validRegions(value.regions)) return false;
   if (value.farming !== undefined && !validFarming(value.farming)) return false;
   if (value.projects !== undefined && !validProjects(value.projects)) return false;
+  if (value.weekly !== undefined && !validWeekly(value.weekly)) return false;
   if (!Array.isArray(value.researched) || value.researched.some(id => !TECHNOLOGY_KEYS.includes(id)) || new Set(value.researched).size !== value.researched.length) return false;
   const researched = value.researched as TechnologyId[];
   if (researched.some(id => TECHNOLOGIES[id].requires.some(prerequisite => !researched.includes(prerequisite)))) return false;
@@ -569,6 +581,52 @@ export class SimWorld {
    * second means a reward that raises another metric (coins earned, say) is picked up by
    * the next pass of the same loop, and no achievement can pay out twice.
    */
+  /**
+   * Opens a new week when the clock crosses one, and pays out a finished board.
+   *
+   * The board is drawn from the week number, so it is reproducible from the save; the baseline is
+   * taken here, at the moment the week opens, which is the only moment a delta can be measured
+   * from. Paying out is automatic, like achievements: the game's direction is few taps, so there
+   * is no claim step to forget before the week lapses.
+   */
+  /** The current week's board, with progress and the time left to finish it. */
+  private weeklyBoard(): { week: number; remaining: number; complete: boolean; rewarded: boolean; tasks: WeeklyTaskProgress[] } {
+    const week = weekOf(this.state.gameTime);
+    const stored = this.state.weekly;
+    // Before the first tick there is no snapshot yet; a board measured from zero is the honest
+    // reading of a week that has not started, rather than an empty panel.
+    const baseline = stored && stored.week === week ? stored.baseline : weekBaseline(this.achievementMetrics());
+    const allowed = this.weeklyAllowed();
+    const tasks = weeklyProgress(weeklyBoard(week, allowed), this.achievementMetrics(), baseline);
+    return { week, remaining: weekRemaining(this.state.gameTime), complete: boardComplete(tasks), rewarded: (stored?.rewarded ?? -1) === week, tasks };
+  }
+
+  /** The tasks this town can actually attempt, which is what the week draws its board from. */
+  private weeklyAllowed(): WeeklyTaskName[] {
+    const owned = new Set<string>(this.state.buildings.map(building => building.kind));
+    return allowedTasks(owned, this.state.projects?.active != null);
+  }
+
+  private syncWeekly(): void {
+    const week = weekOf(this.state.gameTime);
+    const metrics = this.achievementMetrics();
+    // Saves written before the weeklies existed, and every new town, open their first board here.
+    if (!this.state.weekly || this.state.weekly.week !== week || !whole(this.state.weekly.week)) {
+      this.state.weekly = { week, baseline: weekBaseline(metrics), rewarded: this.state.weekly?.rewarded ?? -1 };
+      // A board that lapses unfinished is worth saying out loud; it is the point of the clock.
+      if (week > 0) this.log(`新的每周挑战开始了：${weeklyBoard(week, this.weeklyAllowed()).join('、')}。`, 'info');
+      return;
+    }
+    const progress = weeklyProgress(weeklyBoard(week, this.weeklyAllowed()), metrics, this.state.weekly.baseline);
+    if (!boardComplete(progress) || this.state.weekly.rewarded === week) return;
+    this.state.weekly.rewarded = week;
+    const prestige = progress.reduce((n, task) => n + task.prestige, 0);
+    const coins = progress.reduce((n, task) => n + task.coins, 0);
+    this.state.prestige += prestige;
+    if (coins) this.earn(coins);
+    this.log(`每周挑战全部完成（${progress.map(task => task.name).join('、')}）：获得 ${prestige} 点声望${coins ? ` 与 ${coins} 金币` : ''}。`, 'success');
+  }
+
   private syncAchievements(): void {
     this.state.achievements ??= [];
     for (let pass = 0; pass < ACHIEVEMENTS.length; pass++) {
@@ -583,10 +641,11 @@ export class SimWorld {
     }
   }
 
-  /** Quest, achievement and street-style progress always move together, so none is forgotten. */
+  /** Quest, achievement, weekly and street-style progress always move together, so none is forgotten. */
   private syncProgress(): void {
     this.syncQuests();
     this.syncAchievements();
+    this.syncWeekly();
     this.syncCollections();
   }
 
@@ -2271,6 +2330,7 @@ export class SimWorld {
       readyBuildings: this.state.buildings.filter(building => building.ready).map(building => building.id),
       activity: this.activityActive() ? { ...this.state.activity } : null,
       achievements: achievementProgress(this.achievementMetrics(), this.state.achievements ?? []),
+      weekly: this.weeklyBoard(),
       collections: collectionProgress(this.state.buildings, this.state.collections ?? {}),
       honours: honourSummary(this.state.honours ?? {}).map(entry => ({
         ...entry,
