@@ -1,7 +1,7 @@
 /** Short names for the two construction materials, used in costs and refusals. */
 export const RESOURCE_LABELS: Record<'wood' | 'stone', string> = { wood: '木材', stone: '石料' };
 
-export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage' | 'sugarcane' | 'sugar' | 'hops' | 'beer' | 'meat' | 'sausages' | 'herbs' | 'pelt' | 'souvenir' | 'peach' | 'watermelon' | 'plum' | 'olive' | 'lime' | 'banana' | 'coconut' | 'pineapple' | 'shrimp' | 'lobster' | 'silverore' | 'goldore' | 'platinumore';
+export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage' | 'sugarcane' | 'sugar' | 'hops' | 'beer' | 'meat' | 'sausages' | 'herbs' | 'pelt' | 'souvenir' | 'peach' | 'watermelon' | 'plum' | 'olive' | 'lime' | 'banana' | 'coconut' | 'pineapple' | 'shrimp' | 'lobster' | 'silverore' | 'goldore' | 'platinumore' | 'pickaxe' | 'dynamite' | 'tnt' | 'antique';
 export type ResourceMap = Record<Resource, number>;
 export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
 export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile' | 'barracks' | 'guardpost' | 'wall' | 'canefield' | 'sugarmill' | 'hopsfield' | 'tavern' | 'pigfarm' | 'butcher' | 'herbgarden' | 'hunterlodge' | 'castle' | 'zoogate' | 'zooenclosure' | 'zooshop' | 'harbor';
@@ -145,6 +145,10 @@ export const RESOURCES: Record<Resource, { name: string; icon: string; sellPrice
   charcoal: { name: '木炭', icon: 'charcoal', sellPrice: 7 },
   ingot: { name: '金属锭', icon: 'ingot', sellPrice: 60 },
   tools: { name: '工具', icon: 'tools', sellPrice: 48 },
+  pickaxe: { name: '镐', icon: 'pickaxe', sellPrice: 34 },
+  dynamite: { name: '炸药', icon: 'dynamite', sellPrice: 78 },
+  tnt: { name: 'TNT', icon: 'tnt', sellPrice: 165 },
+  antique: { name: '古董藏品', icon: 'antique', sellPrice: 100 },
   feed: { name: '饲料', icon: 'feed', sellPrice: 3 },
   wool: { name: '羊毛', icon: 'wool', sellPrice: 6 },
   cloth: { name: '布料', icon: 'cloth', sellPrice: 14 },
@@ -203,7 +207,8 @@ export const RESOURCES: Record<Resource, { name: string; icon: string; sellPrice
 
 export const RESOURCE_KEYS = ['flowers','fruit','eggs','jam','wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage', 'sugarcane', 'sugar', 'hops', 'beer', 'meat', 'sausages', 'herbs', 'pelt', 'souvenir',
   'peach', 'watermelon', 'plum', 'olive', 'lime', 'banana', 'coconut', 'pineapple', 'shrimp', 'lobster',
-  'silverore', 'goldore', 'platinumore'] as Resource[];
+  'silverore', 'goldore', 'platinumore',
+  'pickaxe', 'dynamite', 'tnt', 'antique'] as Resource[];
 export const BUILDING_KEYS = Object.keys(BUILDINGS) as BuildingKind[];
 export { MAP_SIZE } from './terrain.ts';
 export const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
@@ -263,7 +268,7 @@ export const HEALTH_TAX_RELIEF = 0.4;
 export const HEALTH_REPAIR_RELIEF = 0.3;
 
 export function emptyResources(): ResourceMap {
-  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0, sugarcane: 0, sugar: 0, hops: 0, beer: 0, meat: 0, sausages: 0, herbs: 0, pelt: 0, souvenir: 0, peach: 0, watermelon: 0, plum: 0, olive: 0, lime: 0, banana: 0, coconut: 0, pineapple: 0, shrimp: 0, lobster: 0, silverore: 0, goldore: 0, platinumore: 0 };
+  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0, sugarcane: 0, sugar: 0, hops: 0, beer: 0, meat: 0, sausages: 0, herbs: 0, pelt: 0, souvenir: 0, peach: 0, watermelon: 0, plum: 0, olive: 0, lime: 0, banana: 0, coconut: 0, pineapple: 0, shrimp: 0, lobster: 0, silverore: 0, goldore: 0, platinumore: 0, pickaxe: 0, dynamite: 0, tnt: 0, antique: 0 };
 }
 
 /**
@@ -325,6 +330,27 @@ export const MINE_GRADE_NAMES: Record<MineGrade, string> = {
 };
 /** Every grade a mine can bring up, so the smelter knows what to look for. */
 export const ORE_GRADES: Resource[] = ['ore', 'silverore', 'goldore', 'platinumore'];
+
+/**
+ * The three mining tools. docs/02 §5 gives them as a pickaxe (one square), dynamite (a whole row)
+ * and TNT (everything around it) — so they differ in how much ground they open at once, and they
+ * are spent one per swing. A wider blast costs more to make and is worth more ore, and the mine
+ * still hands over whatever seam it was set to.
+ */
+export const MINING_TOOLS = ['pickaxe', 'dynamite', 'tnt'] as const;
+export type MiningTool = typeof MINING_TOOLS[number];
+export const MINING_TOOL_NAMES: Record<MiningTool, string> = {
+  pickaxe: '镐', dynamite: '炸药', tnt: 'TNT',
+};
+/**
+ * What one swing hands back. A tool does NOT multiply the batch: docs/02 §5's three tools open
+ * more GROUND (one square, a row, then everything around), and here that reads as finishing the
+ * batch the mine was already working. So a tool saves the wait of at most one cycle and can never
+ * conjure ore faster than the mine's own rhythm — the limit on how many you can swing is how many
+ * your smithy can forge. The prize is what you find down there: coins, and now and then an antique.
+ */
+export const MINING_TOOL_CHEST: Record<MiningTool, number> = { pickaxe: 18, dynamite: 22, tnt: 90 };
+export const MINING_TOOL_ANTIQUE_CHANCE: Record<MiningTool, number> = { pickaxe: 0.08, dynamite: 0.18, tnt: 0.35 };
 export const ZOO_SPECIES = ['zebra', 'giraffe', 'elephant', 'lion'] as const;
 export type ZooSpecies = typeof ZOO_SPECIES[number];
 export const ZOO_SPECIES_NAMES: Record<ZooSpecies, string> = {
@@ -395,7 +421,16 @@ export const MARKET_MARKUP = 18;
  * would happily sell them — reopening the very loop the markup was sized to close, since hops
  * brew into beer. Every variant is therefore listed here and included in that check.
  */
+/** Every variant a building can be set to, across all kinds. */
+export type ProductionFocus = 'balanced' | 'wood' | 'plank' | 'wine' | 'beer' | ZooSpecies | MineGrade | MiningTool;
+
 export const FOCUS_RECIPES: Partial<Record<BuildingKind, Record<string, { input: Partial<ResourceMap>; output: Partial<ResourceMap> }>>> = {
+  // A smithy normally turns out plain tools; these three are the mining branch of the same trade.
+  smithy: {
+    pickaxe: { input: { ingot: 1, plank: 1 }, output: { pickaxe: 2 } },
+    dynamite: { input: { ingot: 1, plank: 1, charcoal: 2 }, output: { dynamite: 2 } },
+    tnt: { input: { ingot: 2, plank: 2, charcoal: 4 }, output: { tnt: 1 } },
+  },
   lumber: {
     balanced: { input: {}, output: { wood: 6, plank: 2 } },
     wood: { input: {}, output: { wood: 10 } },

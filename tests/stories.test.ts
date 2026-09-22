@@ -10,8 +10,11 @@ function grown(){
   const w=new SimWorld();
   w.state.coins=300000;
   // Plenty of every good, and room to hold it, so a shortage never decides an arc for us.
+  // The capacity is derived rather than fixed: a hard number stops being "room to hold it" the
+  // moment the town gains a resource, and the arc then fails for a reason that has nothing to do
+  // with the story being tested.
   for(const key of RESOURCE_KEYS) w.state.resources[key]=4000;
-  w.state.capacity=200000;
+  w.state.capacity=RESOURCE_KEYS.length*4000+50000;
   w.state.settings.disasters=false;w.state.settings.autoMayor=false;
   w.state.level=8;w.state.population=40;
   w.tick(0.1);

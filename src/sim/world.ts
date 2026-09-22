@@ -10,13 +10,14 @@ import { LOCAL_SUPPLY_RANGE, supplyFactor, supplyHauls } from './layout.ts';
 import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type RoadKind, type Tile } from './roads.ts';
 import { TownNavigation } from './navigation.ts';
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
-import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, FOCUS_RECIPES, GAME_DAY_SECONDS, HERB_BOOST, MINE_GRADES, MINE_GRADE_NAMES, ORE_GRADES, SOUVENIR_SHOP_MULTIPLIER, ZOO_DEFAULT_SPECIES, ZOO_SPECIES, ZOO_SPECIES_NAMES, LEISURE_GOODS, MAP_SIZE, TAVERN_GOODS, effectiveRecipe, herbCoverage, herbsPerDay, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type MineGrade, type TechnologyId, type ZooSpecies } from './data.ts';
+import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, FOCUS_RECIPES, GAME_DAY_SECONDS, HERB_BOOST, MINE_GRADES, MINE_GRADE_NAMES, MINING_TOOLS, MINING_TOOL_NAMES, MINING_TOOL_CHEST, MINING_TOOL_ANTIQUE_CHANCE, ORE_GRADES, type MiningTool, type ProductionFocus, SOUVENIR_SHOP_MULTIPLIER, ZOO_DEFAULT_SPECIES, ZOO_SPECIES, ZOO_SPECIES_NAMES, LEISURE_GOODS, MAP_SIZE, TAVERN_GOODS, effectiveRecipe, herbCoverage, herbsPerDay, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type MineGrade, type TechnologyId, type ZooSpecies } from './data.ts';
 import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, canStrike, damageCeiling, disasterOf, raidLoss, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 import { WEATHER, weatherAt, weatherGrowthFactor, weatherRemaining, type WeatherKind } from './weather.ts';
 import { plagueDue, plagueDuration, plagueHappinessCost, plagueSpoilage, type PlagueState } from './plague.ts';
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
+import { noise } from './noise.ts';
 import { DESTINATION_IDS, GUARD_SHARES, MAX_GUARD_COVER, availableDestinations, caravanDuration, caravanSlots, destinationOf, missingCargo, raidChance, tripRaided, type DestinationId } from './destinations.ts';
 import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, ornamentRequirement, type CollectionId } from './collections.ts';
 import { HONOURS, HONOUR_TRACK_IDS, honourCapacity, honourCommunity, honourCycleFactor, honourLevel, honourLevelsTaken, honourSummary, nextHonourLevel, type HonourTrackId } from './honours.ts';
@@ -60,7 +61,11 @@ export interface Building {
    * What a workshop with more than one recipe is set to make. The lumber mill chooses
    * between timber and boards; the winery, per docs/04 §24, brews wine or beer.
    */
-  productionFocus?: 'balanced' | 'wood' | 'plank' | 'wine' | 'beer' | ZooSpecies | MineGrade;
+  /**
+   * Which recipe or variant a building is set to. Every possibility is listed here; which ones a
+   * given kind may actually take is decided in one place, by `FOCUS_BY_KIND` in the save check.
+   */
+  productionFocus?: ProductionFocus;
 }
 export interface Order {
   id: string;
@@ -137,7 +142,7 @@ export interface SimState {
   needs: { food: number; water: number; services: number; environment: number; comfort: number; leisure: number; faith: number; health: number };
   settings: { sound: boolean; disasters: boolean; autoMayor: boolean; reducedMotion?: boolean };
   /** `activities` counts seasonal activities and is absent from saves written before it existed. */
-  stats: { collected: number; ordersCompleted: number; buildingsBuilt: number; caravansCompleted: number; coinsEarned: number; festivals: number; repairs: number; toolsProduced: number; clothingProduced: number; activities?: number };
+  stats: { collected: number; ordersCompleted: number; buildingsBuilt: number; caravansCompleted: number; coinsEarned: number; festivals: number; repairs: number; toolsProduced: number; clothingProduced: number; activities?: number; miningToolsUsed?: number };
   /** Unlocked achievement ids, in the order they were earned. */
   achievements?: AchievementId[];
   /** Street styles collected, and how many tiers of each were banked. */
@@ -174,6 +179,7 @@ export interface ActionResult {
   prestige?: number;
   farmCoins?: number;
   cropQuantity?: number;
+  antique?: boolean;
 }
 export interface OfflineReport {
   seconds: number;
@@ -351,6 +357,7 @@ export function validateSave(value: unknown): value is SimState {
       winery: ['wine', 'beer'],
       zooenclosure: ['zebra', 'giraffe', 'elephant', 'lion'],
       mine: ['copper', 'silver', 'gold', 'platinum'],
+      smithy: ['pickaxe', 'dynamite', 'tnt'],
     };
     if (building.productionFocus !== undefined
       && !(FOCUS_BY_KIND[building.kind as BuildingKind] ?? []).includes(building.productionFocus as string)) return false;
@@ -462,6 +469,8 @@ export function validateSave(value: unknown): value is SimState {
   if (!isRecord(value.stats) || STAT_COUNTERS.some(key => !whole((value.stats as Record<string, unknown>)[key]))) return false;
   // Absent on saves written before seasonal activities were counted, so only its type is checked.
   if (value.stats.activities !== undefined && !whole(value.stats.activities)) return false;
+  // And absent on every save written before mining tools existed, so the same treatment.
+  if (value.stats.miningToolsUsed !== undefined && !whole(value.stats.miningToolsUsed)) return false;
   for (const log of value.logs) if (!isRecord(log) || typeof log.id !== 'string' || typeof log.message !== 'string' || !nonnegative(log.time) || !['success', 'warning', 'info', 'mayor'].includes(log.type as string)) return false;
   return true;
 }
@@ -988,6 +997,41 @@ export class SimWorld {
     return this.success(`${BUILDINGS[building.kind].name}现在安排 ${workerCount} 位工人，小镇重新分配人手时不会改动它。`, { buildingId: id });
   }
 
+  /**
+   * Swing one mining tool at a mine. docs/02 §5 gives three tools that open more ground at once —
+   * a pickaxe one square, dynamite a row, TNT everything around — which here reads as bringing up
+   * the batch already in the shaft instead of waiting for it. So a tool can never produce ore
+   * faster than the mine's own rhythm; how many you can swing is bounded by what your smithy can
+   * forge. What you are really paying for is what the swing turns up: coins, and now and then an
+   * antique.
+   */
+  useMiningTool(id: string, tool: MiningTool): ActionResult {
+    const building = this.state.buildings.find(candidate => candidate.id === id);
+    if (!building) return this.fail('没有找到这座建筑。', 'BUILDING_NOT_FOUND');
+    if (building.kind !== 'mine') return this.fail('只有矿场能用挖矿工具。', 'NOT_A_MINE');
+    if (!MINING_TOOLS.includes(tool)) return this.fail('没有这种挖矿工具。', 'UNKNOWN_TOOL');
+    if (this.state.resources[tool] < 1) return this.fail(`仓库里没有${MINING_TOOL_NAMES[tool]}。`, 'NO_TOOL');
+    if (building.ready) return this.fail('这一批矿石已经挖上来了，先收走再动工具。', 'ALREADY_READY');
+    // A tool finishes work that is genuinely under way; it does not open a batch from nothing.
+    // That is what bounds the whole feature: collect and swing in a loop yields nothing, so ore
+    // still arrives at one batch per cycle however many tools are in the barn.
+    if (building.paused || building.progress <= 0) return this.fail('井里还没开挖，等矿场动起来再用工具。', 'NOT_DIGGING');
+
+    this.state.resources[tool] -= 1;
+    // The swing brings up the batch that was in the shaft, and the shaft starts again.
+    building.progress = 0; building.ready = true;
+    const coins = MINING_TOOL_CHEST[tool];
+    this.state.coins += coins;
+    // The antique is drawn from a counter rather than at random, so reloading a save cannot be
+    // used to reroll the shaft — the same swing count always finds the same thing.
+    const used = this.state.stats.miningToolsUsed ?? 0;
+    const antique = noise(used * 31 + MINING_TOOLS.indexOf(tool) * 7 + 11) < MINING_TOOL_ANTIQUE_CHANCE[tool];
+    if (antique) this.state.resources.antique += 1;
+    this.state.stats.miningToolsUsed = used + 1;
+    const done = `${MINING_TOOL_NAMES[tool]}凿开一层，矿石当场出土，另得 ${coins} 金币`;
+    return this.success(antique ? `${done}，还挖出一件古董藏品。` : `${done}。`, { buildingId: id, coins, antique });
+  }
+
   setProductionFocus(id: string, recipeId: string): ActionResult {
     const building = this.state.buildings.find(candidate => candidate.id === id);
     if (!building) return this.fail('没有找到这座建筑。', 'BUILDING_NOT_FOUND');
@@ -1016,6 +1060,14 @@ export class SimWorld {
       if ((building.productionFocus ?? 'wine') === focus && !building.paused) return this.fail('已经采用这个生产方向。', 'NO_CHANGE');
       building.productionFocus = focus; building.paused = false;
       return this.success(`酿酒坊已改为${focus === 'beer' ? '酿啤酒（6 篮啤酒花 → 3 桶）' : '酿葡萄酒（6 串葡萄 → 3 桶）'}。已完成的产物保持不变。`, { buildingId: id });
+    }
+    // A smithy forges plain tools by default, or one of the three mining tools docs/02 §5 gives.
+    if (building.kind === 'smithy' && MINING_TOOLS.includes(recipeId as MiningTool)) {
+      if ((building.productionFocus ?? 'tools') === recipeId && !building.paused) return this.fail('这座铁匠铺已经在打这个了。', 'NO_CHANGE');
+      building.productionFocus = recipeId as MiningTool; building.paused = false;
+      const recipe = FOCUS_RECIPES.smithy![recipeId]!;
+      const made = Object.entries(recipe.input).map(([key, amount]) => `${amount} ${RESOURCES[key as Resource].name}`).join(' + ');
+      return this.success(`铁匠铺改打${MINING_TOOL_NAMES[recipeId as MiningTool]}（${made} → ${Object.values(recipe.output)[0]} 件）。已完成的产物保持不变。`, { buildingId: id });
     }
     if (recipeId !== building.kind && recipeId !== 'default') return this.fail('这座工坊尚未解锁该配方。', 'RECIPE_LOCKED');
     if (!building.paused) return this.fail('当前配方已经在生产中。', 'NO_CHANGE');

@@ -26,6 +26,9 @@ const WEIGHTS: ResourceMap = {
   peach: 2, watermelon: 2, plum: 2, olive: 2, lime: 2, banana: 2, coconut: 2, pineapple: 2, shrimp: 2, lobster: 2,
   // Deeper ores buffer like the base one.
   silverore: 3, goldore: 2, platinumore: 2,
+  // Mining tools are made goods, not raw stock: they are never "in demand" as goods,
+  // so their weight only keeps the warehouse heuristic from hoarding them.
+  pickaxe: 5, dynamite: 5, tnt: 5, antique: 1,
 };
 
 export function stockTargets(state: SimState): ResourceMap {
