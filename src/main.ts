@@ -4,19 +4,19 @@ import { SimWorld, type ActionResult, type GameState, type OfflineReport } from 
 import { RESOURCE_KEYS, RESOURCES } from './sim/data';
 import { GAME_TOOLS, executeGameTool } from './sim/tools';
 import { TownScene } from './render/TownScene';
+import { sharedAudioContext } from './render/audioContext';
 import { GameUI } from './ui/GameUI';
 import { loadGame, saveGame, exportSave, importSave, listSaves } from './save/storage';
 import './ui/styles.css';
 
 async function bootstrap(){
 const errorMessage=(e:unknown)=>e instanceof Error?e.message:'暂时没有完成，请再试一次。';
-let audio:AudioContext|undefined;
 function chime(good=true,effect=''){
   if(!world.state.settings.sound)return;
   try{
-    audio??=new AudioContext();if(audio.state==='suspended')void audio.resume();
+    const audio=sharedAudioContext();
     const start=audio.currentTime;
-    (good?(effect==='harvest'?[783.99,1046.5]:effect==='build'||effect==='upgrade'?[392,523.25,783.99]:effect==='project'?[523.25,659.25,783.99,1046.5]:[659.25,880]):[330,277.18]).forEach((hz,i)=>{const osc=audio!.createOscillator(),gain=audio!.createGain();osc.type='sine';osc.frequency.value=hz;gain.gain.setValueAtTime(0,start+i*.055);gain.gain.linearRampToValueAtTime(.032,start+i*.055+.008);gain.gain.exponentialRampToValueAtTime(.001,start+i*.055+.2);osc.connect(gain);gain.connect(audio!.destination);osc.start(start+i*.055);osc.stop(start+i*.055+.21);});
+    (good?(effect==='harvest'?[783.99,1046.5]:effect==='build'||effect==='upgrade'?[392,523.25,783.99]:effect==='project'?[523.25,659.25,783.99,1046.5]:[659.25,880]):[330,277.18]).forEach((hz,i)=>{const osc=audio.createOscillator(),gain=audio.createGain();osc.type='sine';osc.frequency.value=hz;gain.gain.setValueAtTime(0,start+i*.055);gain.gain.linearRampToValueAtTime(.032,start+i*.055+.008);gain.gain.exponentialRampToValueAtTime(.001,start+i*.055+.2);osc.connect(gain);gain.connect(audio.destination);osc.start(start+i*.055);osc.stop(start+i*.055+.21);});
   }catch{/* Sound is optional on browsers without Web Audio. */}
 }
 

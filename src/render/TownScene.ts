@@ -8,6 +8,7 @@ import { DisasterLayer } from './DisasterLayer';
 import { CaravanCart } from './CaravanCart';
 import { SeasonalProps } from './SeasonalProps';
 import { MachineLayer } from './MachineLayer';
+import { Ambience } from './Ambience';
 import { valleyCameraCenter } from './cameraBounds';
 import { Residents } from './Residents';
 import { RoadLayer } from './RoadLayer';
@@ -73,6 +74,7 @@ export class TownScene extends Phaser.Scene {
   private caravanCart!:CaravanCart;
   private seasonalProps!:SeasonalProps;
   private machineLayer!:MachineLayer;
+  private ambience!:Ambience;
   private running=new Set<string>();
   private progressSnapshot=new Map<string,number>();
   private lastSeason = '';
@@ -119,6 +121,7 @@ export class TownScene extends Phaser.Scene {
     this.caravanCart=new CaravanCart(this);
     this.seasonalProps=new SeasonalProps(this);
     this.machineLayer=new MachineLayer(this);
+    this.ambience=new Ambience(()=>this.world.state.settings.sound);
     this.ground=drawValley(this);
     this.atmosphere=new TownAtmosphere(this);
     this.cameras.main.setBackgroundColor('#98a96b');
@@ -369,6 +372,7 @@ export class TownScene extends Phaser.Scene {
     this.seasonalProps.sync(this.world);
     this.machineLayer.sync(this.world.state.buildings,this.running,this.game.loop.delta*(this.simulationSpeed>0?1:0),reduced);
     this.atmosphere.update(this.game.loop.delta*(this.simulationSpeed>0?1:0),this.world.state.buildings,this.running,this.world.state.festivalUntil>this.world.state.gameTime,reduced);
+    this.ambience.sync(this.world.state.buildings,this.running,this.cameras.main.midPoint,time);
     if(!reduced&&this.simulationSpeed>0)this.visuals.forEach((v,id)=>{if(v.ready){const b=this.world.state.buildings.find(b=>b.id===id)!;const p=iso(b.x,b.y);v.badge.y=p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)+Math.sin(time/430)*3;}});
     for(const b of this.world.state.buildings){
       const companion=this.visuals.get(b.id)?.companion;
