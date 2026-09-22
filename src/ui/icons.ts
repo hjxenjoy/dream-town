@@ -25,6 +25,9 @@ const paths: Record<string, string> = {
  stone: '<path d="m3 16 4-9 7-3 6 7-2 8-11 1Z" fill="#adb7b2"/><path d="m7 7 5 6 8-2m-8 2-5 7" stroke="#748b88"/>',
  wheat: '<path d="M7 21 17 3M10 15C4 15 4 11 5 9c4 0 6 2 5 6Zm3-5C7 9 8 5 9 4c4 1 5 3 4 6Zm-2 5c3-6 7-5 8-3-1 3-4 5-8 3Zm3-5c2-6 6-6 7-4-1 3-3 5-7 4Z" fill="#e6be62" stroke="#9c853c"/>',
  flour: '<path d="m7 3 3 3h4l3-3 1 3-2 3c6 10 3 12-4 12S2 19 8 9L6 6Z" fill="#e2d3b6"/><path d="M8 10h8M9 17h6"/>',
+ // Cane is a bundle of stalks with a leaf; sugar is a cube with a scattering of grains.
+ sugarcane: '<path d="M8 21V6m4 15V5m4 16V7" stroke="#8fae54"/><path d="M12 4c-2-2-5-2-6 0 1 2 4 3 6 1Zm0 0c2-2 5-2 6 0-1 2-4 3-6 1Z" fill="#a9c46a" stroke="#7d9a48"/><circle cx="12" cy="13" r="1.6" fill="#e8d9a6" stroke="none"/><circle cx="12" cy="17" r="1.6" fill="#e8d9a6" stroke="none"/>',
+ sugar: '<rect x="5" y="9" width="7" height="7" rx="1.4" fill="#f2ead2" stroke="#c9bb92"/><rect x="12" y="9" width="7" height="7" rx="1.4" fill="#f7f1de" stroke="#c9bb92"/><rect x="8.5" y="4.5" width="7" height="7" rx="1.4" fill="#fdfaf0" stroke="#c9bb92"/><path d="M4 20h3m4-1h2m4 1h3" stroke="#d8cba6"/>',
  bread: '<path d="M3 11C0 3 11 2 14 5c8-2 10 10 5 14H5c-3-2-3-5-2-8Z" fill="#d9954d"/><path d="m8 7-1 5m6-6-1 6m6-4-1 5" stroke="#fff0ba" stroke-width="2.5"/>',
  fish: '<path d="M19 11c-4-8-12-7-17 1 5 7 13 8 17 1l3 5V7Z" fill="#79b2be"/><circle cx="7" cy="11" r="1" fill="#314e53"/><path d="M12 8c2 3 2 5 0 8"/>',
  plank: '<path d="m2 9 15-6 5 12-15 6Z" fill="#c68c58"/><path d="m6 10 11-4M8 15l10-4m-7 7 9-4"/>',

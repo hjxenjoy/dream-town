@@ -9,6 +9,8 @@ const WEIGHTS: ResourceMap = {
   materials: 6, ore: 5, charcoal: 3, ingot: 3, tools: 4, feed: 3, wool: 3, cloth: 3, clothing: 4,
   // Dairy, honey and wine keep smaller working buffers than construction or staple food.
   milk: 3, cheese: 3, honey: 2, grape: 3, wine: 3, vintage: 2,
+  // Cane and sugar are intermediates on the way to bread, so they hold a working buffer only.
+  sugarcane: 3, sugar: 3,
 };
 
 export function stockTargets(state: SimState): ResourceMap {

@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { atlasFrames } from '../src/sim/atlases.ts';
+import { atlasFrames, generatedSprite, housingLevelFrame } from '../src/sim/atlases.ts';
 import { BUILDINGS } from '../src/sim/data.ts';
 import { DISASTERS, DISASTER_KINDS } from '../src/sim/disasters.ts';
 import { GENERATED_ATLASES } from '../src/sim/atlases.ts';
+import { WALL_PIECES } from '../src/sim/walls.ts';
 
 const RENDER_DIR = new URL('../src/render/', import.meta.url);
 
@@ -181,4 +182,32 @@ test('one derivation of scale exists, shared by every caller',()=>{
   const machines=readFileSync(new URL('../sim/machines.ts',RENDER_DIR),'utf8');
   assert.match(machines,/frameScale\(frame\.w, targetWidth\)/,'the machine layout uses the shared derivation');
   assert.equal(/targetWidth \/ frame\.w/.test(machines),false,'and does not repeat the division itself');
+});
+
+/**
+ * A sprite registered against an atlas the scene never loads draws as a black placeholder.
+ * That shipped once: the cane field and the sugar mill were mapped to `production-expansion`
+ * in the registry while the scene's load list still ended at the defence atlases, so both
+ * buildings came up as empty rectangles with a green outline. The registry and the load list
+ * are two places that must agree, so this checks they cannot drift apart silently.
+ */
+test('every atlas the registry points a sprite at is actually loaded by the scene',()=>{
+  const scene=readFileSync(new URL('TownScene.ts',RENDER_DIR),'utf8');
+  const listed=/const SCENE_ATLASES = \[([^\]]*)\]/.exec(scene)?.[1] ?? '';
+  const loaded=new Set(listed.split(',').map(part=>part.trim().replace(/['"]/g,'')).filter(Boolean));
+  assert.ok(loaded.size>0,'the scene names its atlases');
+  const check=(label:string,atlas:string)=>{
+    assert.ok(loaded.has(atlas),`${label} draws from ${atlas}, which the scene never loads`);
+  };
+  // Every building that resolves through the generated registry.
+  for(const kind of Object.keys(BUILDINGS) as (keyof typeof BUILDINGS)[]){
+    const sprite=generatedSprite(kind as never);
+    if(sprite) check(`building ${kind}`,sprite.atlas);
+    const housing=housingLevelFrame(kind as never,1);
+    if(housing) check(`housing ${kind}`,housing.atlas);
+  }
+  // Every hazard, which may name a sheet of its own.
+  for(const kind of DISASTER_KINDS) check(`hazard ${kind}`,DISASTERS[kind].atlas??'disasters');
+  // And every wall tile, straight from the tiling table.
+  for(const piece of Object.values(WALL_PIECES)) check(`wall tile ${piece.frame}`,piece.atlas);
 });

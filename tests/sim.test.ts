@@ -15,7 +15,7 @@ function assertHealthy(world: SimWorld): void {
 test('fresh start is valid, unique and isolated from caller-owned saves', () => {
   const initial = createInitialState(123456);
   assert.equal(validateSave(initial), true);
-  assert.equal(initial.population, 12); assert.equal(initial.level, 3); assert.equal(initial.coins, 2800);
+  assert.equal(initial.population, 13); assert.equal(initial.level, 3); assert.equal(initial.coins, 2800);
   assert.equal(new Set(initial.buildings.map(building => `${building.x},${building.y}`)).size, initial.buildings.length);
   const world = new SimWorld(initial);
   world.state.resources.wood = 0;
@@ -53,6 +53,9 @@ test('production consumes recipes once and harvest cannot be collected twice', (
   for (const building of world.state.buildings) building.paused = true;
   const mill = world.state.buildings.find(building => building.kind === 'windmill')!;
   mill.paused = false; mill.progress = 0;
+  // Stock targets stop a workshop that has made enough, so start from empty shelves: this
+  // test is about a recipe being consumed once, not about whether the town wants more flour.
+  world.state.resources.flour = 0;
   const wheat = world.state.resources.wheat;
   const flour = world.state.resources.flour;
   world.tick(30);
@@ -187,7 +190,7 @@ test('offline time cannot run backwards and empty towns never create negative fo
   world.state.resources = emptyResources();
   for (const building of world.state.buildings) { building.paused = true; building.ready = false; building.stock = {}; }
   const report = world.offline(3600);
-  assert.equal(report.tax, 0); assert.equal(world.state.population, 12);
+  assert.equal(report.tax, 0); assert.equal(world.state.population, 13);
   assertHealthy(world);
 });
 
@@ -233,6 +236,7 @@ test('worker assignment can stop a workshop but cannot allocate more residents t
   world.tick(30); assert.equal(mill.progress, progress);
   assert.equal(world.adjustWorkforce(mill.id, 3).ok, false);
   assert.equal(world.adjustWorkforce(mill.id, 1).ok, true);
+  world.state.resources.flour = 0;
   world.tick(30); assert.ok(mill.progress > progress);
   assertHealthy(world);
 });
@@ -262,7 +266,7 @@ test('departing residents vacate their jobs so population decline never creates 
   world.state.resources = emptyResources(); world.state.happiness = 10;
   world.setTax(4);
   world.tick(90);
-  assert.equal(world.state.population, 11);
+  assert.equal(world.state.population, 12, 'one resident leaves the unhappy town');
   assertHealthy(world);
 });
 
@@ -271,6 +275,7 @@ test('offline workshops retain earlier progress but never advance while ingredie
   for (const building of world.state.buildings) building.paused = true;
   const mill = world.state.buildings.find(building => building.kind === 'windmill')!;
   mill.paused = false; mill.progress = 0.4;
+  world.state.resources.flour = 0;
   world.state.resources.wheat = 0;
   world.offline(7); assert.equal(mill.progress, 0.4);
   world.offline(100); assert.equal(mill.progress, 0.4);

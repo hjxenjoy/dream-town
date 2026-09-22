@@ -71,12 +71,12 @@ test('kilns protect construction timber online and offline, kitchens can still b
   for(const b of world.state.buildings){b.workers=0;b.staffing=0;b.staffing=0;}
   const kiln: Building={id:'test-kiln',kind:'kiln',x:2,y:2,level:1,paused:false,ready:false,stock:{},progress:.5,workers:1};
   world.state.buildings.push(kiln);
-  world.state.resources.wood=world.woodReserve(); world.state.resources.flour=6;
+  world.state.resources.wood=world.woodReserve(); world.state.resources.flour=6; world.state.resources.sugar=6;
   world.tick(32); assert.equal(kiln.progress,.5);
   world.offline(100); assert.equal(world.state.resources.wood,world.woodReserve());
   const bakery=world.state.buildings.find(b=>b.kind==='bakery')!;
   bakery.workers=2; world.tick(38);
-  assert.equal(bakery.ready,true); assert.equal(world.state.resources.wood,world.woodReserve()-1);
+  assert.equal(bakery.ready,true); assert.equal(world.state.resources.sugar,5,'the bakery spends sugar, not timber');
 });
 
 test('surplus sale preserves timber, caravan materials and all visible orders; pays once', () => {

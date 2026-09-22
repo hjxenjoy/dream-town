@@ -201,6 +201,9 @@ export function createInitialState(now = Date.now()): SimState {
     ['townhall', 8, 7], ['cottage', 6, 6], ['cottage', 10, 6], ['cottage', 11, 8],
     ['windmill', 5, 10], ['bakery', 7, 11], ['warehouse', 10, 10], ['market', 8, 9],
     ['well', 9, 6], ['lumber', 4, 6], ['fishery', 12, 12], ['quarry', 4, 4],
+    // Bread needs sugar, so the opening town must be able to make it: without these two the
+    // bakery in the starting layout could never bake again.
+    ['canefield', 2, 10], ['sugarmill', 2, 12],
     ['garden', 11, 5], ['farm', 4, 9], ['farm', 4, 10], ['farm', 4, 11],
     ['farm', 3, 9], ['farm', 3, 10], ['farm', 3, 11],
   ];
@@ -210,7 +213,7 @@ export function createInitialState(now = Date.now()): SimState {
   });
   return {
     version: 2, researched: [], createdAt: now, savedAt: now, gameTime: gameTimeAtHour(DAY_START_HOUR), coins: 2800, xp: 80, level: 3, prestige: 6,
-    taxRate: 1, population: 12, happiness: 86, capacity: 240,
+    taxRate: 1, population: 13, happiness: 86, capacity: 240,
     resources: { ...emptyResources(), wood: 42, stone: 25, wheat: 24, flour: 12, bread: 10, fish: 20, plank: 12, materials: 10 },
     buildings, orders: clone(INITIAL_ORDERS),
     caravans: [newCaravan(0)],

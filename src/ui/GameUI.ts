@@ -257,7 +257,7 @@ export class GameUI {
     const s=this.world.state, used=RESOURCE_KEYS.reduce((n,k)=>n+s.resources[k],0);
     const targets=this.world.stockTargets(), surplus=this.world.surplusQuote();
     const barn=s.buildings.filter(b=>b.kind==='warehouse'&&b.level<3).sort((a,b)=>a.level-b.level)[0];
-    const groups: [string,Resource[]][]=[['建造与采集',['wood','plank','stone','materials','ore']],['居民口粮',['fish','bread']],['农产与加工',['wheat','flour','charcoal','ingot','feed','wool','cloth']],['果园与牧场',['flowers','fruit','eggs','milk','grape']],['成品与贸易',['tools','clothing','jam','cheese','honey','wine','vintage']]];
+    const groups: [string,Resource[]][]=[['建造与采集',['wood','plank','stone','materials','ore']],['居民口粮',['fish','bread']],['农产与加工',['wheat','flour','sugarcane','sugar','charcoal','ingot','feed','wool','cloth']],['果园与牧场',['flowers','fruit','eggs','milk','grape']],['成品与贸易',['tools','clothing','jam','cheese','honey','wine','vintage']]];
     const listed=new Set(groups.flatMap(([,keys])=>keys));
     const remaining=RESOURCE_KEYS.filter(key=>!listed.has(key));
     if(remaining.length)groups.push(['其他物资',remaining]);

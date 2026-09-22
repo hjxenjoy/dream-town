@@ -1,10 +1,10 @@
 /** Short names for the two construction materials, used in costs and refusals. */
 export const RESOURCE_LABELS: Record<'wood' | 'stone', string> = { wood: '木材', stone: '石料' };
 
-export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage';
+export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage' | 'sugarcane' | 'sugar';
 export type ResourceMap = Record<Resource, number>;
 export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
-export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile' | 'barracks' | 'guardpost' | 'wall';
+export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile' | 'barracks' | 'guardpost' | 'wall' | 'canefield' | 'sugarmill';
 
 export interface BuildingDefinition {
   name: string;
@@ -70,7 +70,7 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
   firestation: { name: '赤砖消防站', description: '守护半径 7 格内的建筑，每次升级扩大 1 格，让工业区也能安心生产。', category: 'services', cost: 1050, wood: 16, stone: 24, materials: { materials: 4 }, frame: null, technology: 'metallurgy', fireRadius: 7 },
   cottage: { name: '林间小屋', description: '温暖的新家，提供 6 个床位。居民幸福、粮食充足时会迎来新邻居。', category: 'homes', cost: 320, wood: 12, stone: 5, frame: 0, housing: 6 },
   windmill: { name: '风车磨坊', description: '风吹麦香。将 3 份小麦磨成 3 袋面粉，是面包产业的起点。', category: 'production', cost: 560, wood: 18, stone: 8, frame: 1, cycle: 28, input: { wheat: 3 }, output: { flour: 3 }, workers: 2 },
-  bakery: { name: '晨光面包房', description: '用 3 袋面粉和 1 份木材烤出 4 个面包，为居民与订单准备早餐。', category: 'production', cost: 720, wood: 20, stone: 12, frame: 2, cycle: 38, input: { flour: 3, wood: 1 }, output: { bread: 4 }, workers: 2 },
+  bakery: { name: '晨光面包房', description: '用 3 袋面粉和 1 份砂糖烤出 4 个面包，为居民与订单准备早餐。', category: 'production', cost: 720, wood: 20, stone: 12, frame: 2, cycle: 38, input: { flour: 3, sugar: 1 }, output: { bread: 4 }, workers: 2 },
   townhall: { name: '小镇议事厅', description: '小镇的心脏。提升社区人口上限，承载居民共同的梦想。', category: 'services', cost: 1200, wood: 35, stone: 25, frame: 3, populationCap: 6, services: 35 },
   lumber: { name: '林间木工坊', description: '每轮采集 6 份木材、加工 2 块木板。可切换木材或木板优先，均衡模式会按库存补货。', category: 'production', cost: 380, wood: 10, stone: 5, frame: 4, cycle: 24, output: { wood: 6, plank: 2 }, workers: 2 },
   quarry: { name: '山麓采石场', description: '采集结实的山石，每轮提供 3 份石料，支持小镇扩建。', category: 'production', cost: 420, wood: 12, stone: 5, frame: 5, cycle: 32, output: { stone: 3 }, workers: 2 },
@@ -106,6 +106,11 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
   vineyard: { name: '南坡葡萄园', description: '向阳的坡地适合种葡萄，每轮自然结出 6 串。', category: 'production', cost: 460, wood: 14, stone: 6, frame: null, technology: 'viniculture', cycle: 38, output: { grape: 6 }, workers: 1 },
   winery: { name: '木桶酿酒坊', description: '把 6 串葡萄酿成 3 桶葡萄酒，是小镇最能卖出价钱的手艺。', category: 'production', cost: 860, wood: 20, stone: 16, materials: { materials: 3 }, technology: 'viniculture', frame: null, cycle: 56, input: { grape: 6 }, output: { wine: 3 }, workers: 2 },
   cellar: { name: '石阶酒窖', description: '把 3 桶葡萄酒再存成 2 瓶陈年佳酿，慢慢来的味道更好，也更值得上远方的订单。', category: 'production', cost: 980, wood: 16, stone: 26, materials: { materials: 4 }, technology: 'viniculture', frame: null, cycle: 70, input: { wine: 3 }, output: { vintage: 2 }, workers: 1 },
+  // The sugar chain, per docs/04 §2: 农田 → 甘蔗 → 糖厂 → 糖 → 面包房. The field is its own
+  // building rather than a selectable crop, which is how the vineyard already works, and the
+  // shipped art agrees: `sugarcane-field` is a whole field, not a stage of a farm plot.
+  canefield: { name: '河湾甘蔗田', description: '湿热的水边适合甘蔗，每轮收 6 捆，送往糖厂熬成砂糖。', category: 'production', cost: 400, wood: 12, stone: 6, frame: null, cycle: 34, output: { sugarcane: 6 } },
+  sugarmill: { name: '老石糖厂', description: '把 6 捆甘蔗熬成 3 份砂糖。糖是面包房的新配方，也是远方才见得着的好价钱。', category: 'production', cost: 640, wood: 16, stone: 14, frame: null, cycle: 40, input: { sugarcane: 6 }, output: { sugar: 3 }, workers: 1 },
   flowercart: { name: '花车', description: '花巷成型后立起的纪念花车，四季都装着刚剪下的花。环境 +6。', category: 'decoration', cost: 160, wood: 6, stone: 1, frame: null, environment: 6 },
   picniccorner: { name: '野餐角', description: '滨河步道连成一线后添的野餐桌，晴天总有人坐着。环境 +6。', category: 'decoration', cost: 160, wood: 7, stone: 1, frame: null, environment: 6 },
   harvestpile: { name: '丰收堆', description: '工坊广场成气候后堆起的南瓜与谷物，是小镇给手艺人的记功。环境 +6。', category: 'decoration', cost: 160, wood: 2, stone: 2, frame: null, environment: 6 },
@@ -136,9 +141,13 @@ export const RESOURCES: Record<Resource, { name: string; icon: string; sellPrice
   grape: { name: '葡萄', icon: 'grape', sellPrice: 6 },
   wine: { name: '葡萄酒', icon: 'wine', sellPrice: 26 },
   vintage: { name: '陈年佳酿', icon: 'vintage', sellPrice: 60 },
+  // Sugar is made from cane and is an ingredient, not a finished article: it is not in
+  // TERMINAL_GOODS, so the market neither buys nor sells it.
+  sugarcane: { name: '甘蔗', icon: 'sugarcane', sellPrice: 4 },
+  sugar: { name: '砂糖', icon: 'sugar', sellPrice: 9 },
 };
 
-export const RESOURCE_KEYS = ['flowers','fruit','eggs','jam','wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage'] as Resource[];
+export const RESOURCE_KEYS = ['flowers','fruit','eggs','jam','wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage', 'sugarcane', 'sugar'] as Resource[];
 export const BUILDING_KEYS = Object.keys(BUILDINGS) as BuildingKind[];
 export { MAP_SIZE } from './terrain.ts';
 export const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
@@ -198,7 +207,7 @@ export const HEALTH_TAX_RELIEF = 0.4;
 export const HEALTH_REPAIR_RELIEF = 0.3;
 
 export function emptyResources(): ResourceMap {
-  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0 };
+  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0, sugarcane: 0, sugar: 0 };
 }
 
 /**
@@ -308,7 +317,7 @@ export const TECHNOLOGIES: Record<TechnologyId, TechnologyDefinition> = {
 export const TECHNOLOGY_KEYS = Object.keys(TECHNOLOGIES) as TechnologyId[];
 export const INDUSTRY_KINDS: BuildingKind[] = ['mine', 'kiln', 'smelter', 'smithy', 'feedmill', 'pasture', 'weaver', 'tailor'];
 // Stable source-to-product order used by offline settlement.
-export const PRODUCTION_SEQUENCE: BuildingKind[] = ['flowernursery','orchardhouse','jamkitchen','lumber', 'forester', 'quarry', 'farm', 'fishery', 'apiary', 'vineyard', 'mine', 'kiln', 'sawmill', 'windmill', 'feedmill', 'chickencoop', 'fishpond', 'bakery', 'pasture', 'cowbarn', 'smelter', 'brickworks', 'dairy', 'weaver', 'winery', 'smithy', 'cellar', 'tailor'];
+export const PRODUCTION_SEQUENCE: BuildingKind[] = ['flowernursery','orchardhouse','jamkitchen','lumber', 'forester', 'quarry', 'farm', 'fishery', 'apiary', 'vineyard', 'canefield', 'mine', 'kiln', 'sawmill', 'windmill', 'feedmill', 'chickencoop', 'fishpond', 'sugarmill', 'bakery', 'pasture', 'cowbarn', 'smelter', 'brickworks', 'dairy', 'weaver', 'winery', 'smithy', 'cellar', 'tailor'];
 export const INDUSTRY_FRAMES = {
   mine: { x: 0, y: 0, w: 440, h: 435 }, kiln: { x: 443, y: 0, w: 440, h: 435 },
   smelter: { x: 888, y: 0, w: 441, h: 439 }, smithy: { x: 1332, y: 0, w: 442, h: 435 },

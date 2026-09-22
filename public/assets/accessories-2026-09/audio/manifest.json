@@ -1074,6 +1074,40 @@
       }
     },
     {
+      "name": "canefield",
+      "label": "河湾甘蔗田 · 田野微风与鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/canefield.wav",
+      "profile": "field",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -10.89
+      }
+    },
+    {
+      "name": "sugarmill",
+      "label": "老石糖厂 · 机械转动与节律敲击",
+      "url": "/assets/accessories-2026-09/audio/sugarmill.wav",
+      "profile": "machine",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.94
+      }
+    },
+    {
       "name": "flowercart",
       "label": "花车 · 枝叶轻风与短鸟鸣",
       "url": "/assets/accessories-2026-09/audio/flowercart.wav",
@@ -1551,6 +1585,18 @@
       "profile": "bubbles",
       "runtimeIntegrated": false
     },
+    "canefield": {
+      "url": "/assets/accessories-2026-09/audio/canefield.wav",
+      "source": "new",
+      "profile": "field",
+      "runtimeIntegrated": false
+    },
+    "sugarmill": {
+      "url": "/assets/accessories-2026-09/audio/sugarmill.wav",
+      "source": "new",
+      "profile": "machine",
+      "runtimeIntegrated": false
+    },
     "flowercart": {
       "url": "/assets/accessories-2026-09/audio/flowercart.wav",
       "source": "new",
@@ -1576,7 +1622,7 @@
       "runtimeIntegrated": false
     }
   },
-  "buildingCount": 72,
+  "buildingCount": 74,
   "existingReused": 5,
-  "newTracks": 67
+  "newTracks": 69
 }

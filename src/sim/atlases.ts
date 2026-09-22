@@ -70,6 +70,8 @@ const CATALOG_BY_KIND: Partial<Record<BuildingKind, GeneratedAtlas>> = {
   chapel: 'chapel',
   // Defence: barracks and guardpost are whole buildings; wall tiles are picked per neighbour.
   barracks: 'defense-expansion', guardpost: 'defense-expansion',
+  // The sugar chain: the cane field and the mill each ship as a single whole-building frame.
+  canefield: 'production-expansion', sugarmill: 'production-expansion',
 };
 
 const FRAME_BY_KIND: Partial<Record<BuildingKind, string>> = {
@@ -80,6 +82,7 @@ const FRAME_BY_KIND: Partial<Record<BuildingKind, string>> = {
   cowbarn: 'cow-barn', dairy: 'dairy', apiary: 'apiary',
   vineyard: 'vineyard', winery: 'winery', cellar: 'wine-cellar',
   barracks: 'barracks', guardpost: 'guard-post',
+  canefield: 'sugarcane-field', sugarmill: 'sugar-mill',
 };
 
 /** Which generated atlas draws this building, and which frame inside it. */
