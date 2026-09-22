@@ -76,8 +76,13 @@ test('the chosen route decides the cargo, the duration and the reward',()=>{
     const caravan=w.state.caravans[0];
     assert.equal(caravan.destination,id);
     assert.deepEqual(caravan.cargo,DESTINATIONS[id].cargo,`${id} ships its own cargo`);
-    assert.equal(caravan.rewardCoins,DESTINATIONS[id].rewardCoins);
-    assert.equal(caravan.rewardMaterials,DESTINATIONS[id].rewardMaterials);
+    // A trip is either clean or waylaid; docs/06 §2 puts a raid risk on the long roads, and a
+    // raid costs half the coins and all of the materials. Anything else would be neither.
+    const raided=caravan.raided===true;
+    assert.equal(caravan.rewardCoins,raided?Math.round(DESTINATIONS[id].rewardCoins/2):DESTINATIONS[id].rewardCoins,`${id} coins`);
+    assert.equal(caravan.rewardMaterials,raided?0:DESTINATIONS[id].rewardMaterials,`${id} materials`);
+    // The short road to the next village is never waylaid, so the risk it carries must be nil.
+    if(id==='valley')assert.equal(raided,false,'the near road needs no guard');
 
     // The cargo really left the warehouse, and exactly that much.
     const before=prepared().state.resources;
@@ -89,8 +94,8 @@ test('the chosen route decides the cargo, the duration and the reward',()=>{
     assert.equal(w.state.caravans[0].status,'returned');
     const coins=w.state.coins, materials=w.state.resources.materials;
     assert.equal(w.dispatchCaravan().ok,true);
-    assert.equal(w.state.coins,coins+DESTINATIONS[id].rewardCoins,`${id} paid its coins`);
-    assert.equal(w.state.resources.materials,materials+DESTINATIONS[id].rewardMaterials,`${id} brought its materials`);
+    assert.equal(w.state.coins,coins+(raided?Math.round(DESTINATIONS[id].rewardCoins/2):DESTINATIONS[id].rewardCoins),`${id} paid what it promised`);
+    assert.equal(w.state.resources.materials,materials+(raided?0:DESTINATIONS[id].rewardMaterials),`${id} brought what it promised`);
     assert.equal(validateSave(w.state),true);
   }
 });

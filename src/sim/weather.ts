@@ -1,4 +1,6 @@
 import type { SeasonKey } from './seasonal.ts';
+// Shared so weather and the caravan roads draw chance the same way.
+import { noise } from './noise.ts';
 
 /**
  * Weather. The design documents say only one thing about it — `docs/09` §3.5 lists it among
@@ -74,16 +76,6 @@ export const WEATHER_SLOT = 150;
  * swing in what farmland does.
  */
 export const RAIN_GROWTH_FACTOR = 0.95;
-
-/**
- * A stable pseudo-random fraction from an integer, in the style the road and terrain painters
- * already use. Deterministic across runs and machines, which is what lets the weather be
- * derived rather than stored.
- */
-function noise(n: number): number {
-  const x = Math.sin(n * 91.73) * 43758.545;
-  return x - Math.floor(x);
-}
 
 /** Which spell the clock is in. Exported so the renderer and the tests agree with the sim. */
 export function weatherSlot(gameTime: number): number {

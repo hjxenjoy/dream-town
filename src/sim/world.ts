@@ -17,7 +17,7 @@ import { WEATHER, weatherAt, weatherGrowthFactor, weatherRemaining, type Weather
 import { plagueDue, plagueDuration, plagueHappinessCost, plagueSpoilage, type PlagueState } from './plague.ts';
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
-import { DESTINATION_IDS, availableDestinations, caravanDuration, caravanSlots, destinationOf, missingCargo, type DestinationId } from './destinations.ts';
+import { DESTINATION_IDS, GUARD_SHARES, MAX_GUARD_COVER, availableDestinations, caravanDuration, caravanSlots, destinationOf, missingCargo, raidChance, tripRaided, type DestinationId } from './destinations.ts';
 import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, ornamentRequirement, type CollectionId } from './collections.ts';
 import { HONOURS, HONOUR_TRACK_IDS, honourCapacity, honourCommunity, honourCycleFactor, honourLevel, honourLevelsTaken, honourSummary, nextHonourLevel, type HonourTrackId } from './honours.ts';
 import { STORY_PORTRAITS, STORY_STAGES, nextStoryStage, storyChoiceIds, storyEffect, storyEnvironment, storyHistory, type StoryProgress } from './stories.ts';
@@ -87,6 +87,8 @@ export interface Caravan {
   trips: number;
   /** Chosen destination. Missing only on saves written before routes were selectable. */
   destination?: DestinationId;
+  /** Set when this trip was waylaid on the road. Absent on a clean run. */
+  raided?: boolean;
 }
 export interface Quest {
   id: string;
@@ -398,6 +400,7 @@ export function validateSave(value: unknown): value is SimState {
     if (!['idle', 'traveling', 'returned'].includes(caravan.status as string) || !validItems(caravan.cargo)) return false;
     if (['returnAt', 'duration', 'rewardCoins', 'rewardMaterials', 'trips'].some(key => !nonnegative((caravan as Record<string, unknown>)[key]))) return false;
     if (caravan.destination !== undefined && !DESTINATION_IDS.includes(caravan.destination as DestinationId)) return false;
+    if (caravan.raided !== undefined && typeof caravan.raided !== 'boolean') return false;
   }
   if (value.pets !== undefined) {
     if (!Array.isArray(value.pets) || value.pets.length > 6) return false;
@@ -1085,9 +1088,15 @@ export class SimWorld {
     if (caravan.status === 'returned') {
       if (this.room() < caravan.rewardMaterials) return this.fail(`商队带回 ${caravan.rewardMaterials} 份建材，请先为它们腾出仓位。`, 'WAREHOUSE_FULL');
       const coins = caravan.rewardCoins; const items = { materials: caravan.rewardMaterials };
+      const wasRaided = caravan.raided === true;
       this.add(items); this.earn(coins, 60); this.state.stats.caravansCompleted++; caravan.trips++;
       caravan.status = 'idle'; caravan.returnAt = 0;
-      return this.success(`商队平安归来！获得 ${coins} 金币与 ${items.materials} 份建材。`, { coins, xp: 60, items });
+      delete caravan.raided;
+      return this.success(
+        wasRaided
+          ? `商队回来了，可惜路上遭了抢：只剩 ${coins} 金币。建几座岗哨可以让这条路安全些。`
+          : `商队平安归来！获得 ${coins} 金币与 ${items.materials} 份建材。`,
+        { coins, xp: 60, items });
     }
     if (!this.state.buildings.some(building => building.kind === 'market' && !building.damaged)) return this.fail('需要一座可用的集市来组织商队。', 'MARKET_REQUIRED');
     const destination = destinationOf(caravan.destination);
@@ -1102,7 +1111,21 @@ export class SimWorld {
     const marketLevel = Math.max(1, ...this.state.buildings.filter(building => building.kind === 'market').map(building => building.level));
     caravan.duration = caravanDuration(destination, marketLevel, hasProjectTitle(this.state, 'harbor'));
     caravan.returnAt = this.state.gameTime + caravan.duration;
-    return this.success(`商队出发了，正前往${destination.name}。`);
+    // The road decides at departure, from a counter rather than a die roll, so a reload or an
+    // offline settle reaches the same answer. A raid costs the reward, never the cargo: the
+    // goods were paid for the moment the cart left, and a trip that can leave the player worse
+    // off than staying home is the failure state this game does not have.
+    const chance = this.caravanRaidChance(destination.id);
+    const raided = tripRaided(chance, (caravan.trips + 1) * 31 + DESTINATION_IDS.indexOf(destination.id) * 7 + this.state.stats.caravansCompleted);
+    if (raided) {
+      caravan.raided = true;
+      caravan.rewardCoins = Math.round(caravan.rewardCoins / 2);
+      caravan.rewardMaterials = 0;
+      this.log(`商队在前往${destination.name}的路上遇到强盗，货物被抢走大半。岗哨与兵营会让这条路安全些。`, 'warning');
+    } else {
+      delete caravan.raided;
+    }
+    return this.success(`商队出发了，正前往${destination.name}。${raided ? '听说路上不太平……' : ''}`);
   }
 
   setTax(rate: number): ActionResult {
@@ -1520,6 +1543,31 @@ export class SimWorld {
   }
 
   /** Whether the town has somewhere to serve a drink, which is what docs/05 §2 asked for. */
+  /**
+   * How well the guard line covers the road the caravans take out of town. Only guards that
+   * actually stand over the market count — a post on the far side of the valley guards the
+   * valley, not the trade route — and the total is capped, because a long road is never
+   * entirely safe.
+   */
+  caravanGuardCover(): number {
+    const market = this.state.buildings.find(building => building.kind === 'market' && !building.damaged);
+    if (!market) return 0;
+    let cover = 0;
+    for (const building of this.state.buildings) {
+      if (building.damaged) continue;
+      const share = GUARD_SHARES[building.kind as keyof typeof GUARD_SHARES];
+      if (!share) continue;
+      const radius = (BUILDINGS[building.kind].guardRadius ?? 0) + building.level - 1;
+      if (Math.hypot(building.x - market.x, building.y - market.y) <= radius) cover += share;
+    }
+    return Math.min(MAX_GUARD_COVER, cover);
+  }
+
+  /** The chance a caravan bound for this route is waylaid, given the guard line. */
+  caravanRaidChance(destination: DestinationId): number {
+    return raidChance(destinationOf(destination), this.caravanGuardCover());
+  }
+
   /** Whether a souvenir shop is standing, which is what makes souvenirs worth more. */
   private souvenirShopStanding(): boolean {
     return this.state.buildings.some(building => building.kind === 'zooshop' && !building.damaged);
@@ -2105,6 +2153,7 @@ export class SimWorld {
       plague: this.state.plague
         ? { active: true, daysLeft: Math.max(0, Math.ceil((this.state.plague.until - this.state.gameTime) / GAME_DAY_SECONDS)), moodCost: Math.round(this.plagueMoodCost()) }
         : { active: false, daysLeft: 0, moodCost: 0 },
+      caravanRisk: { guardCover: Math.round(this.caravanGuardCover() * 100) / 100, byRoute: Object.fromEntries(availableDestinations(this.state.researched).map(destination => [destination.id, Math.round(this.caravanRaidChance(destination.id) * 1000) / 1000])) },
       zoo: {
         hasGate: this.state.buildings.some(building => building.kind === 'zoogate'),
         enclosures: this.state.buildings.filter(building => building.kind === 'zooenclosure').map(building => ({
