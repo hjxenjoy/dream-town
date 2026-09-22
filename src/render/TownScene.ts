@@ -1,5 +1,5 @@
 import { RegionLayer } from './RegionLayer';
-import { livestockFrame } from '../sim/livestock';
+import { livestockFrame, livestockWalk } from '../sim/livestock';
 import { drawSoilDetails, drawHomeDetails } from './SoilDetails';
 import { REGIONS, type RegionId } from '../sim/regions';
 import { soilLevel, cropGrowthStage, cropStageFrame } from '../sim/farming';
@@ -25,7 +25,7 @@ import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
 /** Generated atlases the scene draws. Preloading and frame registration both read this. */
-const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel','defense-expansion','wall-junctions','duel-actions','production-expansion','plague-animation','weather-expansion'] as const;
+const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel','defense-expansion','wall-junctions','duel-actions','production-expansion','plague-animation','weather-expansion','animal-walk-3','animal-walk-4'] as const;
 /** The seamless weather textures, loaded as images so a tile sprite can repeat them. */
 const WEATHER_TILES = ['weather-tile-rain','weather-tile-snow','weather-tile-fog'] as const;
 /** On-screen widths for the farm visuals, which are drawn from generated textures. */
@@ -286,7 +286,12 @@ export class TownScene extends Phaser.Scene {
         const frame=orchard?(b.ready||b.progress>=.72?'tree-fruit':b.progress>=.3?'tree-blossom':'tree-leaves'):livestockFrame(b)!;
         const herd=b.kind==='pasture'||b.kind==='cowbarn',atlas=herd?'herd-growth':'living-farm';
         if(!v.companion)v.companion=this.add.image(p.x,p.y,atlas,frame).setOrigin(.5,.93);
-        drawFrameWidth(v.companion,atlas,frame,herd?atlasFrames('herd-growth')[frame].w*.12:orchard?78:48);
+        // A herd that is actually working walks; an idle one stands. Poultry have no gait art,
+        // so they keep their stills and simply sway with the rest.
+        const gait=herd?livestockWalk(b,Math.floor(this.game.loop.time/220)):null;
+        const walking=gait&&this.running.has(b.id)&&!this.reducedMotion();
+        if(walking)drawFrameScale(v.companion,gait!.atlas,gait!.frame,gait!.scale);
+        else drawFrameWidth(v.companion,atlas,frame,herd?atlasFrames('herd-growth')[frame].w*.12:orchard?78:48);
         v.companion.setPosition(p.x+(orchard?30:16),p.y+17).setDepth(p.y+7).setVisible(!b.damaged).setAlpha(b.id===this.moveId?.28:b.paused?.65:1);
       }
       v.badge.setVisible(b.ready||!!b.damaged);const text=v.badge.list[1] as Phaser.GameObjects.Text;
@@ -398,7 +403,10 @@ export class TownScene extends Phaser.Scene {
       if(!companion)continue;
       const active=!reduced&&this.simulationSpeed>0&&!b.paused&&!b.damaged;
       // Subtle foliage sway and a slow peck, always reset when motion is disabled.
-      companion.setAngle(active?Math.sin(time/(b.kind==='orchardhouse'?1400:650)+b.x)*.9:0);
+      // A herd that is walking does not also sway: the gait is the motion, and adding the sway
+      // on top of it would rock the whole animal as it steps.
+      const striding=active&&Boolean(livestockWalk(b,0))&&this.running.has(b.id);
+      companion.setAngle(striding?0:active?Math.sin(time/(b.kind==='orchardhouse'?1400:650)+b.x)*.9:0);
     }
     if(this.lastSeason!==this.world.state.season){this.lastSeason=this.world.state.season;this.ground.setAlpha(this.lastSeason==='winter'?.78:1);}
   }
