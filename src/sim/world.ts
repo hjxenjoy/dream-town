@@ -13,6 +13,7 @@ import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, typ
 import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, FOCUS_RECIPES, GAME_DAY_SECONDS, HERB_BOOST, LEISURE_GOODS, MAP_SIZE, TAVERN_GOODS, effectiveRecipe, herbCoverage, herbsPerDay, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId } from './data.ts';
 import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, canStrike, damageCeiling, disasterOf, raidLoss, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
+import { WEATHER, weatherAt, weatherGrowthFactor, weatherRemaining, type WeatherKind } from './weather.ts';
 import { plagueDue, plagueDuration, plagueHappinessCost, plagueSpoilage, type PlagueState } from './plague.ts';
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
@@ -1506,6 +1507,11 @@ export class SimWorld {
   }
 
   /** Whether the town has somewhere to serve a drink, which is what docs/05 §2 asked for. */
+  /** The weather right now. Derived from the clock, so it needs no save field. */
+  weather(): WeatherKind {
+    return weatherAt(this.state.season as SeasonKey, this.state.gameTime);
+  }
+
   /** Whether a clinic is standing, which is the only thing that uses herbs. */
   private clinicStanding(): boolean {
     return this.state.buildings.some(building => building.kind === 'clinic' && !building.damaged);
@@ -1603,11 +1609,15 @@ export class SimWorld {
   private cycleTime(building: Building, hauls: Map<string, number> = this.supplyHauls()): number {
     const definition = BUILDINGS[building.kind];
     const seasonal = building.kind === 'farm' && this.state.season === 'winter' ? 2.5 : building.kind === 'farm' && this.state.season === 'autumn' ? 0.85 : 1;
+    // Rain waters the fields, so farmland works a little faster in it. This is the only thing
+    // weather does, and it is a bonus: in any dry weather the factor is exactly 1, which is
+    // what keeps a town no worse off than it was before weather existed.
+    const watered = building.kind === 'farm' ? weatherGrowthFactor(weatherAt(this.state.season as SeasonKey, this.state.gameTime)) : 1;
     const assigned = this.state.buildings.reduce((total, item) => total + (item.paused || item.damaged ? 0 : (item.workers ?? BUILDINGS[item.kind].workers ?? 0)), 0);
     const workforce = assigned > this.state.population ? assigned / Math.max(1, this.state.population) : 1;
     const morale = this.state.happiness < 35 ? 1.5 : 1;
     const staffing = definition.workers ? definition.workers / Math.max(1, building.workers ?? definition.workers) : 1;
-    return (building.kind==='farm'?CROPS[building.crop??'wheat'].cycle:(definition.cycle??1)) * (building.kind==='farm'?1-soilLevel(building.tended).bonus*.04:1) * (this.state.researched.includes('efficiency') ? 0.9 : 1) * honourCycleFactor(this.state.honours ?? {}) * (hasProjectTitle(this.state,'craft')?0.95:1) * supplyFactor(this.haulOf(building, hauls)) * seasonal * workforce * staffing * morale * Math.max(0.6, 1 - (building.level - 1) * 0.15);
+    return (building.kind==='farm'?CROPS[building.crop??'wheat'].cycle:(definition.cycle??1)) * (building.kind==='farm'?1-soilLevel(building.tended).bonus*.04:1) * (this.state.researched.includes('efficiency') ? 0.9 : 1) * honourCycleFactor(this.state.honours ?? {}) * (hasProjectTitle(this.state,'craft')?0.95:1) * supplyFactor(this.haulOf(building, hauls)) * seasonal * watered * workforce * staffing * morale * Math.max(0.6, 1 - (building.level - 1) * 0.15);
   }
   /**
    * A bulk commission: several goods the town can actually make, at volume. Like every other
@@ -2068,6 +2078,14 @@ export class SimWorld {
         ? { active: true, daysLeft: Math.max(0, Math.ceil((this.state.plague.until - this.state.gameTime) / GAME_DAY_SECONDS)), moodCost: Math.round(this.plagueMoodCost()) }
         : { active: false, daysLeft: 0, moodCost: 0 },
       illness: { clinicCoverage: this.state.needs.health, herbCoverage: Math.round(herbCoverage(this.state.resources, this.state.population)) },
+      // The one thing the design documents ask of weather: get_town_status() reports it.
+      weather: {
+        kind: this.weather(),
+        name: WEATHER[this.weather()].name,
+        note: WEATHER[this.weather()].note,
+        waters: Boolean(WEATHER[this.weather()].waters),
+        secondsLeft: Math.round(weatherRemaining(this.state.gameTime)),
+      },
       market: MARKET_GOODS.map(key => ({ resource: key, unit: this.marketPrice(key)! })),
       marketReady: this.state.buildings.some(building => building.kind === 'market' && !building.damaged),
       stockTargets: this.stockTargets(), woodReserve: this.woodReserve(), surplus: this.surplusQuote(),

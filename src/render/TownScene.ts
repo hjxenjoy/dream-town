@@ -9,6 +9,7 @@ import { CaravanCart } from './CaravanCart';
 import { SeasonalProps } from './SeasonalProps';
 import { MachineLayer } from './MachineLayer';
 import { Ambience } from './Ambience';
+import { WeatherLayer } from './WeatherLayer';
 import { valleyCameraCenter } from './cameraBounds';
 import { Residents } from './Residents';
 import { RoadLayer } from './RoadLayer';
@@ -24,7 +25,9 @@ import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
 /** Generated atlases the scene draws. Preloading and frame registration both read this. */
-const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel','defense-expansion','wall-junctions','duel-actions','production-expansion','plague-animation'] as const;
+const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel','defense-expansion','wall-junctions','duel-actions','production-expansion','plague-animation','weather-expansion'] as const;
+/** The seamless weather textures, loaded as images so a tile sprite can repeat them. */
+const WEATHER_TILES = ['weather-tile-rain','weather-tile-snow','weather-tile-fog'] as const;
 /** On-screen widths for the farm visuals, which are drawn from generated textures. */
 const FARM_WIDTH = 116;
 const FARM_HEIGHT = 86;
@@ -78,6 +81,7 @@ export class TownScene extends Phaser.Scene {
   private seasonalProps!:SeasonalProps;
   private machineLayer!:MachineLayer;
   private ambience!:Ambience;
+  private weatherLayer!:WeatherLayer;
   private running=new Set<string>();
   private progressSnapshot=new Map<string,number>();
   private lastSeason = '';
@@ -95,6 +99,8 @@ export class TownScene extends Phaser.Scene {
     // Every generated atlas is loaded and registered from its own catalog, so a new
     // atlas needs one entry here rather than a matching pair of edits.
     for(const atlas of SCENE_ATLASES) this.load.image(atlas, GENERATED_ATLASES[atlas].image);
+    // The seamless tiles are SVG, loaded as images so a tile sprite can repeat them.
+    for(const tile of WEATHER_TILES) this.load.image(tile, `/assets/readiness-2026-09/${tile}.svg`);
     this.load.json('frames', '/assets/frames.json');
   }
   create() {
@@ -125,6 +131,7 @@ export class TownScene extends Phaser.Scene {
     this.seasonalProps=new SeasonalProps(this);
     this.machineLayer=new MachineLayer(this);
     this.ambience=new Ambience(()=>this.world.state.settings.sound);
+    this.weatherLayer=new WeatherLayer(this);
     this.ground=drawValley(this);
     this.atmosphere=new TownAtmosphere(this);
     this.cameras.main.setBackgroundColor('#98a96b');
@@ -384,6 +391,7 @@ export class TownScene extends Phaser.Scene {
     this.atmosphere.update(this.game.loop.delta*(this.simulationSpeed>0?1:0),this.world.state.buildings,this.running,this.world.state.festivalUntil>this.world.state.gameTime,reduced);
     this.ambience.sync(this.world.state.buildings,this.running,this.cameras.main.midPoint,time);
     this.disasterLayer.syncPlague(Boolean(this.world.state.plague),this.world.state.buildings.find(b=>b.kind==='townhall'),time,reduced);
+    this.weatherLayer.sync(this.world.weather(),this.world.state.buildings.find(b=>b.kind==='townhall'),time,reduced);
     if(!reduced&&this.simulationSpeed>0)this.visuals.forEach((v,id)=>{if(v.ready){const b=this.world.state.buildings.find(b=>b.id===id)!;const p=iso(b.x,b.y);v.badge.y=p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)+Math.sin(time/430)*3;}});
     for(const b of this.world.state.buildings){
       const companion=this.visuals.get(b.id)?.companion;
