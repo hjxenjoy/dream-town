@@ -1,5 +1,5 @@
 import { RARE_REWARDS, rareCount, rareOrnamentUnlocked, rareStyleRequirement } from './rareRewards.ts';
-import { WEEK_SECONDS, allowedTasks, boardComplete, validWeekly, weekBaseline, weekRemaining, weekOf, weeklyBoard, weeklyProgress, type WeeklyTaskName, type WeeklyTaskProgress } from './weekly.ts';
+import { allowedTasks, boardComplete, validWeekly, weekBaseline, weekRemaining, weekOf, weeklyBoard, weeklyProgress, type WeeklyTaskName, type WeeklyTaskProgress } from './weekly.ts';
 import { raiseChicks, livestockSpec } from './livestock.ts';
 import { growOrchards, recordOrchard } from './orchard.ts';
 import { growHomes, HOME_STYLES, type HomeStyle } from './homeGrowth.ts';
