@@ -1688,6 +1688,12 @@
       "profile": "field",
       "runtimeIntegrated": false
     },
+    "hunterlodge": {
+      "url": "/assets/expansion-2026-09/audio/hunter-lodge.wav",
+      "source": "existing",
+      "profile": "hunter-lodge",
+      "runtimeIntegrated": false
+    },
     "herbgarden": {
       "url": "/assets/accessories-2026-09/audio/herbgarden.wav",
       "source": "new",
@@ -1737,7 +1743,7 @@
       "runtimeIntegrated": false
     }
   },
-  "buildingCount": 79,
+  "buildingCount": 80,
   "existingReused": 5,
   "newTracks": 74
 }

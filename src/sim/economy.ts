@@ -18,6 +18,8 @@ const WEIGHTS: ResourceMap = {
   meat: 3, sausages: 3,
   // Herbs are the clinic's working supply, so a small buffer is plenty.
   herbs: 3,
+  // Pelts are a trade good with no workshop consumer, so they hold a modest buffer.
+  pelt: 3,
 };
 
 export function stockTargets(state: SimState): ResourceMap {

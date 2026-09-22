@@ -16,6 +16,10 @@ buildings=json.loads(subprocess.check_output(['node','--experimental-strip-types
 old=json.loads((ROOT/'public/assets/expansion-2026-09/audio/manifest.json').read_text())
 existing={t['name']:t for t in old['tracks']}
 REUSE={'mine','windmill','smithy','bakery','pasture'}
+# Buildings whose sound already shipped under a hyphenated track name in the first pack. The
+# first batch named tracks for the trade ('hunter-lodge'), not for the building id, so a
+# building added later has to say which existing track it is meant to use.
+REUSE_TRACK={'hunterlodge':'hunter-lodge'}
 # Explicit assignments: adding a BuildingKind without a sound is a hard failure.
 GROUPS={
  'leaves':'flowernursery orchardhouse garden oak cherry pine maple flowerarch flowerbox trellis willow vineyard flowercart harvestpile',
@@ -35,15 +39,16 @@ GROUPS={
  'cloth':'railing archlights signflags wall',
 }
 assigned={name:group for group,names in GROUPS.items() for name in names.split()}
-assert set(assigned)|REUSE=={b['id'] for b in buildings}
-assert not set(assigned)&REUSE
+assert set(assigned)|REUSE|set(REUSE_TRACK)=={b['id'] for b in buildings}
+assert not set(assigned)&(REUSE|set(REUSE_TRACK))
 RATE=22050;SECONDS=8;N=RATE*SECONDS;T=np.arange(N)/RATE;TAU=2*np.pi
 DESCRIPTIONS={'leaves':'枝叶轻风与短鸟鸣','home':'轻脚步与门木响','chicken':'鸡鸣与啄食','bubbles':'液体翻动与器皿','crowd':'无词人群低语、脚步与杯盏','fire':'炉火噼啪与低鸣','wood':'木料搬运与敲击','machine':'机械转动与节律敲击','water':'水波、滴水与水流','quiet':'安静室内与轻脚步','bell':'远钟与轻风','footsteps':'木板脚步与微风','cloth':'织物与风','metal':'金属轻击','cow':'低哞与草垫','bees':'蜂群轻嗡与微风','field':'田野微风与鸟鸣'}
 tracks=[];mapping={}
 for building in buildings:
     name=building['id']
-    if name in REUSE:
-        mapping[name]={'url':existing[name]['url'],'source':'existing','profile':existing[name]['name'],'runtimeIntegrated':False}
+    if name in REUSE or name in REUSE_TRACK:
+        track=existing[REUSE_TRACK.get(name,name)]
+        mapping[name]={'url':track['url'],'source':'existing','profile':track['name'],'runtimeIntegrated':False}
         continue
     kind=assigned[name]
     seed=int.from_bytes(hashlib.sha256(name.encode()).digest()[:4],'little')

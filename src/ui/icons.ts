@@ -27,6 +27,7 @@ const paths: Record<string, string> = {
  flour: '<path d="m7 3 3 3h4l3-3 1 3-2 3c6 10 3 12-4 12S2 19 8 9L6 6Z" fill="#e2d3b6"/><path d="M8 10h8M9 17h6"/>',
  // Cane is a bundle of stalks with a leaf; sugar is a cube with a scattering of grains.
  sugarcane: '<path d="M8 21V6m4 15V5m4 16V7" stroke="#8fae54"/><path d="M12 4c-2-2-5-2-6 0 1 2 4 3 6 1Zm0 0c2-2 5-2 6 0-1 2-4 3-6 1Z" fill="#a9c46a" stroke="#7d9a48"/><circle cx="12" cy="13" r="1.6" fill="#e8d9a6" stroke="none"/><circle cx="12" cy="17" r="1.6" fill="#e8d9a6" stroke="none"/>',
+ pelt: '<path d="M7 5c1-1 3-1 4 0 1-1 3-1 4 0 2 1 2 3 1 5l1 4c1 3-1 5-3 5-1 0-2-1-3-1s-2 1-3 1c-2 0-4-2-3-5l1-4C5 8 5 6 7 5Z" fill="#c39a6b" stroke="#8d6740"/><path d="M10 8c1 2 1 5 0 7m4-7c-1 2-1 5 0 7" stroke="#a37c50"/>',
  herbs: '<path d="M12 21V8m0 0c-2-4-6-4-7-2 1 3 4 5 7 4Zm0 0c2-4 6-4 7-2-1 3-4 5-7 4Z" fill="#8fae54" stroke="#5f7a35"/><path d="M8 21h8M9.5 17.5h5" stroke="#a88a4e"/><path d="M12 12c-1.5-2-4-2.5-5-1.5" stroke="#5f7a35"/>',
  meat: '<path d="M6 10c0-3 3-5 6-5s6 2 6 5c0 1-1 2-2 2.4V17a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3v-4.6C5 12 5 11 6 10Z" fill="#d98a86" stroke="#a85f5c"/><circle cx="15.5" cy="15" r="2.2" fill="#f2e6d8" stroke="#c3ab97"/><path d="M6.5 10.5c1.5 1 3 1.2 4.5.8" stroke="#f7d9d6"/>',
  sausages: '<path d="M5 8a2.4 2.4 0 0 1 4.2-1.5l7.3 7.3A2.4 2.4 0 0 1 15 18a2.4 2.4 0 0 1-4.2 1.5L3.5 12.2A2.4 2.4 0 0 1 5 8Z" fill="#c8763f" stroke="#8f4f24"/><path d="M8 7.5 6.5 4m9 12.5L17 20M10 10l1.5-3m3 6.5L16 16" stroke="#e5b98b"/>',
