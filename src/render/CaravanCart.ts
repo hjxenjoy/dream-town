@@ -15,6 +15,8 @@ interface Cart {
   route: { x: number; y: number }[];
   /** What the route was built from, so it is only rebuilt when the town or the route changes. */
   signature: string;
+  /** Which atlas draws this one: a cart for the roads, a ship for the sea voyages. */
+  texture: string;
 }
 
 /**
@@ -33,7 +35,16 @@ export class CaravanCart {
     const live = new Set<string>();
     for (const caravan of caravans as Caravan[]) {
       live.add(caravan.id);
-      const cart = this.carts.get(caravan.id) ?? this.createCart(caravan.id);
+      // A sea voyage is drawn with a ship, not a cart: sending a wagon across open water would
+      // be a lie the player can see. The atlas swaps with the destination, so the same cart id
+      // can carry either.
+      const voyage = Boolean(destinationOf(caravan.destination).island);
+      const texture = voyage ? 'transport-expansion' : 'caravan';
+      if (this.carts.has(caravan.id) && this.carts.get(caravan.id)!.texture !== texture) {
+        this.carts.get(caravan.id)!.sprite.destroy();
+        this.carts.delete(caravan.id);
+      }
+      const cart = this.carts.get(caravan.id) ?? this.createCart(caravan.id, texture);
       this.syncCart(cart, caravan, buildings, roads ?? [], townKey, world.state.gameTime, time, reduced);
     }
     for (const [id, cart] of this.carts) {
@@ -48,8 +59,8 @@ export class CaravanCart {
    * below then has nothing to clean up, and a fresh sprite is leaked every frame — one per cart
    * per frame, each left behind wherever it was last drawn.
    */
-  private createCart(id: string): Cart {
-    const cart: Cart = { sprite: this.scene.add.image(0, 0, 'caravan').setOrigin(.5, .88), route: [], signature: '' };
+  private createCart(id: string, texture: string): Cart {
+    const cart: Cart = { sprite: this.scene.add.image(0, 0, texture).setOrigin(.5, .88), route: [], signature: '', texture };
     this.carts.set(id, cart);
     return cart;
   }
@@ -64,10 +75,12 @@ export class CaravanCart {
     }
     const pose: CartPose = caravanPose(caravan, cart.route as never, gameTime);
     const point = iso(pose.x, pose.y);
-    const frames = pose.moving ? CART_TRAVEL_FRAMES[pose.load] : CART_PARK_FRAMES[pose.load];
-    const frame = frames[reduced ? 0 : Math.floor(time / FRAME_MS) % frames.length]!;
+    const voyage = cart.texture !== 'caravan';
+    const frame = voyage
+      ? 'cargo-ship'
+      : (pose.moving ? CART_TRAVEL_FRAMES[pose.load] : CART_PARK_FRAMES[pose.load])[reduced ? 0 : Math.floor(time / FRAME_MS) % 2]!;
     // The cart is mirrored on the way home so it visibly returns rather than sliding back.
-    drawFrameWidth(cart.sprite, 'caravan', frame, CART_WIDTH);
+    drawFrameWidth(cart.sprite, cart.texture, frame, CART_WIDTH);
     cart.sprite.setPosition(point.x, point.y).setDepth(point.y + 7).setFlipX(pose.direction === 'back');
   }
 }

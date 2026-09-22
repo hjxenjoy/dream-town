@@ -1,10 +1,10 @@
 /** Short names for the two construction materials, used in costs and refusals. */
 export const RESOURCE_LABELS: Record<'wood' | 'stone', string> = { wood: '木材', stone: '石料' };
 
-export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage' | 'sugarcane' | 'sugar' | 'hops' | 'beer' | 'meat' | 'sausages' | 'herbs' | 'pelt' | 'souvenir';
+export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage' | 'sugarcane' | 'sugar' | 'hops' | 'beer' | 'meat' | 'sausages' | 'herbs' | 'pelt' | 'souvenir' | 'peach' | 'watermelon' | 'plum' | 'olive' | 'lime' | 'banana' | 'coconut' | 'pineapple' | 'shrimp' | 'lobster';
 export type ResourceMap = Record<Resource, number>;
 export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
-export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile' | 'barracks' | 'guardpost' | 'wall' | 'canefield' | 'sugarmill' | 'hopsfield' | 'tavern' | 'pigfarm' | 'butcher' | 'herbgarden' | 'hunterlodge' | 'castle' | 'zoogate' | 'zooenclosure' | 'zooshop';
+export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile' | 'barracks' | 'guardpost' | 'wall' | 'canefield' | 'sugarmill' | 'hopsfield' | 'tavern' | 'pigfarm' | 'butcher' | 'herbgarden' | 'hunterlodge' | 'castle' | 'zoogate' | 'zooenclosure' | 'zooshop' | 'harbor';
 
 export interface BuildingDefinition {
   name: string;
@@ -67,6 +67,7 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
   clinic: { name: '安心诊所', description: '照顾邻居的日常健康。每级让 10 位居民康健，并增加 10 位社区人口名额与 25 点社区服务。', category: 'services', cost: 900, wood: 12, stone: 20, materials: { materials: 4 }, frame: null, populationCap: 10, services: 25, health: 10 },
   // The zoo: a second line beside the town, per docs/02 §8. The gate is the entrance and the
   // prerequisite; the enclosures house the animals, which is where the souvenirs come from.
+  harbor: { name: '河湾码头', description: '有码头才能出海。建起它，商队便能扬帆去四座小岛，换回河谷种不出的特产。', category: 'services', cost: 2200, wood: 28, stone: 24, materials: { materials: 10 }, frame: null, minTownLevel: 10, services: 18 },
   zoogate: { name: '青岚动物园', description: '动物园的大门。建起它，镇外才有人来看动物；之后才能修展区与纪念品铺。', category: 'services', cost: 2400, wood: 30, stone: 30, materials: { materials: 10 }, frame: null, technology: 'husbandry', minTownLevel: 12, environment: 8, services: 20 },
   zooenclosure: { name: '动物展区', description: '一个展区住一种动物。它们每天吃饲料，来参观的人留下纪念品；在「展区住户」里换动物。', category: 'production', cost: 900, wood: 20, stone: 16, materials: { materials: 4 }, frame: null, technology: 'husbandry', cycle: 50, input: { feed: 2 }, output: { souvenir: 3 }, workers: 1, autoCollect: true, needsZooGate: true },
   zooshop: { name: '纪念品小铺', description: '门口的小铺把纪念品卖出好价钱——只要它开着，每份纪念品都更值钱。', category: 'services', cost: 700, wood: 14, stone: 10, frame: null, technology: 'husbandry', needsZooGate: true, services: 12, environment: 3 },
@@ -180,9 +181,23 @@ export const RESOURCES: Record<Resource, { name: string; icon: string; sellPrice
   // Souvenirs are what the zoo makes. A finished article with no consumer, so the market may
   // trade them — and a souvenir shop on site makes each one fetch more.
   souvenir: { name: '纪念品', icon: 'souvenir', sellPrice: 11 },
+  // The island specialities, per docs/02 §4: goods this town cannot make and therefore cannot
+  // get any other way. They are what makes a voyage worth the ship.
+  peach: { name: '蜜桃', icon: 'peach', sellPrice: 14 },
+  watermelon: { name: '西瓜', icon: 'watermelon', sellPrice: 12 },
+  plum: { name: '李子', icon: 'plum', sellPrice: 15 },
+  olive: { name: '橄榄', icon: 'olive', sellPrice: 16 },
+  lime: { name: '青柠', icon: 'lime', sellPrice: 13 },
+  banana: { name: '香蕉', icon: 'banana', sellPrice: 12 },
+  coconut: { name: '椰子', icon: 'coconut', sellPrice: 14 },
+  pineapple: { name: '菠萝', icon: 'pineapple', sellPrice: 17 },
+  shrimp: { name: '鲜虾', icon: 'shrimp', sellPrice: 20 },
+  lobster: { name: '龙虾', icon: 'lobster', sellPrice: 28 },
+
 };
 
-export const RESOURCE_KEYS = ['flowers','fruit','eggs','jam','wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage', 'sugarcane', 'sugar', 'hops', 'beer', 'meat', 'sausages', 'herbs', 'pelt', 'souvenir'] as Resource[];
+export const RESOURCE_KEYS = ['flowers','fruit','eggs','jam','wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage', 'sugarcane', 'sugar', 'hops', 'beer', 'meat', 'sausages', 'herbs', 'pelt', 'souvenir',
+  'peach', 'watermelon', 'plum', 'olive', 'lime', 'banana', 'coconut', 'pineapple', 'shrimp', 'lobster'] as Resource[];
 export const BUILDING_KEYS = Object.keys(BUILDINGS) as BuildingKind[];
 export { MAP_SIZE } from './terrain.ts';
 export const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
@@ -242,7 +257,7 @@ export const HEALTH_TAX_RELIEF = 0.4;
 export const HEALTH_REPAIR_RELIEF = 0.3;
 
 export function emptyResources(): ResourceMap {
-  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0, sugarcane: 0, sugar: 0, hops: 0, beer: 0, meat: 0, sausages: 0, herbs: 0, pelt: 0, souvenir: 0 };
+  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0, sugarcane: 0, sugar: 0, hops: 0, beer: 0, meat: 0, sausages: 0, herbs: 0, pelt: 0, souvenir: 0, peach: 0, watermelon: 0, plum: 0, olive: 0, lime: 0, banana: 0, coconut: 0, pineapple: 0, shrimp: 0, lobster: 0 };
 }
 
 /**

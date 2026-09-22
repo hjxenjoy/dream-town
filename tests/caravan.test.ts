@@ -134,7 +134,7 @@ test('the scene registers caravan frames, so the cart never falls back to the wh
   assert.match(scene,/for\(const atlas of SCENE_ATLASES\)\{[\s\S]*?atlasFrames\(atlas\)[\s\S]*?texture\.add\(/,'frames are registered from the catalog for every listed atlas');
   // The cart must set an explicit frame and size it from that frame, every sync.
   const cart=readFileSync(new URL('../src/render/CaravanCart.ts',import.meta.url),'utf8');
-  assert.match(cart,/drawFrameWidth\([\w.]+\.sprite, 'caravan', frame, CART_WIDTH\)/,'the cart sizes each frame it draws');
+  assert.match(cart,/drawFrameWidth\(cart\.sprite, cart\.texture, frame, CART_WIDTH\)/,'the cart sizes each frame it draws, from the atlas it is drawn with');
   assert.equal(cart.includes('setDisplaySize'),false,'sizing never happens once at creation');
 });
 
@@ -162,7 +162,7 @@ test('every pooled renderer retains what its factory creates', () => {
   }
   // And the cart specifically: the id it is stored under must be the one it was created for.
   const cart = readFileSync(new URL('../src/render/CaravanCart.ts', import.meta.url), 'utf8');
-  const factory = /private createCart\(id: string\): Cart \{([\s\S]*?)\n  \}/.exec(cart)?.[1] ?? '';
+  const factory = /private createCart\(id: string, texture: string\): Cart \{([\s\S]*?)\n  \}/.exec(cart)?.[1] ?? '';
   assert.ok(factory.includes('this.carts.set(id'), 'createCart stores the cart under its own id');
   assert.ok(/return cart;/.test(factory), 'and still returns it for the caller to position');
 });

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, RESOURCE_KEYS, TECHNOLOGY_KEYS, emptyResources, type Resource } from '../src/sim/data.ts';
-import { DESTINATIONS, DESTINATION_IDS, CARAVAN_SLOT_LIMIT, CARAVAN_STANDING_FOR_EXTRA, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from '../src/sim/destinations.ts';
+import { DESTINATIONS, DESTINATION_IDS, LAND_DESTINATION_IDS, CARAVAN_SLOT_LIMIT, CARAVAN_STANDING_FOR_EXTRA, availableDestinations, caravanDuration, destinationOf, missingCargo, type DestinationId } from '../src/sim/destinations.ts';
 
 /** Reward per item shipped, so a longer route can be shown to be worth it. */
 function rewardRatio(destination: typeof DESTINATIONS.valley): number {
@@ -14,9 +14,13 @@ import { terrainAt } from '../src/sim/terrain.ts';
 
 function prepared(){
   const w=new SimWorld();w.state.coins=100000;w.state.capacity=40000;
-  w.state.resources={...emptyResources(),bread:400,plank:400,fish:400,cloth:400,clothing:400,tools:400,wine:400,cheese:400,honey:400,materials:0};
+  w.state.resources={...emptyResources(),wood:400,stone:400,flowers:400,jam:400,bread:400,plank:400,fish:400,cloth:400,clothing:400,tools:400,wine:400,cheese:400,honey:400,materials:400};
   w.state.settings.disasters=false;w.state.settings.autoMayor=false;
   w.state.researched=[...TECHNOLOGY_KEYS];
+  // A harbour, so the four island voyages are reachable too. It waits for town level 10 and
+  // for a clear tile, so both are set and the build is asserted rather than assumed.
+  w.state.level=20;
+  assert.equal(w.build('harbor',4,24).ok,true,'the harbour is what opens the sea routes');
   return w;
 }
 
@@ -26,7 +30,9 @@ test('every destination is well formed and distinct',()=>{
     const destination=DESTINATIONS[id];
     assert.equal(destination.id,id);
     assert.ok(destination.name.length>0&&destination.description.length>0,`${id} is described`);
-    assert.ok(destination.rewardCoins>0&&destination.rewardMaterials>0,`${id} pays something`);
+    assert.ok(destination.rewardCoins>0,`${id} pays coins`);
+    assert.ok(Object.values(destination.rewardItems).some(v=>(v??0)>0),`${id} brings goods home`);
+    for(const key of Object.keys(destination.rewardItems)) assert.ok(RESOURCE_KEYS.includes(key as Resource),`${id} brings a real good: ${key}`);
     assert.ok(destination.duration>0,`${id} takes time`);
     assert.ok([15,33].includes(destination.bridge),`${id} crosses a real bridge`);
     const shipped=Object.keys(destination.cargo).sort().join(',');
@@ -44,7 +50,7 @@ test('a longer route pays more per item shipped and in total',()=>{
   assert.ok(rivermouth.duration>hilltown.duration,'the river port is furthest');
   assert.ok(hilltown.rewardCoins>valley.rewardCoins,'and pays more');
   assert.ok(rivermouth.rewardCoins>hilltown.rewardCoins);
-  assert.ok(rivermouth.rewardMaterials>valley.rewardMaterials,'the furthest route brings the most materials');
+  assert.ok((rivermouth.rewardItems.materials??0)>(valley.rewardItems.materials??0),'the furthest land route brings the most materials');
   for(const destination of [valley,hilltown,rivermouth]) assert.ok(rewardRatio(destination)>0);
 });
 
@@ -53,7 +59,10 @@ test('routes unlock with research and the starting route is always available',()
   assert.deepEqual(none.map(d=>d.id),['valley'],'a fresh town only knows the nearby village');
   assert.deepEqual(availableDestinations(['tailoring']).map(d=>d.id).sort(),['hilltown','valley']);
   assert.deepEqual(availableDestinations(['viniculture']).map(d=>d.id).sort(),['rivermouth','valley']);
-  assert.equal(availableDestinations(TECHNOLOGY_KEYS).length,DESTINATION_IDS.length,'everything unlocks');
+  // The sea routes need a harbour as well as their research, so a fully researched town
+  // without one still sees only the land roads.
+  assert.equal(availableDestinations(TECHNOLOGY_KEYS).length,LAND_DESTINATION_IDS.length,'research alone opens the land roads');
+  assert.equal(availableDestinations(TECHNOLOGY_KEYS,true).length,DESTINATION_IDS.length,'and a harbour opens the rest');
 });
 
 test('a locked route cannot be chosen, and the refusal costs nothing',()=>{
@@ -68,6 +77,7 @@ test('a locked route cannot be chosen, and the refusal costs nothing',()=>{
 });
 
 test('the chosen route decides the cargo, the duration and the reward',()=>{
+  // With a harbour, so the sea routes are included too.
   for(const id of DESTINATION_IDS){
     const w=prepared();
     assert.equal(w.chooseCaravanDestination(id).ok,true,`${id} is selectable`);
@@ -80,7 +90,8 @@ test('the chosen route decides the cargo, the duration and the reward',()=>{
     // raid costs half the coins and all of the materials. Anything else would be neither.
     const raided=caravan.raided===true;
     assert.equal(caravan.rewardCoins,raided?Math.round(DESTINATIONS[id].rewardCoins/2):DESTINATIONS[id].rewardCoins,`${id} coins`);
-    assert.equal(caravan.rewardMaterials,raided?0:DESTINATIONS[id].rewardMaterials,`${id} materials`);
+    // A raid takes the goods as well as half the coins.
+    assert.deepEqual(caravan.rewardItems,raided?{}:DESTINATIONS[id].rewardItems,`${id} goods`);
     // The short road to the next village is never waylaid, so the risk it carries must be nil.
     if(id==='valley')assert.equal(raided,false,'the near road needs no guard');
 
@@ -95,7 +106,7 @@ test('the chosen route decides the cargo, the duration and the reward',()=>{
     const coins=w.state.coins, materials=w.state.resources.materials;
     assert.equal(w.dispatchCaravan().ok,true);
     assert.equal(w.state.coins,coins+(raided?Math.round(DESTINATIONS[id].rewardCoins/2):DESTINATIONS[id].rewardCoins),`${id} paid what it promised`);
-    assert.equal(w.state.resources.materials,materials+(raided?0:DESTINATIONS[id].rewardMaterials),`${id} brought what it promised`);
+    assert.equal(w.state.resources.materials,materials+(raided?0:(DESTINATIONS[id].rewardItems.materials??0)),`${id} brought what it promised`);
     assert.equal(validateSave(w.state),true);
   }
 });
@@ -286,7 +297,9 @@ test('the tool surface exposes every route with its cargo and shortfall',()=>{
   const w=prepared();
   w.state.researched=['tailoring'];
   const routes=w.observe().caravanRoutes;
-  assert.deepEqual(routes.map(r=>r.id).sort(),['hilltown','valley'],'only unlocked routes are offered');
+  // Research alone gates the land roads; the sea routes need the harbour as well, and the
+  // helper builds one, so tailoring opens the hill town and the fisher island together.
+  assert.deepEqual(routes.map(r=>r.id).sort(),['fisherisland','hilltown','valley'],'only unlocked routes are offered');
   const chosen=routes.filter(r=>r.chosen);
   assert.equal(chosen.length,1,'exactly one route is marked as chosen');
   assert.equal(chosen[0]!.id,'valley','the default is the village');

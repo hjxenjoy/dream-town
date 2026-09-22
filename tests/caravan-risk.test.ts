@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
-import { DESTINATIONS, DESTINATION_IDS, GUARD_SHARES, MAX_GUARD_COVER, raidChance, tripRaided } from '../src/sim/destinations.ts';
+import { DESTINATIONS, DESTINATION_IDS, LAND_DESTINATION_IDS, GUARD_SHARES, MAX_GUARD_COVER, raidChance, tripRaided } from '../src/sim/destinations.ts';
 import { emptyResources } from '../src/sim/data.ts';
 
 function prepared() {
@@ -22,8 +22,15 @@ test('the near road is safe and the long ones are not, as docs/06 §2 asks', () 
   assert.ok(DESTINATIONS.hilltown.risk > 0, 'the mountain market is not');
   assert.ok(DESTINATIONS.rivermouth.risk > DESTINATIONS.hilltown.risk, 'and the river port further down is worse');
   // Risk and reward climb together, or the far routes would be a trap rather than a choice.
-  const byReward = [...DESTINATION_IDS].sort((a, b) => DESTINATIONS[a].rewardCoins - DESTINATIONS[b].rewardCoins);
+  const byReward = [...LAND_DESTINATION_IDS].sort((a, b) => DESTINATIONS[a].rewardCoins - DESTINATIONS[b].rewardCoins);
   assert.deepEqual(byReward, ['valley', 'hilltown', 'rivermouth'], 'reward order matches distance');
+  // The sea routes are a second, longer ladder, and they are the dearest part of the board.
+  const islands = DESTINATION_IDS.filter(id => DESTINATIONS[id].island);
+  assert.equal(islands.length, 4, 'four islands, as the design lists');
+  for (const id of islands) {
+    assert.ok(DESTINATIONS[id].risk >= DESTINATIONS.rivermouth.risk, `${id} is at least as risky as the furthest land road`);
+    assert.ok(DESTINATIONS[id].duration > DESTINATIONS.rivermouth.duration, `${id} takes longer than any land road`);
+  }
 });
 
 test('guards cut the risk of a raid, and the castle is worth the most', () => {
@@ -123,10 +130,13 @@ test('the raid risk is reported to the player, and a clean field is still a vali
   const world = prepared();
   const risk = world.observe().caravanRisk;
   assert.equal(typeof risk.guardCover, 'number');
-  for (const id of DESTINATION_IDS) {
-    assert.equal(typeof risk.byRoute[id], 'number', `${id} reports its odds`);
+  // Only the routes this town can reach: without a harbour the sea roads are not on the board,
+  // so they are not reported either.
+  for (const id of Object.keys(risk.byRoute)) {
+    assert.ok(DESTINATION_IDS.includes(id as never), `${id} is a real route`);
     assert.ok(risk.byRoute[id]! >= 0 && risk.byRoute[id]! <= 1, `${id} odds are a probability`);
   }
+  assert.deepEqual(Object.keys(risk.byRoute).sort(), LAND_DESTINATION_IDS.slice().sort(), 'the land roads are the ones on offer');
   // Absent `raided` is the ordinary case and must stay valid.
   const older = JSON.parse(JSON.stringify(world.state));
   delete older.caravans[0].raided;

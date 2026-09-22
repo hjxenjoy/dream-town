@@ -1434,6 +1434,12 @@
       "profile": "quiet",
       "runtimeIntegrated": false
     },
+    "harbor": {
+      "url": "/assets/expansion-2026-09/audio/harbor.wav",
+      "source": "existing",
+      "profile": "harbor",
+      "runtimeIntegrated": false
+    },
     "zoogate": {
       "url": "/assets/expansion-2026-09/audio/zoo.wav",
       "source": "existing",
@@ -1801,7 +1807,7 @@
       "runtimeIntegrated": false
     }
   },
-  "buildingCount": 84,
+  "buildingCount": 85,
   "existingReused": 5,
   "newTracks": 76
 }

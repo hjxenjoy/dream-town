@@ -19,7 +19,7 @@ REUSE={'mine','windmill','smithy','bakery','pasture'}
 # Buildings whose sound already shipped under a hyphenated track name in the first pack. The
 # first batch named tracks for the trade ('hunter-lodge'), not for the building id, so a
 # building added later has to say which existing track it is meant to use.
-REUSE_TRACK={'hunterlodge':'hunter-lodge','castle':'castle','zoogate':'zoo'}
+REUSE_TRACK={'hunterlodge':'hunter-lodge','castle':'castle','zoogate':'zoo','harbor':'harbor'}
 # Explicit assignments: adding a BuildingKind without a sound is a hard failure.
 GROUPS={
  'leaves':'flowernursery orchardhouse garden oak cherry pine maple flowerarch flowerbox trellis willow vineyard flowercart harvestpile',

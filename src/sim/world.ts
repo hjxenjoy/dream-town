@@ -83,7 +83,8 @@ export interface Caravan {
   duration: number;
   cargo: Partial<ResourceMap>;
   rewardCoins: number;
-  rewardMaterials: number;
+  /** Goods handed over on collection: materials from a land route, specialities from a voyage. */
+  rewardItems: Partial<ResourceMap>;
   trips: number;
   /** Chosen destination. Missing only on saves written before routes were selectable. */
   destination?: DestinationId;
@@ -306,7 +307,7 @@ const STAT_COUNTERS = ['collected', 'ordersCompleted', 'buildingsBuilt', 'carava
 function newCaravan(index: number): Caravan {
   return {
     id: `caravan-${index + 1}`, status: 'idle', returnAt: 0, duration: CARAVAN_DURATION,
-    cargo: { ...CARAVAN_CARGO }, rewardCoins: 420, rewardMaterials: 8, trips: 0, destination: 'valley',
+    cargo: { ...CARAVAN_CARGO }, rewardCoins: 420, rewardItems: { materials: 8 }, trips: 0, destination: 'valley',
   };
 }
 
@@ -398,7 +399,8 @@ export function validateSave(value: unknown): value is SimState {
     if (!isRecord(caravan) || typeof caravan.id !== 'string' || caravanIds.has(caravan.id)) return false;
     caravanIds.add(caravan.id);
     if (!['idle', 'traveling', 'returned'].includes(caravan.status as string) || !validItems(caravan.cargo)) return false;
-    if (['returnAt', 'duration', 'rewardCoins', 'rewardMaterials', 'trips'].some(key => !nonnegative((caravan as Record<string, unknown>)[key]))) return false;
+    if (['returnAt', 'duration', 'rewardCoins', 'trips'].some(key => !nonnegative((caravan as Record<string, unknown>)[key]))) return false;
+    if (!validItems(caravan.rewardItems)) return false;
     if (caravan.destination !== undefined && !DESTINATION_IDS.includes(caravan.destination as DestinationId)) return false;
     if (caravan.raided !== undefined && typeof caravan.raided !== 'boolean') return false;
   }
@@ -1066,7 +1068,7 @@ export class SimWorld {
 
   /** Picks where one caravan goes. Only possible between its trips, and only if unlocked. */
   chooseCaravanDestination(id: DestinationId, caravanId?: string): ActionResult {
-    const options = availableDestinations(this.state.researched);
+    const options = availableDestinations(this.state.researched, this.hasHarbor());
     const chosen = options.find(destination => destination.id === id);
     if (!chosen) return this.fail('这条路线还没有打听到，先研究对应的手艺吧。', 'DESTINATION_LOCKED');
     const caravan = this.findCaravan(caravanId);
@@ -1086,8 +1088,8 @@ export class SimWorld {
     if (!caravan) return this.fail('需要一座可用的集市来组织商队。', 'MARKET_REQUIRED');
     if (caravan.status === 'traveling') return this.fail('这支商队正在旅途中，回来后会带给你消息。', 'CARAVAN_BUSY');
     if (caravan.status === 'returned') {
-      if (this.room() < caravan.rewardMaterials) return this.fail(`商队带回 ${caravan.rewardMaterials} 份建材，请先为它们腾出仓位。`, 'WAREHOUSE_FULL');
-      const coins = caravan.rewardCoins; const items = { materials: caravan.rewardMaterials };
+      if (this.room() < sum(caravan.rewardItems)) return this.fail(`商队带回 ${resourceLabel(caravan.rewardItems)}，请先为它们腾出仓位。`, 'WAREHOUSE_FULL');
+      const coins = caravan.rewardCoins; const items = { ...caravan.rewardItems };
       const wasRaided = caravan.raided === true;
       this.add(items); this.earn(coins, 60); this.state.stats.caravansCompleted++; caravan.trips++;
       caravan.status = 'idle'; caravan.returnAt = 0;
@@ -1095,7 +1097,7 @@ export class SimWorld {
       return this.success(
         wasRaided
           ? `商队回来了，可惜路上遭了抢：只剩 ${coins} 金币。建几座岗哨可以让这条路安全些。`
-          : `商队平安归来！获得 ${coins} 金币与 ${items.materials} 份建材。`,
+          : `商队平安归来！获得 ${coins} 金币${sum(items) ? `与 ${resourceLabel(items)}` : ''}。`,
         { coins, xp: 60, items });
     }
     if (!this.state.buildings.some(building => building.kind === 'market' && !building.damaged)) return this.fail('需要一座可用的集市来组织商队。', 'MARKET_REQUIRED');
@@ -1106,7 +1108,7 @@ export class SimWorld {
     if (!this.has(cargo)) return this.fail(`前往${destination.name}需要${resourceLabel(cargo)}。`, 'INSUFFICIENT_RESOURCES');
     caravan.cargo = cargo;
     caravan.rewardCoins = destination.rewardCoins;
-    caravan.rewardMaterials = destination.rewardMaterials;
+    caravan.rewardItems = { ...destination.rewardItems };
     this.deduct(caravan.cargo); caravan.status = 'traveling';
     const marketLevel = Math.max(1, ...this.state.buildings.filter(building => building.kind === 'market').map(building => building.level));
     caravan.duration = caravanDuration(destination, marketLevel, hasProjectTitle(this.state, 'harbor'));
@@ -1120,7 +1122,7 @@ export class SimWorld {
     if (raided) {
       caravan.raided = true;
       caravan.rewardCoins = Math.round(caravan.rewardCoins / 2);
-      caravan.rewardMaterials = 0;
+      caravan.rewardItems = {};
       this.log(`商队在前往${destination.name}的路上遇到强盗，货物被抢走大半。岗哨与兵营会让这条路安全些。`, 'warning');
     } else {
       delete caravan.raided;
@@ -1566,6 +1568,11 @@ export class SimWorld {
   /** The chance a caravan bound for this route is waylaid, given the guard line. */
   caravanRaidChance(destination: DestinationId): number {
     return raidChance(destinationOf(destination), this.caravanGuardCover());
+  }
+
+  /** Whether a harbour is standing, which is what opens the sea routes. */
+  hasHarbor(): boolean {
+    return this.state.buildings.some(building => building.kind === 'harbor' && !building.damaged);
   }
 
   /** Whether a souvenir shop is standing, which is what makes souvenirs worth more. */
@@ -2153,7 +2160,7 @@ export class SimWorld {
       plague: this.state.plague
         ? { active: true, daysLeft: Math.max(0, Math.ceil((this.state.plague.until - this.state.gameTime) / GAME_DAY_SECONDS)), moodCost: Math.round(this.plagueMoodCost()) }
         : { active: false, daysLeft: 0, moodCost: 0 },
-      caravanRisk: { guardCover: Math.round(this.caravanGuardCover() * 100) / 100, byRoute: Object.fromEntries(availableDestinations(this.state.researched).map(destination => [destination.id, Math.round(this.caravanRaidChance(destination.id) * 1000) / 1000])) },
+      caravanRisk: { guardCover: Math.round(this.caravanGuardCover() * 100) / 100, byRoute: Object.fromEntries(availableDestinations(this.state.researched, this.hasHarbor()).map(destination => [destination.id, Math.round(this.caravanRaidChance(destination.id) * 1000) / 1000])) },
       zoo: {
         hasGate: this.state.buildings.some(building => building.kind === 'zoogate'),
         enclosures: this.state.buildings.filter(building => building.kind === 'zooenclosure').map(building => ({
@@ -2191,7 +2198,7 @@ export class SimWorld {
       })),
       honourBonus: { capacity: honourCapacity(this.state.honours ?? {}), community: honourCommunity(this.state.honours ?? {}), cycle: honourCycleFactor(this.state.honours ?? {}) },
       stories: this.neighbourStories(),
-      caravanRoutes: availableDestinations(this.state.researched).map(destination => ({
+      caravanRoutes: availableDestinations(this.state.researched, this.hasHarbor()).map(destination => ({
         ...destination,
         // "Chosen" is per slot now, so the route list reports how many carts are pointed at
         // each one rather than a single town-wide selection.

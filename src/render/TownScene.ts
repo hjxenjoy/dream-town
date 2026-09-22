@@ -25,7 +25,7 @@ import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
 /** Generated atlases the scene draws. Preloading and frame registration both read this. */
-const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel','defense-expansion','wall-junctions','duel-actions','production-expansion','plague-animation','weather-expansion','animal-walk-3','animal-walk-4','zoo-expansion','small-accessories'] as const;
+const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel','defense-expansion','wall-junctions','duel-actions','production-expansion','plague-animation','weather-expansion','animal-walk-3','animal-walk-4','zoo-expansion','small-accessories','transport-expansion'] as const;
 /** The seamless weather textures, loaded as images so a tile sprite can repeat them. */
 const WEATHER_TILES = ['weather-tile-rain','weather-tile-snow','weather-tile-fog'] as const;
 /** On-screen widths for the farm visuals, which are drawn from generated textures. */
