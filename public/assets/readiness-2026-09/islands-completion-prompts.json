@@ -1,0 +1,5 @@
+{
+  "generator": "built-in image_gen",
+  "finalPrompt": "Use case: stylized-concept. Production sprite atlas for cozy hand-painted isometric farming game. True transparent background, no text, no labels, no grid lines. Warm cream/wood/green palette, light from upper LEFT. Orthographic 2:1 ground plane. Each sprite isolated inside central 65% of its equal grid cell, ample transparent gutters; no shared ground or backdrop. Wide 3 columns one row, exactly THREE miniature destination islands equal visual size. Left: fruit island, peach and plum orchard and watermelon garden, tiny dock. Middle: Mediterranean olive island with silver olive trees, stone cottage and tiny dock. Right: fisherman's island rocky shore, fishing hut, drying nets, lobster pots and tiny dock. No palm trees. Small turquoise shoreline around each, entirely isolated.",
+  "source": "output/readiness-assets-2026-09-21/raw/islands-completion.png"
+}

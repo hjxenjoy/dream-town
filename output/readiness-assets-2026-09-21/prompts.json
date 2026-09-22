@@ -1,0 +1,200 @@
+[
+  {
+    "name": "islands-completion",
+    "label": "水果岛、橄榄岛、渔人岛",
+    "cols": 3,
+    "rows": 1,
+    "frames": [
+      "fruit-island",
+      "olive-island",
+      "fisherman-island"
+    ],
+    "prompt": "Use case: stylized-concept. Production sprite atlas for cozy hand-painted isometric farming game. True transparent background, no text, no labels, no grid lines. Warm cream/wood/green palette, light from upper LEFT. Orthographic 2:1 ground plane. Each sprite isolated inside central 65% of its equal grid cell, ample transparent gutters; no shared ground or backdrop. Wide 3 columns one row, exactly THREE miniature destination islands equal visual size. Left: fruit island, peach and plum orchard and watermelon garden, tiny dock. Middle: Mediterranean olive island with silver olive trees, stone cottage and tiny dock. Right: fisherman's island rocky shore, fishing hut, drying nets, lobster pots and tiny dock. No palm trees. Small turquoise shoreline around each, entirely isolated."
+  },
+  {
+    "name": "plague-animation",
+    "label": "瘟疫双帧",
+    "cols": 2,
+    "rows": 1,
+    "frames": [
+      "plague-cloud-1",
+      "plague-cloud-2"
+    ],
+    "prompt": "Use case: stylized-concept. Production sprite atlas for cozy hand-painted isometric farming game. True transparent background, no text, no labels, no grid lines. Warm cream/wood/green palette, light from upper LEFT. Orthographic 2:1 ground plane. Each sprite isolated inside central 65% of its equal grid cell, ample transparent gutters; no shared ground or backdrop. Exactly TWO cells, 2 columns one row. Same lime-green translucent curly magical sickness cloud with tiny green bubbles in both cells, same size and center. Frame1 curls clockwise with bubbles close, frame2 curls relaxed with bubbles slightly expanded, suitable for a two-frame pulse. No houses, no skulls, no ground. Preserve design of plague cloud in attached defense sheet."
+  },
+  {
+    "name": "vehicles-return",
+    "label": "返程车辆",
+    "cols": 4,
+    "rows": 1,
+    "frames": [
+      "train-engine-right",
+      "cargo-plane-right",
+      "cargo-ship-right",
+      "fishing-boat-right"
+    ],
+    "prompt": "Create transparent-background game sprites: FOUR separate vehicles in ONE long horizontal row. Tiny green red-roof locomotive, tiny cream green airplane, tiny wooden sailing cargo ship, tiny blue white fishing trawler. Facing lower right, sunlight upper left. Each sprite VERY SMALL: occupies only 40 percent of its equally spaced cell, empty alpha all around, huge gaps between vehicles. Hand painted isometric fantasy farming game style. Absolutely transparent PNG background, no glow or shadows."
+  },
+  {
+    "name": "crop-stages-1",
+    "label": "四阶段作物 wheat / carrot / corn",
+    "cols": 4,
+    "rows": 3,
+    "frames": [
+      "wheat-sprout",
+      "wheat-young",
+      "wheat-growing",
+      "wheat-ripe",
+      "carrot-sprout",
+      "carrot-young",
+      "carrot-growing",
+      "carrot-ripe",
+      "corn-sprout",
+      "corn-young",
+      "corn-growing",
+      "corn-ripe"
+    ],
+    "sequenceNames": [
+      "wheat-growth",
+      "carrot-growth",
+      "corn-growth"
+    ],
+    "prompt": "Transparent PNG sprite sheet, cozy hand-painted isometric farming game. Exactly 4 columns and 3 rows, 12 separate sprites. Each row is ONE crop over four stages left to right: sprout, young, growing, ripe. Row1 wheat, row2 carrot, row3 corn. All have the SAME small diamond soil bed and same camera and same ground position within each cell; plants grow naturally, maturity changes height only, never zoom. Each entire sprite occupies at most central 55% width and 65% height of its cell, plenty of completely transparent space between cells. Warm upper-left light, detailed organic leaves, 2:1 ground diamond. No writing or grid. True alpha transparent background, no backdrop or glow."
+  },
+  {
+    "name": "crop-stages-2",
+    "label": "四阶段作物 tomato / strawberry / pumpkin",
+    "cols": 4,
+    "rows": 3,
+    "frames": [
+      "tomato-sprout",
+      "tomato-young",
+      "tomato-growing",
+      "tomato-ripe",
+      "strawberry-sprout",
+      "strawberry-young",
+      "strawberry-growing",
+      "strawberry-ripe",
+      "pumpkin-sprout",
+      "pumpkin-young",
+      "pumpkin-growing",
+      "pumpkin-ripe"
+    ],
+    "sequenceNames": [
+      "tomato-growth",
+      "strawberry-growth",
+      "pumpkin-growth"
+    ],
+    "prompt": "Transparent PNG sprite sheet, cozy hand-painted isometric farming game. Exactly 4 columns and 3 rows, 12 separate sprites. Each row is ONE crop over four stages left to right: sprout, young, growing, ripe. Row1 tomato, row2 strawberry, row3 pumpkin. All have the SAME small diamond soil bed and same camera and same ground position within each cell; plants grow naturally, maturity changes height only, never zoom. Each entire sprite occupies at most central 55% width and 65% height of its cell, plenty of completely transparent space between cells. Warm upper-left light, detailed organic leaves, 2:1 ground diamond. No writing or grid. True alpha transparent background, no backdrop or glow."
+  },
+  {
+    "name": "crop-stages-3",
+    "label": "四阶段作物 sunflower / grape / apple",
+    "cols": 4,
+    "rows": 3,
+    "frames": [
+      "sunflower-sprout",
+      "sunflower-young",
+      "sunflower-growing",
+      "sunflower-ripe",
+      "grape-sprout",
+      "grape-young",
+      "grape-growing",
+      "grape-ripe",
+      "apple-sprout",
+      "apple-young",
+      "apple-growing",
+      "apple-ripe"
+    ],
+    "sequenceNames": [
+      "sunflower-growth",
+      "grape-growth",
+      "apple-growth"
+    ],
+    "prompt": "Transparent PNG sprite sheet, cozy hand-painted isometric farming game. Exactly 4 columns and 3 rows, 12 separate sprites. Each row is ONE crop over four stages left to right: sprout, young, growing, ripe. Row1 sunflower, row2 grape, row3 apple. All have the SAME small diamond soil bed and same camera and same ground position within each cell; plants grow naturally, maturity changes height only, never zoom. Each entire sprite occupies at most central 55% width and 65% height of its cell, plenty of completely transparent space between cells. Warm upper-left light, detailed organic leaves, 2:1 ground diamond. No writing or grid. True alpha transparent background, no backdrop or glow."
+  },
+  {
+    "name": "animal-walk-1",
+    "label": "行走 elephant / giraffe",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "elephant-walk-1",
+      "elephant-walk-2",
+      "elephant-walk-3",
+      "elephant-walk-4",
+      "giraffe-walk-1",
+      "giraffe-walk-2",
+      "giraffe-walk-3",
+      "giraffe-walk-4"
+    ],
+    "sequenceNames": [
+      "elephant-walk",
+      "giraffe-walk"
+    ],
+    "prompt": "Create a PNG with a TRANSPARENT BACKGROUND. A game sprite sheet: four walking elephants across the top row, four walking giraffes across the bottom row. Eight small isolated animals total, widely spaced, equal cells. Four successive different leg poses for each animal walking left. Cute painted isometric farm game style. No ground, no scenery, no backdrop, no lighting effects."
+  },
+  {
+    "name": "animal-walk-2",
+    "label": "行走 zebra / lion",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "zebra-walk-1",
+      "zebra-walk-2",
+      "zebra-walk-3",
+      "zebra-walk-4",
+      "lion-walk-1",
+      "lion-walk-2",
+      "lion-walk-3",
+      "lion-walk-4"
+    ],
+    "sequenceNames": [
+      "zebra-walk",
+      "lion-walk"
+    ],
+    "prompt": "Create a PNG with a TRANSPARENT BACKGROUND. A game sprite sheet: four walking zebras across the top row, four walking male lions across the bottom row. Eight small isolated animals total, widely spaced, equal cells. Four successive different leg poses for each animal walking lower left. Same body size and position within each cell, only moving legs and tail. Cute painted isometric farm game style. No ground, no scenery, no backdrop, no lighting effects."
+  },
+  {
+    "name": "animal-walk-3",
+    "label": "行走 lamb / sheep",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "lamb-walk-1",
+      "lamb-walk-2",
+      "lamb-walk-3",
+      "lamb-walk-4",
+      "sheep-walk-1",
+      "sheep-walk-2",
+      "sheep-walk-3",
+      "sheep-walk-4"
+    ],
+    "sequenceNames": [
+      "lamb-walk",
+      "sheep-walk"
+    ],
+    "prompt": "Create a PNG with a TRANSPARENT BACKGROUND. Game sprite sheet: four walking cream wool lambs across top row, four walking adult cream wool sheep across bottom row. Eight small isolated animals, widely spaced with very generous outside margins, equal cells. Four successive distinct leg poses for each animal walking lower left. Fixed size and body location within each cell. Soft detailed painted isometric farming game style, natural wool, gentle upper left highlights. No ground, no scenery, no backdrop, no glow. Every animal occupies only central 60% of its cell, tails safely inside."
+  },
+  {
+    "name": "animal-walk-4",
+    "label": "行走 calf / cow",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "calf-walk-1",
+      "calf-walk-2",
+      "calf-walk-3",
+      "calf-walk-4",
+      "cow-walk-1",
+      "cow-walk-2",
+      "cow-walk-3",
+      "cow-walk-4"
+    ],
+    "sequenceNames": [
+      "calf-walk",
+      "cow-walk"
+    ],
+    "prompt": "Transparent background PNG. Eight separate cow sprites in a 4-column 2-row sheet. Top row: small brown-and-white calf walking left in four phases. Bottom row: adult brown-and-white cow walking left in four phases. Alternating extended and lifted legs, same body each row, cute hand painted isometric game art. Wide empty transparent gutters, no backdrop, no shadows, no glow. True alpha."
+  }
+]

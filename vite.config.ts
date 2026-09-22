@@ -17,8 +17,14 @@ export default defineConfig({
       // world.png is legacy art that no code loads; keeping it out of the offline payload
       // saves every player 2.5 MB. verify-offline.mjs proves an ignored file is unreferenced,
       // so this cannot silently start excluding something the game actually needs.
-      globIgnores: ['**/favicon.svg', '**/assets/world.png'],
-      globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,webp,svg,woff2,json}'],
+      globIgnores: ['**/favicon.svg', '**/assets/world.png', '**/assets/expansion-2026-09/**', '**/assets/accessories-2026-09/**', '**/assets/readiness-2026-09/**', '**/assets/crops-growing*'],
+      // Optional art/audio is cached after first use, not downloaded by every player.
+      runtimeCaching: [{
+        urlPattern: /\/assets\/(?:expansion|accessories|readiness)-2026-09\//,
+        handler: 'CacheFirst',
+        options: { cacheName: 'optional-town-assets-v1', cacheableResponse: { statuses: [200] }, expiration: { maxEntries: 256, maxAgeSeconds: 60 * 60 * 24 * 90 } }
+      }],
+      globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,webp,svg,woff2,json,wav}'],
       dontCacheBustURLsMatching: /assets\/.*-[a-zA-Z0-9_-]{8,}\.(?:js|css)$/,
       maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
     }

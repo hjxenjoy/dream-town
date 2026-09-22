@@ -1,0 +1,214 @@
+{
+  "name": "mining-expansion",
+  "label": "分矿与矿井道具",
+  "image": "/assets/expansion-2026-09/mining-expansion.webp",
+  "width": 1448,
+  "height": 1086,
+  "columns": 4,
+  "rows": 3,
+  "activeFrames": 12,
+  "frames": {
+    "copper-mine": {
+      "x": 14,
+      "y": 19,
+      "w": 348,
+      "h": 373,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        174.0,
+        354.35
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "silver-mine": {
+      "x": 379,
+      "y": 26,
+      "w": 340,
+      "h": 366,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        170.0,
+        347.7
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "gold-mine": {
+      "x": 735,
+      "y": 38,
+      "w": 344,
+      "h": 354,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        172.0,
+        336.3
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "platinum-mine": {
+      "x": 1096,
+      "y": 33,
+      "w": 342,
+      "h": 359,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        171.0,
+        341.05
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "copper-ore": {
+      "x": 44,
+      "y": 436,
+      "w": 276,
+      "h": 258,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        138.0,
+        245.1
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "silver-ore": {
+      "x": 414,
+      "y": 441,
+      "w": 268,
+      "h": 259,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        134.0,
+        246.05
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "gold-ore": {
+      "x": 768,
+      "y": 436,
+      "w": 273,
+      "h": 265,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        136.5,
+        251.75
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "platinum-ore": {
+      "x": 1139,
+      "y": 435,
+      "w": 266,
+      "h": 266,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        133.0,
+        252.7
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "pickaxe": {
+      "x": 50,
+      "y": 725,
+      "w": 287,
+      "h": 317,
+      "row": 2,
+      "column": 0,
+      "pivot": [
+        143.5,
+        301.15
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "dynamite": {
+      "x": 403,
+      "y": 736,
+      "w": 290,
+      "h": 293,
+      "row": 2,
+      "column": 1,
+      "pivot": [
+        145.0,
+        278.35
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "mine-chest": {
+      "x": 767,
+      "y": 723,
+      "w": 300,
+      "h": 320,
+      "row": 2,
+      "column": 2,
+      "pivot": [
+        150.0,
+        304.0
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "mine-antique": {
+      "x": 1120,
+      "y": 731,
+      "w": 301,
+      "h": 311,
+      "row": 2,
+      "column": 3,
+      "pivot": [
+        150.5,
+        295.45
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    }
+  },
+  "alphaPercent": 52.85,
+  "webpBytes": 1408446,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

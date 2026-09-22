@@ -1,0 +1,161 @@
+[
+  {
+    "name": "production-expansion",
+    "label": "新增生产链",
+    "cols": 4,
+    "rows": 3,
+    "frames": [
+      "sugarcane-field",
+      "sugar-mill",
+      "hops-field",
+      "tavern",
+      "herb-garden",
+      "pig-farm",
+      "butcher",
+      "hunter-lodge",
+      "sugar",
+      "beer",
+      "herbs",
+      "meat-sausages"
+    ],
+    "subjects": "Row 1: sugarcane farm plot with tall segmented canes; sugar factory cottage with crushing rollers; hops farm trellises with dangling hop cones; tavern with beer barrel and tankard sign. Row 2: medicinal herb garden with drying rack; pig farm with three pink pigs; butcher shop with sausage links under awning; hunter lodge with bow and forest supplies. Row 3: sugar cubes and sugar sack; amber beer tankard and small barrel; bundle of medicinal herbs; neatly displayed meat cut and sausage links, no gore.",
+    "prompt": "Use case: stylized-concept. Create ONE production sprite atlas for Dream Town. Match existing cozy painterly isometric town art: creamy plaster, terracotta roofs, dark oak, jewel green foliage, soft sunlight from upper left, polished hand painted 3D illustration, crisp readable silhouettes. Exactly 4 columns by 3 rows, 12 sprites in strict row-major order. Equal sized cells, each subject centered, at least 15 percent empty padding on EVERY side inside every cell. No sprite crosses its cell. Row 1: sugarcane farm plot with tall segmented canes; sugar factory cottage with crushing rollers; hops farm trellises with dangling hop cones; tavern with beer barrel and tankard sign. Row 2: medicinal herb garden with drying rack; pig farm with three pink pigs; butcher shop with sausage links under awning; hunter lodge with bow and forest supplies. Row 3: sugar cubes and sugar sack; amber beer tankard and small barrel; bundle of medicinal herbs; neatly displayed meat cut and sausage links, no gore. Genuinely transparent alpha background and gutters. No checkerboard, solid background, captions, typography, watermarks or grid lines. No extra sprites. Whole subjects, no clipping. Buildings on small individual isometric grass/stone foundations. Aim for 2048px wide high quality sheet."
+  },
+  {
+    "name": "defense-expansion",
+    "label": "军事与灾害",
+    "cols": 4,
+    "rows": 3,
+    "frames": [
+      "barracks",
+      "guard-post",
+      "castle",
+      "wall-straight",
+      "wall-corner",
+      "city-gate",
+      "guard",
+      "bandit",
+      "bandit-camp",
+      "plague-house",
+      "plague-cloud",
+      "quarantine-marker"
+    ],
+    "subjects": "Row 1: military barracks with blue banners and training dummies; military sentry post with shield emblem; small stone castle; straight stone defensive wall section. Row 2: corner stone defensive wall section; stone city gate; friendly armored town guard with spear; storybook bandit carrying loot bag. Row 3: bandit camp with tent and loot; cottage marked by illness with subdued green haze; isolated stylized pale green plague cloud status effect; quarantine warning marker with medicinal leaf emblem. Family friendly, no gore.",
+    "prompt": "Use case: stylized-concept. Create ONE production sprite atlas for Dream Town. Match existing cozy painterly isometric town art: creamy plaster, terracotta roofs, dark oak, jewel green foliage, soft sunlight from upper left, polished hand painted 3D illustration, crisp readable silhouettes. Exactly 4 columns by 3 rows, 12 sprites in strict row-major order. Equal sized cells, each subject centered, at least 15 percent empty padding on EVERY side inside every cell. No sprite crosses its cell. Row 1: military barracks with blue banners and training dummies; military sentry post with shield emblem; small stone castle; straight stone defensive wall section. Row 2: corner stone defensive wall section; stone city gate; friendly armored town guard with spear; storybook bandit carrying loot bag. Row 3: bandit camp with tent and loot; cottage marked by illness with subdued green haze; isolated stylized pale green plague cloud status effect; quarantine warning marker with medicinal leaf emblem. Family friendly, no gore. Genuinely transparent alpha background and gutters. No checkerboard, solid background, captions, typography, watermarks or grid lines. No extra sprites. Whole subjects, no clipping. Buildings on small individual isometric grass/stone foundations. Aim for 2048px wide high quality sheet. OVERRIDE COMPOSITION: make each sprite miniature, only 55% of cell width and height. Huge transparent padding. Plague cloud is a small contained symbol WITHOUT spreading haze. Buildings must NOT fill cells. No cropped flag or smoke. This is essential for slicing."
+  },
+  {
+    "name": "mining-expansion",
+    "label": "分矿与矿井道具",
+    "cols": 4,
+    "rows": 3,
+    "frames": [
+      "copper-mine",
+      "silver-mine",
+      "gold-mine",
+      "platinum-mine",
+      "copper-ore",
+      "silver-ore",
+      "gold-ore",
+      "platinum-ore",
+      "pickaxe",
+      "dynamite",
+      "mine-chest",
+      "mine-antique"
+    ],
+    "subjects": "Row 1: copper mine with reddish copper veins; silver mine with bright silver veins; gold mine with yellow gold veins; platinum mine with pale blue-white veins. Make four entrances visibly different. Row 2: copper ore chunk; silver ore chunk; gold ore chunk; platinum ore chunk with bluish crystals. Row 3: miner pickaxe; cartoon red dynamite bundle with unlit fuse and wooden detonator, no text; treasure chest with gems; ancient ceramic amphora and old bronze relic.",
+    "prompt": "Use case: stylized-concept. Create ONE production sprite atlas for Dream Town. Match existing cozy painterly isometric town art: creamy plaster, terracotta roofs, dark oak, jewel green foliage, soft sunlight from upper left, polished hand painted 3D illustration, crisp readable silhouettes. Exactly 4 columns by 3 rows, 12 sprites in strict row-major order. Equal sized cells, each subject centered, at least 15 percent empty padding on EVERY side inside every cell. No sprite crosses its cell. Row 1: copper mine with reddish copper veins; silver mine with bright silver veins; gold mine with yellow gold veins; platinum mine with pale blue-white veins. Make four entrances visibly different. Row 2: copper ore chunk; silver ore chunk; gold ore chunk; platinum ore chunk with bluish crystals. Row 3: miner pickaxe; cartoon red dynamite bundle with unlit fuse and wooden detonator, no text; treasure chest with gems; ancient ceramic amphora and old bronze relic. Genuinely transparent alpha background and gutters. No checkerboard, solid background, captions, typography, watermarks or grid lines. No extra sprites. Whole subjects, no clipping. Buildings on small individual isometric grass/stone foundations. Aim for 2048px wide high quality sheet."
+  },
+  {
+    "name": "transport-expansion",
+    "label": "交通与岛屿贸易",
+    "cols": 4,
+    "rows": 3,
+    "frames": [
+      "train-engine",
+      "train-wagon",
+      "rail-station",
+      "cargo-plane",
+      "airfield",
+      "harbor",
+      "cargo-ship",
+      "fishing-boat",
+      "island",
+      "coconut",
+      "pineapple",
+      "pearl-shell"
+    ],
+    "subjects": "Row 1: charming steam locomotive facing lower left; matching cargo rail wagon facing lower left; small red roof railway station; vintage propeller cargo airplane facing lower left. Row 2: small airfield hangar and control hut; wooden cargo harbor with crane; cargo sailing ship facing lower left; small fishing boat facing lower left. Row 3: tropical island with palm trees and small dock; two coconuts one open; ripe pineapple; open shell holding pearl.",
+    "prompt": "Use case: stylized-concept. Create ONE production sprite atlas for Dream Town. Match existing cozy painterly isometric town art: creamy plaster, terracotta roofs, dark oak, jewel green foliage, soft sunlight from upper left, polished hand painted 3D illustration, crisp readable silhouettes. Exactly 4 columns by 3 rows, 12 sprites in strict row-major order. Equal sized cells, each subject centered, at least 15 percent empty padding on EVERY side inside every cell. No sprite crosses its cell. Row 1: charming steam locomotive facing lower left; matching cargo rail wagon facing lower left; small red roof railway station; vintage propeller cargo airplane facing lower left. Row 2: small airfield hangar and control hut; wooden cargo harbor with crane; cargo sailing ship facing lower left; small fishing boat facing lower left. Row 3: tropical island with palm trees and small dock; two coconuts one open; ripe pineapple; open shell holding pearl. Genuinely transparent alpha background and gutters. No checkerboard, solid background, captions, typography, watermarks or grid lines. No extra sprites. Whole subjects, no clipping. Buildings on small individual isometric grass/stone foundations. Aim for 2048px wide high quality sheet."
+  },
+  {
+    "name": "zoo-expansion",
+    "label": "动物园",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "zoo-gate",
+      "zoo-enclosure",
+      "zoo-keeper",
+      "zoo-feed",
+      "elephant",
+      "giraffe",
+      "zebra",
+      "lion"
+    ],
+    "subjects": "Row 1: welcoming zoo entrance with animal silhouette sign, no letters; grassy fenced animal habitat with shelter and pond; friendly zookeeper with bucket; basket of animal feed fruit and hay. Row 2: cute elephant; cute giraffe; cute zebra; friendly lion. All animals whole body, calm standing pose, 3/4 isometric, distinct isolated sprites.",
+    "prompt": "Use case: stylized-concept. Create ONE production sprite atlas for Dream Town. Match existing cozy painterly isometric town art: creamy plaster, terracotta roofs, dark oak, jewel green foliage, soft sunlight from upper left, polished hand painted 3D illustration, crisp readable silhouettes. Exactly 4 columns by 2 rows, 8 sprites in strict row-major order. Equal sized cells, each subject centered, at least 15 percent empty padding on EVERY side inside every cell. No sprite crosses its cell. Row 1: welcoming zoo entrance with animal silhouette sign, no letters; grassy fenced animal habitat with shelter and pond; friendly zookeeper with bucket; basket of animal feed fruit and hay. Row 2: cute elephant; cute giraffe; cute zebra; friendly lion. All animals whole body, calm standing pose, 3/4 isometric, distinct isolated sprites. Genuinely transparent alpha background and gutters. No checkerboard, solid background, captions, typography, watermarks or grid lines. No extra sprites. Whole subjects, no clipping. Buildings on small individual isometric grass/stone foundations. Aim for 2048px wide high quality sheet. OVERRIDE SIZE: each object occupies ONLY central 55% of its own equal sized cell. Huge transparent padding, especially above giraffe horns and below habitat. All 4 columns must have EXACT same width; do not widen architecture cells. Make buildings smaller if necessary. This is an atlas to slice into exactly equal cells."
+  },
+  {
+    "name": "weather-expansion",
+    "label": "天气图层",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "cloud-fair",
+      "cloud-storm",
+      "rain-light",
+      "rain-heavy",
+      "snow-light",
+      "snow-heavy",
+      "fog",
+      "lightning"
+    ],
+    "subjects": "Row 1: soft fair weather cloud; dark storm cloud; isolated patch of light diagonal raindrops WITHOUT cloud; isolated patch of heavy rain streaks WITHOUT cloud. Row 2: light scattered snowflakes; denser snowfall particles; low soft fog bank; stylized lightning flash. These are reusable isolated transparent overlay sprites with no buildings, ground, UI or landscape. Preserve soft translucent alpha and readable silhouettes.",
+    "prompt": "Use case: stylized-concept. A production transparent game VFX sprite sheet. EXACT 4 columns x 2 rows, eight fully separate SMALL sprites. CRITICAL: each sprite occupies ONLY the central 45% width and 45% height of its cell. Huge completely transparent gutters. No effects or haze outside the central area. Top row: one small cream fair weather cloud; one small dark storm cloud; just 12 tiny blue rain streaks in a small loose cluster; just 25 small blue rain streaks in a small cluster. Bottom row: six tiny white snowflakes in small cluster; twelve tiny white snowflakes in small cluster; one small low gray fog wisp; one small golden lightning bolt. Cozy painterly town game style, crisp outlines on cloud and bolt. Rain and snow are JUST separate droplets and flakes with fully transparent spaces between, NO blue backdrop, no discs, no glow, no enclosing haze. Real transparent alpha everywhere except the small subjects. No words, gridlines, landscape or backgrounds. Each sprite is visibly separated from every other by enormous empty space. Entire sheet 2:1 aspect ratio."
+  },
+  {
+    "name": "ai-assistant-expansion",
+    "label": "AI 助手界面美术",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "assistant-avatar",
+      "cursor-idle",
+      "cursor-select",
+      "cursor-build",
+      "mode-a",
+      "mode-b",
+      "mode-c",
+      "director"
+    ],
+    "subjects": "Row 1: friendly small brass-and-wood automaton assistant bust portrait; ornate ivory mouse cursor arrow idle; same cursor with golden selection spark; same cursor holding miniature hammer. Row 2: single carved wood badge showing guiding hand for assisted mode; single carved wood badge showing handshake for collaborative mode; single carved wood badge showing small gear for autonomous mode; director badge showing vintage film camera. No text, letters or numbers. UI icons, no ground bases. Exactly one icon per cell.",
+    "prompt": "Use case: stylized-concept. Create ONE production sprite atlas for Dream Town. Match existing cozy painterly isometric town art: creamy plaster, terracotta roofs, dark oak, jewel green foliage, soft sunlight from upper left, polished hand painted 3D illustration, crisp readable silhouettes. Exactly 4 columns by 2 rows, 8 sprites in strict row-major order. Equal sized cells, each subject centered, at least 15 percent empty padding on EVERY side inside every cell. No sprite crosses its cell. Row 1: friendly small brass-and-wood automaton assistant bust portrait; ornate ivory mouse cursor arrow idle; same cursor with golden selection spark; same cursor holding miniature hammer. Row 2: single carved wood badge showing guiding hand for assisted mode; single carved wood badge showing handshake for collaborative mode; single carved wood badge showing small gear for autonomous mode; director badge showing vintage film camera. No text, letters or numbers. UI icons, no ground bases. Exactly one icon per cell. Genuinely transparent alpha background and gutters. No checkerboard, solid background, captions, typography, watermarks or grid lines. No extra sprites. Whole subjects, no clipping. Buildings on small individual isometric grass/stone foundations. Aim for 2048px wide high quality sheet."
+  },
+  {
+    "name": "interface-resources-expansion",
+    "label": "助手面板与独立物品",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "assistant-panel",
+      "activity-panel",
+      "director-panel",
+      "tnt-crate",
+      "sugarcane",
+      "hops",
+      "meat",
+      "sausages"
+    ],
+    "prompt": "Use case: stylized-concept. Create one transparent sprite atlas for cozy Dream Town town-builder, painterly warm oak, ivory parchment, brass accents matching isometric terracotta town art. Exactly 4 columns and 2 rows. Each of 8 objects wholly isolated with LARGE empty gutters, 18 percent empty padding inside its equal cell. Row 1 left to right: blank rectangular assistant control panel frame with wood border and empty ivory interior; blank taller activity summary parchment panel with wood border and empty interior; blank director control panel with brass camera ornament and empty interior; small wooden crate of cartoon red TNT sticks with unlit fuses, NO lettering. Row 2: harvested segmented sugarcane stalk bundle; handful of green hop cones with leaves; raw meat cut on simple small board; loop of cured sausages. Panels front view, resources 3/4 view. No words, no numbers, no grid, no scenes. Real transparent alpha background, no checkerboard. Do not fill whole cells, subjects must have huge clear gaps. Entire objects visible."
+  }
+]

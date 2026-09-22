@@ -1,0 +1,214 @@
+{
+  "name": "production-expansion",
+  "label": "新增生产链",
+  "image": "/assets/expansion-2026-09/production-expansion.webp",
+  "width": 1448,
+  "height": 1086,
+  "columns": 4,
+  "rows": 3,
+  "activeFrames": 12,
+  "frames": {
+    "sugarcane-field": {
+      "x": 15,
+      "y": 65,
+      "w": 332,
+      "h": 322,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        166.0,
+        305.9
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "sugar-mill": {
+      "x": 371,
+      "y": 24,
+      "w": 347,
+      "h": 364,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        173.5,
+        345.8
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "hops-field": {
+      "x": 734,
+      "y": 93,
+      "w": 339,
+      "h": 295,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        169.5,
+        280.25
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "tavern": {
+      "x": 1089,
+      "y": 56,
+      "w": 342,
+      "h": 338,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        171.0,
+        321.1
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "herb-garden": {
+      "x": 11,
+      "y": 435,
+      "w": 338,
+      "h": 288,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        169.0,
+        273.6
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "pig-farm": {
+      "x": 354,
+      "y": 421,
+      "w": 368,
+      "h": 310,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        184.0,
+        294.5
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "butcher": {
+      "x": 733,
+      "y": 400,
+      "w": 341,
+      "h": 339,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        170.5,
+        322.05
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "hunter-lodge": {
+      "x": 1090,
+      "y": 401,
+      "w": 349,
+      "h": 338,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        174.5,
+        321.1
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "sugar": {
+      "x": 24,
+      "y": 759,
+      "w": 331,
+      "h": 272,
+      "row": 2,
+      "column": 0,
+      "pivot": [
+        165.5,
+        258.4
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "beer": {
+      "x": 387,
+      "y": 761,
+      "w": 311,
+      "h": 265,
+      "row": 2,
+      "column": 1,
+      "pivot": [
+        155.5,
+        251.75
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "herbs": {
+      "x": 750,
+      "y": 758,
+      "w": 314,
+      "h": 277,
+      "row": 2,
+      "column": 2,
+      "pivot": [
+        157.0,
+        263.15
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "meat-sausages": {
+      "x": 1106,
+      "y": 764,
+      "w": 313,
+      "h": 264,
+      "row": 2,
+      "column": 3,
+      "pivot": [
+        156.5,
+        250.8
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    }
+  },
+  "alphaPercent": 46.52,
+  "webpBytes": 1653614,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

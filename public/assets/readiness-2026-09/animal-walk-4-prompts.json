@@ -1,0 +1,5 @@
+{
+  "generator": "built-in image_gen",
+  "finalPrompt": "Transparent background PNG. Eight separate cow sprites in a 4-column 2-row sheet. Top row: small brown-and-white calf walking left in four phases. Bottom row: adult brown-and-white cow walking left in four phases. Alternating extended and lifted legs, same body each row, cute hand painted isometric game art. Wide empty transparent gutters, no backdrop, no shadows, no glow. True alpha.",
+  "source": "output/readiness-assets-2026-09-21/raw/animal-walk-4.png"
+}

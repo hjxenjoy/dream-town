@@ -2,7 +2,7 @@ import { RegionLayer } from './RegionLayer';
 import { livestockFrame } from '../sim/livestock';
 import { drawSoilDetails, drawHomeDetails } from './SoilDetails';
 import { REGIONS, type RegionId } from '../sim/regions';
-import { CROP_FRAMES, soilLevel, cropGrowthStage } from '../sim/farming';
+import { soilLevel, cropGrowthStage, cropStageFrame } from '../sim/farming';
 import { TownAtmosphere } from './TownAtmosphere';
 import { DisasterLayer } from './DisasterLayer';
 import { CaravanCart } from './CaravanCart';
@@ -16,17 +16,24 @@ import Phaser from 'phaser';
 import { SimWorld, type Building, type BuildingKind } from '../sim/world';
 import { BUILDINGS, EXPANSION_SPRITES, EXPANSION_FRAMES, INDUSTRY_KINDS, INDUSTRY_FRAMES, DECORATION_SPRITES, DECORATION_FRAMES } from '../sim/data';
 import { GENERATED_ATLASES, atlasFrames, generatedSprite, housingLevelFrame } from '../sim/atlases';
-import { drawFrameWidth } from './atlasSprite';
+import { drawFrameWidth, drawFrameScale } from './atlasSprite';
 import { MAP_SIZE, TILE_W, TILE_H, iso, terrainAt, terrainReason, DISTRICTS, type District } from '../sim/terrain';
 import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
 /** Generated atlases the scene draws. Preloading and frame registration both read this. */
-const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crops-growing','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel'] as const;
-/** On-screen widths for the two farm visuals, which are drawn from generated textures. */
-const CROP_WIDTH = 130;
+const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel'] as const;
+/** On-screen widths for the farm visuals, which are drawn from generated textures. */
 const FARM_WIDTH = 116;
 const FARM_HEIGHT = 86;
+/**
+ * A field's soil plot is drawn this wide, and its near corner sits this far below the tile
+ * centre. Both match `farm0`'s baked-in plot (a 104 x 52 diamond whose bottom corner is
+ * 21.1px below the anchor), so a field does not move or resize when it goes from fallow to
+ * planted art.
+ */
+const FARM_PLOT_WIDTH = 104;
+const FARM_SOIL_DROP = 21;
 
 const deiso = (x: number, y: number) => ({ x: Math.round(x / TILE_W + y / TILE_H), y: Math.round(y / TILE_H - x / TILE_W) });
 type BuildingVisual = { sprite: Phaser.GameObjects.Image; badge: Phaser.GameObjects.Container; progress: Phaser.GameObjects.Graphics; ready: boolean; soil: Phaser.GameObjects.Graphics; soilLevel: number; homeStyle?: string; companion?: Phaser.GameObjects.Image };
@@ -74,7 +81,6 @@ export class TownScene extends Phaser.Scene {
     super('Town'); this.world = world; this.onChoose = choose; this.onPlace = place;
   }
   preload() {
-    this.load.image('crops','/assets/crops.png');
     this.load.image('expansion','/assets/town-expansion.png');
     this.load.image('decorations','/assets/decorations.png');
     this.load.image('citizens','/assets/citizens.png');
@@ -87,8 +93,6 @@ export class TownScene extends Phaser.Scene {
     this.load.json('frames', '/assets/frames.json');
   }
   create() {
-    const crops=this.textures.get('crops');
-    Object.entries(CROP_FRAMES).forEach(([name,f])=>crops.add(name,0,f.x,f.y,f.w,f.h));
     const texture = this.textures.get('buildings');
     const frames = this.cache.json.get('frames').frames;
     Object.entries(frames).forEach(([name, f]) => { const r = f as { x: number; y: number; w: number; h: number }; texture.add(name === 'watchtower' ? 'firetower' : name, 0, r.x, r.y, r.w, r.h); });
@@ -237,15 +241,19 @@ export class TownScene extends Phaser.Scene {
         const level=soilLevel(b.tended).level;
         if(v.soilLevel!==level){drawSoilDetails(v.soil,level);v.soilLevel=level;}
         v.soil.setPosition(p.x,p.y).setDepth(p.y+6).setAlpha(b.id===this.moveId?.28:b.paused?.65:1);
-        const crop=b.crop??'wheat',f=CROP_FRAMES[crop],stage=cropGrowthStage(b.progress,b.ready,b.fallow);
-        if(stage==='ready'||stage==='ripening'){drawFrameWidth(v.sprite,'crops',crop,CROP_WIDTH);v.sprite.setOrigin(.5,f.anchor);if(!b.ready)v.sprite.setTint(0xc3d995);else v.sprite.clearTint();}
-        else if(stage==='growing'||stage==='sprouting'&&(crop==='apple'||crop==='grape')){
-          const growing=GENERATED_ATLASES['crops-growing'].frames[crop];
-          drawFrameWidth(v.sprite,'crops-growing',crop,CROP_WIDTH);v.sprite.setOrigin(.5,growing.anchor).clearTint();
+        const crop=b.crop??'wheat',stage=cropGrowthStage(b.progress,b.ready,b.fallow),art=cropStageFrame(crop,stage);
+        if(art){
+          const frame=atlasFrames(art.atlas)[art.frame];
+          // The scale comes from the art's own soil plot, not from the frame box: the three
+          // sheets were framed at different scales, so dividing by the plot width is what
+          // makes every field the same size on screen.
+          drawFrameScale(v.sprite,art.atlas,art.frame,FARM_PLOT_WIDTH/art.soilWidth);
+          v.sprite.setOrigin(...(frame.origin??[.5,1] as [number,number])).clearTint();
+          v.sprite.setPosition(p.x,p.y+FARM_SOIL_DROP);
         }
         // farm0 is a single-frame texture generated at runtime, so sizing it
         // once is correct: there is no other frame whose dimensions could disagree.
-        else{v.sprite.setTexture('farm0').setOrigin(.5,.65).setDisplaySize(FARM_WIDTH,FARM_HEIGHT);v.sprite.setTint(soilLevel(b.tended).level>2?0xf6e6ae:0xffffff);}
+        else{v.sprite.setTexture('farm0').setOrigin(.5,.65).setDisplaySize(FARM_WIDTH,FARM_HEIGHT);v.sprite.setPosition(p.x,p.y);v.sprite.setTint(soilLevel(b.tended).level>2?0xf6e6ae:0xffffff);}
       }
       if(BUILDINGS[b.kind].housing){
         const style=b.homeStyle??'original';

@@ -1,0 +1,172 @@
+{
+  "name": "animal-walk-1",
+  "label": "行走 elephant / giraffe",
+  "image": "/assets/readiness-2026-09/animal-walk-1.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "frames": {
+    "elephant-walk-1": {
+      "x": 0,
+      "y": 0,
+      "w": 444,
+      "h": 394,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        222.0,
+        351.0
+      ],
+      "origin": [
+        0.5,
+        0.89086
+      ]
+    },
+    "elephant-walk-2": {
+      "x": 444,
+      "y": 0,
+      "w": 443,
+      "h": 394,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        221.5,
+        345.0
+      ],
+      "origin": [
+        0.5,
+        0.87563
+      ]
+    },
+    "elephant-walk-3": {
+      "x": 887,
+      "y": 0,
+      "w": 443,
+      "h": 394,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        221.5,
+        353.0
+      ],
+      "origin": [
+        0.5,
+        0.89594
+      ]
+    },
+    "elephant-walk-4": {
+      "x": 1330,
+      "y": 0,
+      "w": 444,
+      "h": 394,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        222.0,
+        353.0
+      ],
+      "origin": [
+        0.5,
+        0.89594
+      ]
+    },
+    "giraffe-walk-1": {
+      "x": 0,
+      "y": 394,
+      "w": 444,
+      "h": 493,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        222.0,
+        425.0
+      ],
+      "origin": [
+        0.5,
+        0.86207
+      ]
+    },
+    "giraffe-walk-2": {
+      "x": 444,
+      "y": 394,
+      "w": 443,
+      "h": 493,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        221.5,
+        413.0
+      ],
+      "origin": [
+        0.5,
+        0.83773
+      ]
+    },
+    "giraffe-walk-3": {
+      "x": 887,
+      "y": 394,
+      "w": 443,
+      "h": 493,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        221.5,
+        423.0
+      ],
+      "origin": [
+        0.5,
+        0.85801
+      ]
+    },
+    "giraffe-walk-4": {
+      "x": 1330,
+      "y": 394,
+      "w": 444,
+      "h": 493,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        222.0,
+        430.0
+      ],
+      "origin": [
+        0.5,
+        0.87221
+      ]
+    }
+  },
+  "alphaPercent": 67.91,
+  "webpBytes": 739844,
+  "runtimeIntegrated": false,
+  "animation": "ordered sequences with ground anchors",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  },
+  "sequences": {
+    "elephant-walk": {
+      "frames": [
+        "elephant-walk-1",
+        "elephant-walk-2",
+        "elephant-walk-3",
+        "elephant-walk-4"
+      ],
+      "frameRate": 4,
+      "loop": true
+    },
+    "giraffe-walk": {
+      "frames": [
+        "giraffe-walk-1",
+        "giraffe-walk-2",
+        "giraffe-walk-3",
+        "giraffe-walk-4"
+      ],
+      "frameRate": 4,
+      "loop": true
+    }
+  }
+}

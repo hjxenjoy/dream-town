@@ -1,0 +1,346 @@
+{
+  "created": "2026-09-21",
+  "note": "程序合成的风格化环境音，非录音；尚未接入建筑距离混音。",
+  "tracks": [
+    {
+      "name": "sugar-mill",
+      "label": "糖厂 · 木轮与滚轴",
+      "url": "/assets/expansion-2026-09/audio/sugar-mill.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -23.51,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "tavern",
+      "label": "酒馆 · 杯盏与壁炉",
+      "url": "/assets/expansion-2026-09/audio/tavern.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -26.32,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "herb-garden",
+      "label": "药草园 · 风与鸟鸣",
+      "url": "/assets/expansion-2026-09/audio/herb-garden.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -22.51,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "pig-farm",
+      "label": "猪场 · 低哼与草垫",
+      "url": "/assets/expansion-2026-09/audio/pig-farm.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -26.04,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "butcher",
+      "label": "肉铺 · 木案与工具",
+      "url": "/assets/expansion-2026-09/audio/butcher.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -29.49,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "hunter-lodge",
+      "label": "猎人屋 · 林风与木响",
+      "url": "/assets/expansion-2026-09/audio/hunter-lodge.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -24.47,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "barracks",
+      "label": "兵营 · 操练脚步",
+      "url": "/assets/expansion-2026-09/audio/barracks.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -29.42,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "guard-post",
+      "label": "岗哨 · 旗帜与远钟",
+      "url": "/assets/expansion-2026-09/audio/guard-post.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -25.25,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "castle",
+      "label": "城堡 · 风与钟声",
+      "url": "/assets/expansion-2026-09/audio/castle.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -26.11,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "mine",
+      "label": "矿井 · 镐击与洞穴低鸣",
+      "url": "/assets/expansion-2026-09/audio/mine.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -26.11,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "rail-station",
+      "label": "车站 · 车轮与蒸汽",
+      "url": "/assets/expansion-2026-09/audio/rail-station.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -24.76,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "airfield",
+      "label": "机场 · 螺旋桨低鸣",
+      "url": "/assets/expansion-2026-09/audio/airfield.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -23.89,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "harbor",
+      "label": "港口 · 水波与木船",
+      "url": "/assets/expansion-2026-09/audio/harbor.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -23.2,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "zoo",
+      "label": "动物园 · 鸟鸣与栖地",
+      "url": "/assets/expansion-2026-09/audio/zoo.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -22.34,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "windmill",
+      "label": "风车 · 木轮旋转",
+      "url": "/assets/expansion-2026-09/audio/windmill.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -23.8,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "smithy",
+      "label": "铁匠铺 · 锤击与炉火",
+      "url": "/assets/expansion-2026-09/audio/smithy.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -25.56,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "bakery",
+      "label": "面包房 · 炉火与木案",
+      "url": "/assets/expansion-2026-09/audio/bakery.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -29.74,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "pasture",
+      "label": "牧场 · 草风与铃声",
+      "url": "/assets/expansion-2026-09/audio/pasture.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -23.6,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "rain",
+      "label": "雨天 · 细雨",
+      "url": "/assets/expansion-2026-09/audio/rain.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -24.7,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    },
+    {
+      "name": "snow-wind",
+      "label": "雪天 · 轻风",
+      "url": "/assets/expansion-2026-09/audio/snow-wind.wav",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "peakDbFS": -8.4,
+        "rmsDbFS": -22.81,
+        "clippedSamples": 0,
+        "seamDelta": 0
+      }
+    }
+  ]
+}

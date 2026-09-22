@@ -1,0 +1,172 @@
+{
+  "name": "animal-walk-2",
+  "label": "行走 zebra / lion",
+  "image": "/assets/readiness-2026-09/animal-walk-2.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "frames": {
+    "zebra-walk-1": {
+      "x": 0,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        222.0,
+        401.0
+      ],
+      "origin": [
+        0.5,
+        0.90315
+      ]
+    },
+    "zebra-walk-2": {
+      "x": 444,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        221.5,
+        401.0
+      ],
+      "origin": [
+        0.5,
+        0.90315
+      ]
+    },
+    "zebra-walk-3": {
+      "x": 887,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        221.5,
+        401.0
+      ],
+      "origin": [
+        0.5,
+        0.90315
+      ]
+    },
+    "zebra-walk-4": {
+      "x": 1330,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        222.0,
+        394.0
+      ],
+      "origin": [
+        0.5,
+        0.88739
+      ]
+    },
+    "lion-walk-1": {
+      "x": 0,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        222.0,
+        385.0
+      ],
+      "origin": [
+        0.5,
+        0.86907
+      ]
+    },
+    "lion-walk-2": {
+      "x": 444,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        221.5,
+        380.0
+      ],
+      "origin": [
+        0.5,
+        0.85779
+      ]
+    },
+    "lion-walk-3": {
+      "x": 887,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        221.5,
+        385.0
+      ],
+      "origin": [
+        0.5,
+        0.86907
+      ]
+    },
+    "lion-walk-4": {
+      "x": 1330,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        222.0,
+        383.0
+      ],
+      "origin": [
+        0.5,
+        0.86456
+      ]
+    }
+  },
+  "alphaPercent": 64.97,
+  "webpBytes": 893594,
+  "runtimeIntegrated": false,
+  "animation": "ordered sequences with ground anchors",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  },
+  "sequences": {
+    "zebra-walk": {
+      "frames": [
+        "zebra-walk-1",
+        "zebra-walk-2",
+        "zebra-walk-3",
+        "zebra-walk-4"
+      ],
+      "frameRate": 4,
+      "loop": true
+    },
+    "lion-walk": {
+      "frames": [
+        "lion-walk-1",
+        "lion-walk-2",
+        "lion-walk-3",
+        "lion-walk-4"
+      ],
+      "frameRate": 4,
+      "loop": true
+    }
+  }
+}

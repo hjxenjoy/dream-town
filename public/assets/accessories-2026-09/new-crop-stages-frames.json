@@ -1,0 +1,172 @@
+{
+  "name": "new-crop-stages",
+  "label": "甘蔗与啤酒花生长阶段",
+  "image": "/assets/accessories-2026-09/new-crop-stages.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "frames": {
+    "sugarcane-sprout": {
+      "x": 0,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        221.0,
+        402.0
+      ],
+      "origin": [
+        0.49775,
+        0.90541
+      ]
+    },
+    "sugarcane-young": {
+      "x": 444,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        220.0,
+        402.0
+      ],
+      "origin": [
+        0.49661,
+        0.90541
+      ]
+    },
+    "sugarcane-growing": {
+      "x": 887,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        222.0,
+        403.0
+      ],
+      "origin": [
+        0.50113,
+        0.90766
+      ]
+    },
+    "sugarcane-ripe": {
+      "x": 1330,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        224.0,
+        402.0
+      ],
+      "origin": [
+        0.5045,
+        0.90541
+      ]
+    },
+    "hops-sprout": {
+      "x": 0,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        221.0,
+        372.0
+      ],
+      "origin": [
+        0.49775,
+        0.83973
+      ]
+    },
+    "hops-young": {
+      "x": 444,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        221.0,
+        372.0
+      ],
+      "origin": [
+        0.49887,
+        0.83973
+      ]
+    },
+    "hops-growing": {
+      "x": 887,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        222.0,
+        372.0
+      ],
+      "origin": [
+        0.50113,
+        0.83973
+      ]
+    },
+    "hops-ripe": {
+      "x": 1330,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        223.0,
+        372.0
+      ],
+      "origin": [
+        0.50225,
+        0.83973
+      ]
+    }
+  },
+  "alphaPercent": 79.6,
+  "webpBytes": 629294,
+  "runtimeIntegrated": false,
+  "animation": "ordered sequences; fixed source-cell scale, per-frame ground anchors",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  },
+  "sequences": {
+    "sugarcane-growth": {
+      "frames": [
+        "sugarcane-sprout",
+        "sugarcane-young",
+        "sugarcane-growing",
+        "sugarcane-ripe"
+      ],
+      "frameRate": 1,
+      "loop": false
+    },
+    "hops-growth": {
+      "frames": [
+        "hops-sprout",
+        "hops-young",
+        "hops-growing",
+        "hops-ripe"
+      ],
+      "frameRate": 1,
+      "loop": false
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "generator": "built-in image_gen",
+  "finalPrompt": "Create a NEW transparent game sprite sheet PNG with alpha channel. Four isolated miniature sprites arranged in ONE horizontal row, FOUR equal columns. Left to right: 1 folded brown fur pelt, 2 isometric cozy terracotta-roof zoo souvenir cottage displaying tiny animal plush toys, 3 empty cream cloud-shaped thought bubble with two small trailing bubbles, 4 same thought bubble containing three gold dots. Hand painted cozy town simulation game art, clean sprite silhouettes. Everything outside the objects is transparent. Wide sprite sheet. Each object tiny in its cell, 25 percent padding on each side. No backdrop, no aura, no glowing lights, no dark vignette, no labels. This is a transparent sprite texture atlas not a presentation illustration. Fresh composition unrelated to prior images.",
+  "source": "output/accessory-assets-2026-09-21/raw/small-accessories.png"
+}

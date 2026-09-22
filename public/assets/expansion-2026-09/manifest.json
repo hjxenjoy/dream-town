@@ -1,0 +1,1465 @@
+{
+  "created": "2026-09-21",
+  "generator": "built-in image_gen",
+  "runtimeIntegrated": false,
+  "activeFrames": 80,
+  "webpBytes": 8196890,
+  "atlases": [
+    {
+      "name": "production-expansion",
+      "label": "新增生产链",
+      "image": "/assets/expansion-2026-09/production-expansion.webp",
+      "width": 1448,
+      "height": 1086,
+      "columns": 4,
+      "rows": 3,
+      "activeFrames": 12,
+      "frames": {
+        "sugarcane-field": {
+          "x": 15,
+          "y": 65,
+          "w": 332,
+          "h": 322,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            166.0,
+            305.9
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "sugar-mill": {
+          "x": 371,
+          "y": 24,
+          "w": 347,
+          "h": 364,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            173.5,
+            345.8
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "hops-field": {
+          "x": 734,
+          "y": 93,
+          "w": 339,
+          "h": 295,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            169.5,
+            280.25
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "tavern": {
+          "x": 1089,
+          "y": 56,
+          "w": 342,
+          "h": 338,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            171.0,
+            321.1
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "herb-garden": {
+          "x": 11,
+          "y": 435,
+          "w": 338,
+          "h": 288,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            169.0,
+            273.6
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "pig-farm": {
+          "x": 354,
+          "y": 421,
+          "w": 368,
+          "h": 310,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            184.0,
+            294.5
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "butcher": {
+          "x": 733,
+          "y": 400,
+          "w": 341,
+          "h": 339,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            170.5,
+            322.05
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "hunter-lodge": {
+          "x": 1090,
+          "y": 401,
+          "w": 349,
+          "h": 338,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            174.5,
+            321.1
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "sugar": {
+          "x": 24,
+          "y": 759,
+          "w": 331,
+          "h": 272,
+          "row": 2,
+          "column": 0,
+          "pivot": [
+            165.5,
+            258.4
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "beer": {
+          "x": 387,
+          "y": 761,
+          "w": 311,
+          "h": 265,
+          "row": 2,
+          "column": 1,
+          "pivot": [
+            155.5,
+            251.75
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "herbs": {
+          "x": 750,
+          "y": 758,
+          "w": 314,
+          "h": 277,
+          "row": 2,
+          "column": 2,
+          "pivot": [
+            157.0,
+            263.15
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "meat-sausages": {
+          "x": 1106,
+          "y": 764,
+          "w": 313,
+          "h": 264,
+          "row": 2,
+          "column": 3,
+          "pivot": [
+            156.5,
+            250.8
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        }
+      },
+      "alphaPercent": 46.52,
+      "webpBytes": 1653614,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "defense-expansion",
+      "label": "军事与灾害",
+      "image": "/assets/expansion-2026-09/defense-expansion.webp",
+      "width": 1448,
+      "height": 1086,
+      "columns": 4,
+      "rows": 3,
+      "activeFrames": 12,
+      "frames": {
+        "barracks": {
+          "x": 64,
+          "y": 80,
+          "w": 276,
+          "h": 276,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            138.0,
+            262.2
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "guard-post": {
+          "x": 449,
+          "y": 72,
+          "w": 213,
+          "h": 286,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            106.5,
+            271.7
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "castle": {
+          "x": 779,
+          "y": 72,
+          "w": 258,
+          "h": 293,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            129.0,
+            278.35
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "wall-straight": {
+          "x": 1135,
+          "y": 158,
+          "w": 261,
+          "h": 196,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            130.5,
+            186.2
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "wall-corner": {
+          "x": 72,
+          "y": 487,
+          "w": 245,
+          "h": 192,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            122.5,
+            182.4
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "city-gate": {
+          "x": 414,
+          "y": 440,
+          "w": 278,
+          "h": 242,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            139.0,
+            229.9
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "guard": {
+          "x": 818,
+          "y": 427,
+          "w": 183,
+          "h": 261,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            91.5,
+            247.95
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "bandit": {
+          "x": 1179,
+          "y": 474,
+          "w": 177,
+          "h": 208,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            88.5,
+            197.6
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "bandit-camp": {
+          "x": 62,
+          "y": 761,
+          "w": 272,
+          "h": 255,
+          "row": 2,
+          "column": 0,
+          "pivot": [
+            136.0,
+            242.25
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "plague-house": {
+          "x": 426,
+          "y": 745,
+          "w": 253,
+          "h": 275,
+          "row": 2,
+          "column": 1,
+          "pivot": [
+            126.5,
+            261.25
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "plague-cloud": {
+          "x": 831,
+          "y": 829,
+          "w": 156,
+          "h": 153,
+          "row": 2,
+          "column": 2,
+          "pivot": [
+            78.0,
+            145.35
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "quarantine-marker": {
+          "x": 1187,
+          "y": 768,
+          "w": 160,
+          "h": 248,
+          "row": 2,
+          "column": 3,
+          "pivot": [
+            80.0,
+            235.6
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        }
+      },
+      "alphaPercent": 72.89,
+      "webpBytes": 820220,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "mining-expansion",
+      "label": "分矿与矿井道具",
+      "image": "/assets/expansion-2026-09/mining-expansion.webp",
+      "width": 1448,
+      "height": 1086,
+      "columns": 4,
+      "rows": 3,
+      "activeFrames": 12,
+      "frames": {
+        "copper-mine": {
+          "x": 14,
+          "y": 19,
+          "w": 348,
+          "h": 373,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            174.0,
+            354.35
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "silver-mine": {
+          "x": 379,
+          "y": 26,
+          "w": 340,
+          "h": 366,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            170.0,
+            347.7
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "gold-mine": {
+          "x": 735,
+          "y": 38,
+          "w": 344,
+          "h": 354,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            172.0,
+            336.3
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "platinum-mine": {
+          "x": 1096,
+          "y": 33,
+          "w": 342,
+          "h": 359,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            171.0,
+            341.05
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "copper-ore": {
+          "x": 44,
+          "y": 436,
+          "w": 276,
+          "h": 258,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            138.0,
+            245.1
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "silver-ore": {
+          "x": 414,
+          "y": 441,
+          "w": 268,
+          "h": 259,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            134.0,
+            246.05
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "gold-ore": {
+          "x": 768,
+          "y": 436,
+          "w": 273,
+          "h": 265,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            136.5,
+            251.75
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "platinum-ore": {
+          "x": 1139,
+          "y": 435,
+          "w": 266,
+          "h": 266,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            133.0,
+            252.7
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "pickaxe": {
+          "x": 50,
+          "y": 725,
+          "w": 287,
+          "h": 317,
+          "row": 2,
+          "column": 0,
+          "pivot": [
+            143.5,
+            301.15
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "dynamite": {
+          "x": 403,
+          "y": 736,
+          "w": 290,
+          "h": 293,
+          "row": 2,
+          "column": 1,
+          "pivot": [
+            145.0,
+            278.35
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "mine-chest": {
+          "x": 767,
+          "y": 723,
+          "w": 300,
+          "h": 320,
+          "row": 2,
+          "column": 2,
+          "pivot": [
+            150.0,
+            304.0
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "mine-antique": {
+          "x": 1120,
+          "y": 731,
+          "w": 301,
+          "h": 311,
+          "row": 2,
+          "column": 3,
+          "pivot": [
+            150.5,
+            295.45
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        }
+      },
+      "alphaPercent": 52.85,
+      "webpBytes": 1408446,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "transport-expansion",
+      "label": "交通与岛屿贸易",
+      "image": "/assets/expansion-2026-09/transport-expansion.webp",
+      "width": 1448,
+      "height": 1086,
+      "columns": 4,
+      "rows": 3,
+      "activeFrames": 12,
+      "frames": {
+        "train-engine": {
+          "x": 22,
+          "y": 10,
+          "w": 334,
+          "h": 338,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            167.0,
+            321.1
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "train-wagon": {
+          "x": 375,
+          "y": 60,
+          "w": 330,
+          "h": 283,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            165.0,
+            268.85
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "rail-station": {
+          "x": 719,
+          "y": 37,
+          "w": 366,
+          "h": 319,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            183.0,
+            303.05
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "cargo-plane": {
+          "x": 1095,
+          "y": 60,
+          "w": 338,
+          "h": 267,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            169.0,
+            253.65
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "airfield": {
+          "x": 12,
+          "y": 377,
+          "w": 368,
+          "h": 320,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            184.0,
+            304.0
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "harbor": {
+          "x": 399,
+          "y": 386,
+          "w": 332,
+          "h": 328,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            166.0,
+            311.6
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "cargo-ship": {
+          "x": 744,
+          "y": 375,
+          "w": 327,
+          "h": 338,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            163.5,
+            321.1
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "fishing-boat": {
+          "x": 1116,
+          "y": 401,
+          "w": 301,
+          "h": 305,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            150.5,
+            289.75
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "island": {
+          "x": 24,
+          "y": 718,
+          "w": 352,
+          "h": 327,
+          "row": 2,
+          "column": 0,
+          "pivot": [
+            176.0,
+            310.65
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "coconut": {
+          "x": 424,
+          "y": 782,
+          "w": 302,
+          "h": 257,
+          "row": 2,
+          "column": 1,
+          "pivot": [
+            151.0,
+            244.15
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "pineapple": {
+          "x": 780,
+          "y": 726,
+          "w": 271,
+          "h": 319,
+          "row": 2,
+          "column": 2,
+          "pivot": [
+            135.5,
+            303.05
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "pearl-shell": {
+          "x": 1112,
+          "y": 769,
+          "w": 298,
+          "h": 256,
+          "row": 2,
+          "column": 3,
+          "pivot": [
+            149.0,
+            243.2
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        }
+      },
+      "alphaPercent": 50.84,
+      "webpBytes": 1489966,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "zoo-expansion",
+      "label": "动物园",
+      "image": "/assets/expansion-2026-09/zoo-expansion.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "zoo-gate": {
+          "x": 65,
+          "y": 121,
+          "w": 346,
+          "h": 285,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            173.0,
+            270.75
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "zoo-enclosure": {
+          "x": 487,
+          "y": 86,
+          "w": 391,
+          "h": 328,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            195.5,
+            311.6
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "zoo-keeper": {
+          "x": 1025,
+          "y": 85,
+          "w": 157,
+          "h": 343,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            78.5,
+            325.85
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "zoo-feed": {
+          "x": 1423,
+          "y": 156,
+          "w": 250,
+          "h": 244,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            125.0,
+            231.8
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "elephant": {
+          "x": 90,
+          "y": 515,
+          "w": 311,
+          "h": 294,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            155.5,
+            279.3
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "giraffe": {
+          "x": 577,
+          "y": 471,
+          "w": 176,
+          "h": 358,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            88.0,
+            340.1
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "zebra": {
+          "x": 999,
+          "y": 523,
+          "w": 234,
+          "h": 294,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            117.0,
+            279.3
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "lion": {
+          "x": 1386,
+          "y": 517,
+          "w": 315,
+          "h": 300,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            157.5,
+            285.0
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        }
+      },
+      "alphaPercent": 73.55,
+      "webpBytes": 765956,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "weather-expansion",
+      "label": "天气图层",
+      "image": "/assets/expansion-2026-09/weather-expansion.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "cloud-fair": {
+          "x": 126,
+          "y": 157,
+          "w": 194,
+          "h": 127,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            97.0,
+            63.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "cloud-storm": {
+          "x": 560,
+          "y": 149,
+          "w": 209,
+          "h": 134,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            104.5,
+            67.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "rain-light": {
+          "x": 1018,
+          "y": 141,
+          "w": 175,
+          "h": 174,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            87.5,
+            87.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "rain-heavy": {
+          "x": 1458,
+          "y": 126,
+          "w": 187,
+          "h": 204,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            93.5,
+            102.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "snow-light": {
+          "x": 147,
+          "y": 587,
+          "w": 150,
+          "h": 162,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            75.0,
+            81.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "snow-heavy": {
+          "x": 572,
+          "y": 576,
+          "w": 185,
+          "h": 180,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            92.5,
+            90.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "fog": {
+          "x": 1001,
+          "y": 614,
+          "w": 214,
+          "h": 108,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            107.0,
+            54.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "lightning": {
+          "x": 1488,
+          "y": 541,
+          "w": 117,
+          "h": 241,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            58.5,
+            120.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "alphaPercent": 90.97,
+      "webpBytes": 209856,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "ai-assistant-expansion",
+      "label": "AI 助手界面美术",
+      "image": "/assets/expansion-2026-09/ai-assistant-expansion.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "assistant-avatar": {
+          "x": 67,
+          "y": 31,
+          "w": 323,
+          "h": 406,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            161.5,
+            203.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "cursor-idle": {
+          "x": 542,
+          "y": 94,
+          "w": 246,
+          "h": 311,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            36.9,
+            46.65
+          ],
+          "origin": [
+            0.15,
+            0.15
+          ]
+        },
+        "cursor-select": {
+          "x": 928,
+          "y": 39,
+          "w": 303,
+          "h": 365,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            45.45,
+            54.75
+          ],
+          "origin": [
+            0.15,
+            0.15
+          ]
+        },
+        "cursor-build": {
+          "x": 1401,
+          "y": 91,
+          "w": 310,
+          "h": 294,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            46.5,
+            44.1
+          ],
+          "origin": [
+            0.15,
+            0.15
+          ]
+        },
+        "mode-a": {
+          "x": 31,
+          "y": 469,
+          "w": 390,
+          "h": 365,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            195.0,
+            182.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "mode-b": {
+          "x": 472,
+          "y": 469,
+          "w": 388,
+          "h": 365,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            194.0,
+            182.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "mode-c": {
+          "x": 914,
+          "y": 469,
+          "w": 388,
+          "h": 365,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            194.0,
+            182.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "director": {
+          "x": 1356,
+          "y": 470,
+          "w": 389,
+          "h": 364,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            194.5,
+            182.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "alphaPercent": 60.77,
+      "webpBytes": 951680,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "interface-resources-expansion",
+      "label": "助手面板与独立物品",
+      "image": "/assets/expansion-2026-09/interface-resources-expansion.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "assistant-panel": {
+          "x": 18,
+          "y": 181,
+          "w": 378,
+          "h": 233,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            189.0,
+            116.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "activity-panel": {
+          "x": 513,
+          "y": 19,
+          "w": 301,
+          "h": 400,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            150.5,
+            200.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "director-panel": {
+          "x": 919,
+          "y": 108,
+          "w": 397,
+          "h": 308,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            198.5,
+            154.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "tnt-crate": {
+          "x": 1439,
+          "y": 147,
+          "w": 286,
+          "h": 307,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            143.0,
+            153.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "sugarcane": {
+          "x": 34,
+          "y": 500,
+          "w": 401,
+          "h": 354,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            200.5,
+            177.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "hops": {
+          "x": 487,
+          "y": 519,
+          "w": 356,
+          "h": 325,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            178.0,
+            162.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "meat": {
+          "x": 925,
+          "y": 545,
+          "w": 389,
+          "h": 286,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            194.5,
+            143.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "sausages": {
+          "x": 1478,
+          "y": 494,
+          "w": 230,
+          "h": 352,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            115.0,
+            176.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "alphaPercent": 61.46,
+      "webpBytes": 897152,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    }
+  ]
+}

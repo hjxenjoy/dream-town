@@ -1,0 +1,1513 @@
+{
+  "created": "2026-09-21",
+  "note": "原创程序合成，非实录；同类声源共享合成配方，各建筑独立文件与随机种子，未接入游戏。",
+  "tracks": [
+    {
+      "name": "flowernursery",
+      "label": "四季花圃 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/flowernursery.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.0
+      }
+    },
+    {
+      "name": "orchardhouse",
+      "label": "果园小屋 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/orchardhouse.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.69
+      }
+    },
+    {
+      "name": "chickencoop",
+      "label": "咯咯鸡舍 · 鸡鸣与啄食",
+      "url": "/assets/accessories-2026-09/audio/chickencoop.wav",
+      "profile": "chicken",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.18
+      }
+    },
+    {
+      "name": "jamkitchen",
+      "label": "甜果果酱坊 · 液体翻动与器皿",
+      "url": "/assets/accessories-2026-09/audio/jamkitchen.wav",
+      "profile": "bubbles",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.64
+      }
+    },
+    {
+      "name": "teahouse",
+      "label": "河畔茶屋 · 无词人群低语、脚步与杯盏",
+      "url": "/assets/accessories-2026-09/audio/teahouse.wav",
+      "profile": "crowd",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.49
+      }
+    },
+    {
+      "name": "homestead",
+      "label": "花窗农庄 · 轻脚步与门木响",
+      "url": "/assets/accessories-2026-09/audio/homestead.wav",
+      "profile": "home",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -7.96
+      }
+    },
+    {
+      "name": "kiln",
+      "label": "松烟炭窑 · 炉火噼啪与低鸣",
+      "url": "/assets/accessories-2026-09/audio/kiln.wav",
+      "profile": "fire",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -10.11
+      }
+    },
+    {
+      "name": "smelter",
+      "label": "炉光冶炼坊 · 炉火噼啪与低鸣",
+      "url": "/assets/accessories-2026-09/audio/smelter.wav",
+      "profile": "fire",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -10.01
+      }
+    },
+    {
+      "name": "feedmill",
+      "label": "谷穗饲料坊 · 机械转动与节律敲击",
+      "url": "/assets/accessories-2026-09/audio/feedmill.wav",
+      "profile": "machine",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -10.04
+      }
+    },
+    {
+      "name": "weaver",
+      "label": "蓝梭织布坊 · 机械转动与节律敲击",
+      "url": "/assets/accessories-2026-09/audio/weaver.wav",
+      "profile": "machine",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.8
+      }
+    },
+    {
+      "name": "tailor",
+      "label": "暖衣裁缝铺 · 机械转动与节律敲击",
+      "url": "/assets/accessories-2026-09/audio/tailor.wav",
+      "profile": "machine",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.97
+      }
+    },
+    {
+      "name": "farmhouse",
+      "label": "田园小院 · 轻脚步与门木响",
+      "url": "/assets/accessories-2026-09/audio/farmhouse.wav",
+      "profile": "home",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -7.96
+      }
+    },
+    {
+      "name": "rowhouse",
+      "label": "彩窗联排屋 · 轻脚步与门木响",
+      "url": "/assets/accessories-2026-09/audio/rowhouse.wav",
+      "profile": "home",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -7.96
+      }
+    },
+    {
+      "name": "apartment",
+      "label": "晴空公寓 · 轻脚步与门木响",
+      "url": "/assets/accessories-2026-09/audio/apartment.wav",
+      "profile": "home",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -7.96
+      }
+    },
+    {
+      "name": "forester",
+      "label": "青林伐木屋 · 木料搬运与敲击",
+      "url": "/assets/accessories-2026-09/audio/forester.wav",
+      "profile": "wood",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.25
+      }
+    },
+    {
+      "name": "sawmill",
+      "label": "河谷锯木厂 · 机械转动与节律敲击",
+      "url": "/assets/accessories-2026-09/audio/sawmill.wav",
+      "profile": "machine",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.73
+      }
+    },
+    {
+      "name": "fishpond",
+      "label": "碧水养鱼场 · 水波、滴水与水流",
+      "url": "/assets/accessories-2026-09/audio/fishpond.wav",
+      "profile": "water",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.25
+      }
+    },
+    {
+      "name": "brickworks",
+      "label": "窑火建材坊 · 炉火噼啪与低鸣",
+      "url": "/assets/accessories-2026-09/audio/brickworks.wav",
+      "profile": "fire",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -10.29
+      }
+    },
+    {
+      "name": "school",
+      "label": "晨读小学 · 无词人群低语、脚步与杯盏",
+      "url": "/assets/accessories-2026-09/audio/school.wav",
+      "profile": "crowd",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.93
+      }
+    },
+    {
+      "name": "clinic",
+      "label": "安心诊所 · 安静室内与轻脚步",
+      "url": "/assets/accessories-2026-09/audio/clinic.wav",
+      "profile": "quiet",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.54
+      }
+    },
+    {
+      "name": "theatre",
+      "label": "星幕小剧院 · 无词人群低语、脚步与杯盏",
+      "url": "/assets/accessories-2026-09/audio/theatre.wav",
+      "profile": "crowd",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.26
+      }
+    },
+    {
+      "name": "chapel",
+      "label": "河畔小教堂 · 远钟与轻风",
+      "url": "/assets/accessories-2026-09/audio/chapel.wav",
+      "profile": "bell",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.46
+      }
+    },
+    {
+      "name": "watertower",
+      "label": "蓝顶供水塔 · 水波、滴水与水流",
+      "url": "/assets/accessories-2026-09/audio/watertower.wav",
+      "profile": "water",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.21
+      }
+    },
+    {
+      "name": "firestation",
+      "label": "赤砖消防站 · 远钟与轻风",
+      "url": "/assets/accessories-2026-09/audio/firestation.wav",
+      "profile": "bell",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.66
+      }
+    },
+    {
+      "name": "cottage",
+      "label": "林间小屋 · 轻脚步与门木响",
+      "url": "/assets/accessories-2026-09/audio/cottage.wav",
+      "profile": "home",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -7.96
+      }
+    },
+    {
+      "name": "townhall",
+      "label": "小镇议事厅 · 无词人群低语、脚步与杯盏",
+      "url": "/assets/accessories-2026-09/audio/townhall.wav",
+      "profile": "crowd",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.62
+      }
+    },
+    {
+      "name": "lumber",
+      "label": "林间木工坊 · 木料搬运与敲击",
+      "url": "/assets/accessories-2026-09/audio/lumber.wav",
+      "profile": "wood",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -7.96
+      }
+    },
+    {
+      "name": "quarry",
+      "label": "山麓采石场 · 金属轻击",
+      "url": "/assets/accessories-2026-09/audio/quarry.wav",
+      "profile": "metal",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.31
+      }
+    },
+    {
+      "name": "fishery",
+      "label": "河畔渔屋 · 水波、滴水与水流",
+      "url": "/assets/accessories-2026-09/audio/fishery.wav",
+      "profile": "water",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -7.96
+      }
+    },
+    {
+      "name": "market",
+      "label": "旅行者集市 · 无词人群低语、脚步与杯盏",
+      "url": "/assets/accessories-2026-09/audio/market.wav",
+      "profile": "crowd",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.56
+      }
+    },
+    {
+      "name": "well",
+      "label": "清泉水井 · 水波、滴水与水流",
+      "url": "/assets/accessories-2026-09/audio/well.wav",
+      "profile": "water",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.33
+      }
+    },
+    {
+      "name": "warehouse",
+      "label": "丰收仓库 · 木料搬运与敲击",
+      "url": "/assets/accessories-2026-09/audio/warehouse.wav",
+      "profile": "wood",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -7.96
+      }
+    },
+    {
+      "name": "firetower",
+      "label": "森林瞭望塔 · 远钟与轻风",
+      "url": "/assets/accessories-2026-09/audio/firetower.wav",
+      "profile": "bell",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.01
+      }
+    },
+    {
+      "name": "garden",
+      "label": "花语小花园 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/garden.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.91
+      }
+    },
+    {
+      "name": "oak",
+      "label": "青荫橡树 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/oak.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.45
+      }
+    },
+    {
+      "name": "cherry",
+      "label": "春樱花树 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/cherry.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.9
+      }
+    },
+    {
+      "name": "pine",
+      "label": "常青松树 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/pine.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.66
+      }
+    },
+    {
+      "name": "maple",
+      "label": "晚霞红枫 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/maple.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -10.09
+      }
+    },
+    {
+      "name": "fountain",
+      "label": "涟漪喷泉 · 水波、滴水与水流",
+      "url": "/assets/accessories-2026-09/audio/fountain.wav",
+      "profile": "water",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.75
+      }
+    },
+    {
+      "name": "gazebo",
+      "label": "听风凉亭 · 木板脚步与微风",
+      "url": "/assets/accessories-2026-09/audio/gazebo.wav",
+      "profile": "footsteps",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.71
+      }
+    },
+    {
+      "name": "bench",
+      "label": "花畔长椅 · 木板脚步与微风",
+      "url": "/assets/accessories-2026-09/audio/bench.wav",
+      "profile": "footsteps",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.97
+      }
+    },
+    {
+      "name": "flowerarch",
+      "label": "蔷薇花拱门 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/flowerarch.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.98
+      }
+    },
+    {
+      "name": "flowerbox",
+      "label": "临街花箱 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/flowerbox.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.48
+      }
+    },
+    {
+      "name": "trellis",
+      "label": "蔷薇花架 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/trellis.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.34
+      }
+    },
+    {
+      "name": "archlights",
+      "label": "串灯花门 · 织物与风",
+      "url": "/assets/accessories-2026-09/audio/archlights.wav",
+      "profile": "cloth",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.4
+      }
+    },
+    {
+      "name": "boardwalk",
+      "label": "木栈道 · 木板脚步与微风",
+      "url": "/assets/accessories-2026-09/audio/boardwalk.wav",
+      "profile": "footsteps",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.23
+      }
+    },
+    {
+      "name": "railing",
+      "label": "滨河栏杆 · 织物与风",
+      "url": "/assets/accessories-2026-09/audio/railing.wav",
+      "profile": "cloth",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.7
+      }
+    },
+    {
+      "name": "parasol",
+      "label": "遮阳伞座 · 无词人群低语、脚步与杯盏",
+      "url": "/assets/accessories-2026-09/audio/parasol.wav",
+      "profile": "crowd",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.65
+      }
+    },
+    {
+      "name": "willow",
+      "label": "垂柳 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/willow.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.21
+      }
+    },
+    {
+      "name": "dock",
+      "label": "浮动码头 · 水波、滴水与水流",
+      "url": "/assets/accessories-2026-09/audio/dock.wav",
+      "profile": "water",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.87
+      }
+    },
+    {
+      "name": "crates",
+      "label": "木箱堆 · 木料搬运与敲击",
+      "url": "/assets/accessories-2026-09/audio/crates.wav",
+      "profile": "wood",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -7.96
+      }
+    },
+    {
+      "name": "barrels",
+      "label": "橡木酒桶 · 木料搬运与敲击",
+      "url": "/assets/accessories-2026-09/audio/barrels.wav",
+      "profile": "wood",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.73
+      }
+    },
+    {
+      "name": "anvil",
+      "label": "旧铁砧 · 金属轻击",
+      "url": "/assets/accessories-2026-09/audio/anvil.wav",
+      "profile": "metal",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -7.96
+      }
+    },
+    {
+      "name": "signflags",
+      "label": "彩旗招牌 · 织物与风",
+      "url": "/assets/accessories-2026-09/audio/signflags.wav",
+      "profile": "cloth",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.98
+      }
+    },
+    {
+      "name": "cowbarn",
+      "label": "青草牛舍 · 低哞与草垫",
+      "url": "/assets/accessories-2026-09/audio/cowbarn.wav",
+      "profile": "cow",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.59
+      }
+    },
+    {
+      "name": "dairy",
+      "label": "山泉奶坊 · 液体翻动与器皿",
+      "url": "/assets/accessories-2026-09/audio/dairy.wav",
+      "profile": "bubbles",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.43
+      }
+    },
+    {
+      "name": "apiary",
+      "label": "百花蜂场 · 蜂群轻嗡与微风",
+      "url": "/assets/accessories-2026-09/audio/apiary.wav",
+      "profile": "bees",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -10.46
+      }
+    },
+    {
+      "name": "vineyard",
+      "label": "南坡葡萄园 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/vineyard.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.88
+      }
+    },
+    {
+      "name": "winery",
+      "label": "木桶酿酒坊 · 液体翻动与器皿",
+      "url": "/assets/accessories-2026-09/audio/winery.wav",
+      "profile": "bubbles",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -7.96
+      }
+    },
+    {
+      "name": "cellar",
+      "label": "石阶酒窖 · 液体翻动与器皿",
+      "url": "/assets/accessories-2026-09/audio/cellar.wav",
+      "profile": "bubbles",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.59
+      }
+    },
+    {
+      "name": "flowercart",
+      "label": "花车 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/flowercart.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.84
+      }
+    },
+    {
+      "name": "picniccorner",
+      "label": "野餐角 · 无词人群低语、脚步与杯盏",
+      "url": "/assets/accessories-2026-09/audio/picniccorner.wav",
+      "profile": "crowd",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.31
+      }
+    },
+    {
+      "name": "harvestpile",
+      "label": "丰收堆 · 枝叶轻风与短鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/harvestpile.wav",
+      "profile": "leaves",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.48
+      }
+    },
+    {
+      "name": "farm",
+      "label": "田园农田 · 田野微风与鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/farm.wav",
+      "profile": "field",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.98
+      }
+    }
+  ],
+  "buildingCoverage": {
+    "flowernursery": {
+      "url": "/assets/accessories-2026-09/audio/flowernursery.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "orchardhouse": {
+      "url": "/assets/accessories-2026-09/audio/orchardhouse.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "chickencoop": {
+      "url": "/assets/accessories-2026-09/audio/chickencoop.wav",
+      "source": "new",
+      "profile": "chicken",
+      "runtimeIntegrated": false
+    },
+    "jamkitchen": {
+      "url": "/assets/accessories-2026-09/audio/jamkitchen.wav",
+      "source": "new",
+      "profile": "bubbles",
+      "runtimeIntegrated": false
+    },
+    "teahouse": {
+      "url": "/assets/accessories-2026-09/audio/teahouse.wav",
+      "source": "new",
+      "profile": "crowd",
+      "runtimeIntegrated": false
+    },
+    "homestead": {
+      "url": "/assets/accessories-2026-09/audio/homestead.wav",
+      "source": "new",
+      "profile": "home",
+      "runtimeIntegrated": false
+    },
+    "mine": {
+      "url": "/assets/expansion-2026-09/audio/mine.wav",
+      "source": "existing",
+      "profile": "mine",
+      "runtimeIntegrated": false
+    },
+    "kiln": {
+      "url": "/assets/accessories-2026-09/audio/kiln.wav",
+      "source": "new",
+      "profile": "fire",
+      "runtimeIntegrated": false
+    },
+    "smelter": {
+      "url": "/assets/accessories-2026-09/audio/smelter.wav",
+      "source": "new",
+      "profile": "fire",
+      "runtimeIntegrated": false
+    },
+    "smithy": {
+      "url": "/assets/expansion-2026-09/audio/smithy.wav",
+      "source": "existing",
+      "profile": "smithy",
+      "runtimeIntegrated": false
+    },
+    "feedmill": {
+      "url": "/assets/accessories-2026-09/audio/feedmill.wav",
+      "source": "new",
+      "profile": "machine",
+      "runtimeIntegrated": false
+    },
+    "pasture": {
+      "url": "/assets/expansion-2026-09/audio/pasture.wav",
+      "source": "existing",
+      "profile": "pasture",
+      "runtimeIntegrated": false
+    },
+    "weaver": {
+      "url": "/assets/accessories-2026-09/audio/weaver.wav",
+      "source": "new",
+      "profile": "machine",
+      "runtimeIntegrated": false
+    },
+    "tailor": {
+      "url": "/assets/accessories-2026-09/audio/tailor.wav",
+      "source": "new",
+      "profile": "machine",
+      "runtimeIntegrated": false
+    },
+    "farmhouse": {
+      "url": "/assets/accessories-2026-09/audio/farmhouse.wav",
+      "source": "new",
+      "profile": "home",
+      "runtimeIntegrated": false
+    },
+    "rowhouse": {
+      "url": "/assets/accessories-2026-09/audio/rowhouse.wav",
+      "source": "new",
+      "profile": "home",
+      "runtimeIntegrated": false
+    },
+    "apartment": {
+      "url": "/assets/accessories-2026-09/audio/apartment.wav",
+      "source": "new",
+      "profile": "home",
+      "runtimeIntegrated": false
+    },
+    "forester": {
+      "url": "/assets/accessories-2026-09/audio/forester.wav",
+      "source": "new",
+      "profile": "wood",
+      "runtimeIntegrated": false
+    },
+    "sawmill": {
+      "url": "/assets/accessories-2026-09/audio/sawmill.wav",
+      "source": "new",
+      "profile": "machine",
+      "runtimeIntegrated": false
+    },
+    "fishpond": {
+      "url": "/assets/accessories-2026-09/audio/fishpond.wav",
+      "source": "new",
+      "profile": "water",
+      "runtimeIntegrated": false
+    },
+    "brickworks": {
+      "url": "/assets/accessories-2026-09/audio/brickworks.wav",
+      "source": "new",
+      "profile": "fire",
+      "runtimeIntegrated": false
+    },
+    "school": {
+      "url": "/assets/accessories-2026-09/audio/school.wav",
+      "source": "new",
+      "profile": "crowd",
+      "runtimeIntegrated": false
+    },
+    "clinic": {
+      "url": "/assets/accessories-2026-09/audio/clinic.wav",
+      "source": "new",
+      "profile": "quiet",
+      "runtimeIntegrated": false
+    },
+    "theatre": {
+      "url": "/assets/accessories-2026-09/audio/theatre.wav",
+      "source": "new",
+      "profile": "crowd",
+      "runtimeIntegrated": false
+    },
+    "chapel": {
+      "url": "/assets/accessories-2026-09/audio/chapel.wav",
+      "source": "new",
+      "profile": "bell",
+      "runtimeIntegrated": false
+    },
+    "watertower": {
+      "url": "/assets/accessories-2026-09/audio/watertower.wav",
+      "source": "new",
+      "profile": "water",
+      "runtimeIntegrated": false
+    },
+    "firestation": {
+      "url": "/assets/accessories-2026-09/audio/firestation.wav",
+      "source": "new",
+      "profile": "bell",
+      "runtimeIntegrated": false
+    },
+    "cottage": {
+      "url": "/assets/accessories-2026-09/audio/cottage.wav",
+      "source": "new",
+      "profile": "home",
+      "runtimeIntegrated": false
+    },
+    "windmill": {
+      "url": "/assets/expansion-2026-09/audio/windmill.wav",
+      "source": "existing",
+      "profile": "windmill",
+      "runtimeIntegrated": false
+    },
+    "bakery": {
+      "url": "/assets/expansion-2026-09/audio/bakery.wav",
+      "source": "existing",
+      "profile": "bakery",
+      "runtimeIntegrated": false
+    },
+    "townhall": {
+      "url": "/assets/accessories-2026-09/audio/townhall.wav",
+      "source": "new",
+      "profile": "crowd",
+      "runtimeIntegrated": false
+    },
+    "lumber": {
+      "url": "/assets/accessories-2026-09/audio/lumber.wav",
+      "source": "new",
+      "profile": "wood",
+      "runtimeIntegrated": false
+    },
+    "quarry": {
+      "url": "/assets/accessories-2026-09/audio/quarry.wav",
+      "source": "new",
+      "profile": "metal",
+      "runtimeIntegrated": false
+    },
+    "fishery": {
+      "url": "/assets/accessories-2026-09/audio/fishery.wav",
+      "source": "new",
+      "profile": "water",
+      "runtimeIntegrated": false
+    },
+    "market": {
+      "url": "/assets/accessories-2026-09/audio/market.wav",
+      "source": "new",
+      "profile": "crowd",
+      "runtimeIntegrated": false
+    },
+    "well": {
+      "url": "/assets/accessories-2026-09/audio/well.wav",
+      "source": "new",
+      "profile": "water",
+      "runtimeIntegrated": false
+    },
+    "warehouse": {
+      "url": "/assets/accessories-2026-09/audio/warehouse.wav",
+      "source": "new",
+      "profile": "wood",
+      "runtimeIntegrated": false
+    },
+    "firetower": {
+      "url": "/assets/accessories-2026-09/audio/firetower.wav",
+      "source": "new",
+      "profile": "bell",
+      "runtimeIntegrated": false
+    },
+    "garden": {
+      "url": "/assets/accessories-2026-09/audio/garden.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "oak": {
+      "url": "/assets/accessories-2026-09/audio/oak.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "cherry": {
+      "url": "/assets/accessories-2026-09/audio/cherry.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "pine": {
+      "url": "/assets/accessories-2026-09/audio/pine.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "maple": {
+      "url": "/assets/accessories-2026-09/audio/maple.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "fountain": {
+      "url": "/assets/accessories-2026-09/audio/fountain.wav",
+      "source": "new",
+      "profile": "water",
+      "runtimeIntegrated": false
+    },
+    "gazebo": {
+      "url": "/assets/accessories-2026-09/audio/gazebo.wav",
+      "source": "new",
+      "profile": "footsteps",
+      "runtimeIntegrated": false
+    },
+    "bench": {
+      "url": "/assets/accessories-2026-09/audio/bench.wav",
+      "source": "new",
+      "profile": "footsteps",
+      "runtimeIntegrated": false
+    },
+    "flowerarch": {
+      "url": "/assets/accessories-2026-09/audio/flowerarch.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "flowerbox": {
+      "url": "/assets/accessories-2026-09/audio/flowerbox.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "trellis": {
+      "url": "/assets/accessories-2026-09/audio/trellis.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "archlights": {
+      "url": "/assets/accessories-2026-09/audio/archlights.wav",
+      "source": "new",
+      "profile": "cloth",
+      "runtimeIntegrated": false
+    },
+    "boardwalk": {
+      "url": "/assets/accessories-2026-09/audio/boardwalk.wav",
+      "source": "new",
+      "profile": "footsteps",
+      "runtimeIntegrated": false
+    },
+    "railing": {
+      "url": "/assets/accessories-2026-09/audio/railing.wav",
+      "source": "new",
+      "profile": "cloth",
+      "runtimeIntegrated": false
+    },
+    "parasol": {
+      "url": "/assets/accessories-2026-09/audio/parasol.wav",
+      "source": "new",
+      "profile": "crowd",
+      "runtimeIntegrated": false
+    },
+    "willow": {
+      "url": "/assets/accessories-2026-09/audio/willow.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "dock": {
+      "url": "/assets/accessories-2026-09/audio/dock.wav",
+      "source": "new",
+      "profile": "water",
+      "runtimeIntegrated": false
+    },
+    "crates": {
+      "url": "/assets/accessories-2026-09/audio/crates.wav",
+      "source": "new",
+      "profile": "wood",
+      "runtimeIntegrated": false
+    },
+    "barrels": {
+      "url": "/assets/accessories-2026-09/audio/barrels.wav",
+      "source": "new",
+      "profile": "wood",
+      "runtimeIntegrated": false
+    },
+    "anvil": {
+      "url": "/assets/accessories-2026-09/audio/anvil.wav",
+      "source": "new",
+      "profile": "metal",
+      "runtimeIntegrated": false
+    },
+    "signflags": {
+      "url": "/assets/accessories-2026-09/audio/signflags.wav",
+      "source": "new",
+      "profile": "cloth",
+      "runtimeIntegrated": false
+    },
+    "cowbarn": {
+      "url": "/assets/accessories-2026-09/audio/cowbarn.wav",
+      "source": "new",
+      "profile": "cow",
+      "runtimeIntegrated": false
+    },
+    "dairy": {
+      "url": "/assets/accessories-2026-09/audio/dairy.wav",
+      "source": "new",
+      "profile": "bubbles",
+      "runtimeIntegrated": false
+    },
+    "apiary": {
+      "url": "/assets/accessories-2026-09/audio/apiary.wav",
+      "source": "new",
+      "profile": "bees",
+      "runtimeIntegrated": false
+    },
+    "vineyard": {
+      "url": "/assets/accessories-2026-09/audio/vineyard.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "winery": {
+      "url": "/assets/accessories-2026-09/audio/winery.wav",
+      "source": "new",
+      "profile": "bubbles",
+      "runtimeIntegrated": false
+    },
+    "cellar": {
+      "url": "/assets/accessories-2026-09/audio/cellar.wav",
+      "source": "new",
+      "profile": "bubbles",
+      "runtimeIntegrated": false
+    },
+    "flowercart": {
+      "url": "/assets/accessories-2026-09/audio/flowercart.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "picniccorner": {
+      "url": "/assets/accessories-2026-09/audio/picniccorner.wav",
+      "source": "new",
+      "profile": "crowd",
+      "runtimeIntegrated": false
+    },
+    "harvestpile": {
+      "url": "/assets/accessories-2026-09/audio/harvestpile.wav",
+      "source": "new",
+      "profile": "leaves",
+      "runtimeIntegrated": false
+    },
+    "farm": {
+      "url": "/assets/accessories-2026-09/audio/farm.wav",
+      "source": "new",
+      "profile": "field",
+      "runtimeIntegrated": false
+    }
+  },
+  "buildingCount": 69,
+  "existingReused": 5,
+  "newTracks": 64
+}

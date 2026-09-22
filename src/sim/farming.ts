@@ -1,3 +1,6 @@
+// Type-only: the sim layer names atlas frames but never loads them, so this import is erased.
+import type { GeneratedAtlas } from './atlases.ts';
+
 export const CROP_IDS=['wheat','carrot','corn','tomato','strawberry','pumpkin','sunflower','grape','apple'] as const;
 export type CropId=typeof CROP_IDS[number];
 export interface CropDefinition { name:string; level:number; cycle:number; yield:number; price:number; color:number; description:string }
@@ -25,8 +28,10 @@ export function gardenLevel(xp:number){let level=1,left=xp;while(level<30){const
 export function soilLevel(harvests=0){const thresholds=[0,8,24,60,140];let index=0;for(let i=1;i<thresholds.length;i++)if(harvests>=thresholds[i])index=i;return {level:index+1,name:['新垦土地','松软沃土','丰饶良田','金穗田园','传家沃土'][index],harvests,next:thresholds[index+1]??null,bonus:index};}
 export function cropMastery(amount:number){return amount>=1500?'传家品种':amount>=500?'丰收能手':amount>=150?'熟练种植':amount>=30?'初尝收获':amount>0?'初试种植':'等待收获';}
 
+export type GrowthStage='fallow'|'sprouting'|'growing'|'ripening'|'ready';
+
 /** The ready flag is authoritative: a full progress bar may still await settlement. */
-export function cropGrowthStage(progress:number, ready:boolean, fallow=false): 'fallow'|'sprouting'|'growing'|'ripening'|'ready' {
+export function cropGrowthStage(progress:number, ready:boolean, fallow=false): GrowthStage {
   if(ready)return 'ready';
   if(fallow)return 'fallow';
   if(progress>=.72)return 'ripening';
@@ -34,6 +39,32 @@ export function cropGrowthStage(progress:number, ready:boolean, fallow=false): '
   return 'sprouting';
 }
 export const CROP_GROWTH_LABELS={fallow:'等待播种',sprouting:'正在萌芽',growing:'枝叶渐丰',ripening:'快成熟了',ready:'可以收获'};
+
+/**
+ * Field art, from the readiness pack: four frames per crop. The five logical stages above
+ * map onto them, so ripening already shows the third frame and `ready` is the only state
+ * that shows the full plant. A fallow field has no crop art at all and stays bare soil.
+ *
+ * Which atlas holds a crop's four frames, and how wide its soil plot is drawn inside that
+ * atlas. The three sheets were framed at slightly different scales, so the measured plot
+ * width is recorded here and the renderer divides by it: without that, a tomato field would
+ * show a plot 9% smaller than the wheat field next to it. Measured from each sheet's sprout
+ * frame, where the soil is the widest thing in the image.
+ */
+export const CROP_STAGE_ATLAS:Record<CropId,{atlas:GeneratedAtlas;soilWidth:number}>={
+  wheat:{atlas:'crop-stages-1',soilWidth:272},carrot:{atlas:'crop-stages-1',soilWidth:272},corn:{atlas:'crop-stages-1',soilWidth:272},
+  tomato:{atlas:'crop-stages-2',soilWidth:247},strawberry:{atlas:'crop-stages-2',soilWidth:247},pumpkin:{atlas:'crop-stages-2',soilWidth:247},
+  sunflower:{atlas:'crop-stages-3',soilWidth:271},grape:{atlas:'crop-stages-3',soilWidth:265},apple:{atlas:'crop-stages-3',soilWidth:267},
+};
+
+/** The atlas frame for a crop's current stage, or null when the field is bare. */
+export function cropStageFrame(crop:CropId,stage:GrowthStage):{atlas:GeneratedAtlas;frame:string;soilWidth:number}|null {
+  const key=stage==='sprouting'?'sprout':stage==='growing'?'young':stage==='ripening'?'growing':stage==='ready'?'ripe':null;
+  if(!key)return null;
+  const {atlas,soilWidth}=CROP_STAGE_ATLAS[crop];
+  return {atlas,frame:`${crop}-${key}`,soilWidth};
+}
+
 export function harvestQuote(crop:CropId,buildingLevel:number,harvests:number,seed:number):CropHarvest {
   const def=CROPS[crop],soil=soilLevel(harvests);
   // A deterministic lucky harvest survives refreshes and offline settlement.

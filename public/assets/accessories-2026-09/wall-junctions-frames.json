@@ -1,0 +1,150 @@
+{
+  "name": "wall-junctions",
+  "label": "城墙端头与丁字口",
+  "image": "/assets/accessories-2026-09/wall-junctions.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "frames": {
+    "wall-end-n": {
+      "x": 111,
+      "y": 112,
+      "w": 234,
+      "h": 219,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        117.0,
+        208.05
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "wall-end-e": {
+      "x": 546,
+      "y": 112,
+      "w": 234,
+      "h": 218,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        117.0,
+        207.1
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "wall-end-s": {
+      "x": 1008,
+      "y": 115,
+      "w": 223,
+      "h": 219,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        111.5,
+        208.05
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "wall-end-w": {
+      "x": 1436,
+      "y": 115,
+      "w": 221,
+      "h": 217,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        110.5,
+        206.15
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "wall-tee-n": {
+      "x": 69,
+      "y": 527,
+      "w": 311,
+      "h": 259,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        155.5,
+        246.05
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "wall-tee-e": {
+      "x": 510,
+      "y": 527,
+      "w": 313,
+      "h": 259,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        156.5,
+        246.05
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "wall-tee-s": {
+      "x": 953,
+      "y": 527,
+      "w": 299,
+      "h": 259,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        149.5,
+        246.05
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "wall-tee-w": {
+      "x": 1411,
+      "y": 527,
+      "w": 294,
+      "h": 259,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        147.0,
+        246.05
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    }
+  },
+  "alphaPercent": 81.05,
+  "webpBytes": 532912,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

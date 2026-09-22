@@ -1,0 +1,106 @@
+[
+  {
+    "name": "island-products",
+    "label": "四岛特产",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "peach",
+      "watermelon",
+      "plum",
+      "olive",
+      "lime",
+      "banana",
+      "shrimp",
+      "lobster"
+    ],
+    "subjects": "Row 1: peach with one leaf; watermelon whole and one red slice; two purple plums; green olives on a small leafy twig. Row 2: whole lime and cut lime half; small bunch of bananas; three pink shrimp; one red lobster. Single inventory icon per cell, no plates, no ground.",
+    "prompt": "Use case: stylized-concept. One production transparent sprite atlas for Dream Town. Cozy polished hand-painted isometric 3D game art, warm oak, cream plaster, terracotta, jewel green foliage, lighting upper left. EXACT 4 columns and 2 rows, 8 isolated sprites, row-major ordering. Row 1: peach with one leaf; watermelon whole and one red slice; two purple plums; green olives on a small leafy twig. Row 2: whole lime and cut lime half; small bunch of bananas; three pink shrimp; one red lobster. Single inventory icon per cell, no plates, no ground. CRITICAL keep every sprite SMALL, centered in central 55% of each equally sized cell, huge fully transparent gutters on all sides, no touching or cropping. Truly transparent alpha background, no checkerboard, no captions, no lettering, no labels, no grids. Same orthographic 3/4 isometric camera for world objects; front view for UI. Crisp readable silhouettes."
+  },
+  {
+    "name": "railway-parts",
+    "label": "铁路与枕木",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "rail-ne-sw",
+      "rail-nw-se",
+      "rail-curve-north",
+      "rail-curve-east",
+      "rail-curve-south",
+      "rail-curve-west",
+      "rail-cross",
+      "rail-ties"
+    ],
+    "subjects": "Eight consistent railway construction pieces, isometric projected diamond ground plane, dark wood sleepers and two steel rails. Row 1: straight diagonal track rising right (/); straight diagonal track falling right (backslash); quarter curve joining upper-left and upper-right diamond edges; quarter curve joining upper-right and lower-right diamond edges. Row 2: quarter curve joining lower-right and lower-left diamond edges; quarter curve joining lower-left and upper-left diamond edges; crossing with both diagonal tracks; neat bundle of spare wooden railway sleepers with steel fasteners. Every track same gauge, same sleeper spacing, no train, no station, no trees, no chunky platform.",
+    "prompt": "Use case: stylized-concept. One production transparent sprite atlas for Dream Town. Cozy polished hand-painted isometric 3D game art, warm oak, cream plaster, terracotta, jewel green foliage, lighting upper left. EXACT 4 columns and 2 rows, 8 isolated sprites, row-major ordering. Eight consistent railway construction pieces, isometric projected diamond ground plane, dark wood sleepers and two steel rails. Row 1: straight diagonal track rising right (/); straight diagonal track falling right (backslash); quarter curve joining upper-left and upper-right diamond edges; quarter curve joining upper-right and lower-right diamond edges. Row 2: quarter curve joining lower-right and lower-left diamond edges; quarter curve joining lower-left and upper-left diamond edges; crossing with both diagonal tracks; neat bundle of spare wooden railway sleepers with steel fasteners. Every track same gauge, same sleeper spacing, no train, no station, no trees, no chunky platform. CRITICAL keep every sprite SMALL, centered in central 55% of each equally sized cell, huge fully transparent gutters on all sides, no touching or cropping. Truly transparent alpha background, no checkerboard, no captions, no lettering, no labels, no grids. Same orthographic 3/4 isometric camera for world objects; front view for UI. Crisp readable silhouettes. OVERRIDE CURVE ORIENTATION: cell 3 must be an upside-down arch ∩ with its middle HIGH on screen and both ends LOW. Cell 5 must be a U-shaped arc ∪ with middle LOW on screen and both ends HIGH. These two are vertical opposites. Cell 4 is a right-parenthesis arc ) bulging RIGHT. Cell 6 is a left-parenthesis arc ( bulging LEFT. These four arc silhouettes MUST BE visibly distinct. Preserve the same isometric ground perspective. No text or drawn diagram symbols."
+  },
+  {
+    "name": "wall-junctions",
+    "label": "城墙端头与丁字口",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "wall-end-n",
+      "wall-end-e",
+      "wall-end-s",
+      "wall-end-w",
+      "wall-tee-n",
+      "wall-tee-e",
+      "wall-tee-s",
+      "wall-tee-w"
+    ],
+    "subjects": "Consistent modular light cream stone crenellated castle walls, same blue pennant accent and stone scale as Dream Town military buildings. On isometric diamond grid. Row 1: four short wall end-caps with one connection each, projecting toward upper-left, upper-right, lower-right, lower-left respectively, blunt solid finished free ends. Row 2: four T-shaped three-branch wall junctions, missing branch toward upper-left, upper-right, lower-right, lower-left respectively. Each junction has exactly 3 clear arms. Minimal grass footing. No towers, gates, people or buildings.",
+    "prompt": "Use case: stylized-concept. One production transparent sprite atlas for Dream Town. Cozy polished hand-painted isometric 3D game art, warm oak, cream plaster, terracotta, jewel green foliage, lighting upper left. EXACT 4 columns and 2 rows, 8 isolated sprites, row-major ordering. Consistent modular light cream stone crenellated castle walls, same blue pennant accent and stone scale as Dream Town military buildings. On isometric diamond grid. Row 1: four short wall end-caps with one connection each, projecting toward upper-left, upper-right, lower-right, lower-left respectively, blunt solid finished free ends. Row 2: four T-shaped three-branch wall junctions, missing branch toward upper-left, upper-right, lower-right, lower-left respectively. Each junction has exactly 3 clear arms. Minimal grass footing. No towers, gates, people or buildings. CRITICAL keep every sprite SMALL, centered in central 55% of each equally sized cell, huge fully transparent gutters on all sides, no touching or cropping. Truly transparent alpha background, no checkerboard, no captions, no lettering, no labels, no grids. Same orthographic 3/4 isometric camera for world objects; front view for UI. Crisp readable silhouettes. OVERRIDE GEOMETRY: lower row MUST show three-arm junctions, NOT corners. Use low walls with NO TOWERS and camera high enough to see all arms. Each T junction is like a plus-shaped wall with one arm removed, THREE long arms clearly visible, long enough none is hidden. Cell 5 branches upper-right, lower-right, lower-left. Cell 6 branches upper-left, lower-right, lower-left. Cell 7 branches upper-left, upper-right, lower-left. Cell 8 branches upper-left, upper-right, lower-right. Every branch same thickness and length. No pillars or towers in any cell. Top four cells remain simple short end-cap walls."
+  },
+  {
+    "name": "small-accessories",
+    "label": "猎获物、动物园商店与助手气泡",
+    "cols": 4,
+    "rows": 1,
+    "frames": [
+      "pelt",
+      "zoo-souvenir-shop",
+      "thought-bubble-idle",
+      "thought-bubble-thinking"
+    ],
+    "subjects": "Row 1: neatly folded tawny animal hide with soft fur edge, no animal head or gore; cozy tiny zoo souvenir shop with terracotta roof, cream plaster and dark timber, striped awning, plush elephant toy and giraffe toy in window, paw symbol sign with no letters. Row 2: empty ivory cloud-shaped thought bubble with two small trailing bubbles below left, brass thin rim; exact same thought bubble with three gold dots horizontally centered inside. Bubble frame interiors opaque ivory, outside transparent, UI front view. Whole bubble tails included.",
+    "prompt": "Create a NEW transparent game sprite sheet PNG with alpha channel. Four isolated miniature sprites arranged in ONE horizontal row, FOUR equal columns. Left to right: 1 folded brown fur pelt, 2 isometric cozy terracotta-roof zoo souvenir cottage displaying tiny animal plush toys, 3 empty cream cloud-shaped thought bubble with two small trailing bubbles, 4 same thought bubble containing three gold dots. Hand painted cozy town simulation game art, clean sprite silhouettes. Everything outside the objects is transparent. Wide sprite sheet. Each object tiny in its cell, 25 percent padding on each side. No backdrop, no aura, no glowing lights, no dark vignette, no labels. This is a transparent sprite texture atlas not a presentation illustration. Fresh composition unrelated to prior images."
+  },
+  {
+    "name": "duel-actions",
+    "label": "守卫与强盗决斗动作",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "guard-ready",
+      "guard-thrust",
+      "guard-block",
+      "guard-recover",
+      "bandit-ready",
+      "bandit-lunge",
+      "bandit-recoil",
+      "bandit-retreat"
+    ],
+    "subjects": "Sprite animation sheet, TWO characters in separate rows, four poses each. Top row SAME friendly stocky guard in silver helmet, royal blue surcoat with gold trim, round blue shield with gold emblem, short wooden spear, facing RIGHT: ready stance; controlled forward spear thrust; shield blocking; return to ready. Bottom row SAME short bandit in dark olive hood, brown clothes, red face scarf, leather boots, small wooden club, facing LEFT: ready stance; club lunge; recoil from block; stepping backward retreat. Consistent costume, head size, body proportions and camera between frames; ground feet on same baseline in each row, equal framing and sprite scale. No plinths, scenery, sparks, blood, injury or text. Lighthearted stage duel, non-graphic. Single character per cell, weapons stay entirely inside its cell.",
+    "prompt": "Use case: stylized-concept. One production transparent sprite atlas for Dream Town. Cozy polished hand-painted isometric 3D game art, warm oak, cream plaster, terracotta, jewel green foliage, lighting upper left. EXACT 4 columns and 2 rows, 8 isolated sprites, row-major ordering. Sprite animation sheet, TWO characters in separate rows, four poses each. Top row SAME friendly stocky guard in silver helmet, royal blue surcoat with gold trim, round blue shield with gold emblem, short wooden spear, facing RIGHT: ready stance; controlled forward spear thrust; shield blocking; return to ready. Bottom row SAME short bandit in dark olive hood, brown clothes, red face scarf, leather boots, small wooden club, facing LEFT: ready stance; club lunge; recoil from block; stepping backward retreat. Consistent costume, head size, body proportions and camera between frames; ground feet on same baseline in each row, equal framing and sprite scale. No plinths, scenery, sparks, blood, injury or text. Lighthearted stage duel, non-graphic. Single character per cell, weapons stay entirely inside its cell. CRITICAL keep every sprite SMALL, centered in central 55% of each equally sized cell, huge fully transparent gutters on all sides, no touching or cropping. Truly transparent alpha background, no checkerboard, no captions, no lettering, no labels, no grids. Same orthographic 3/4 isometric camera for world objects; front view for UI. Crisp readable silhouettes."
+  },
+  {
+    "name": "new-crop-stages",
+    "label": "甘蔗与啤酒花生长阶段",
+    "cols": 4,
+    "rows": 2,
+    "frames": [
+      "sugarcane-sprout",
+      "sugarcane-young",
+      "sugarcane-growing",
+      "sugarcane-ripe",
+      "hops-sprout",
+      "hops-young",
+      "hops-growing",
+      "hops-ripe"
+    ],
+    "subjects": "Crop growth sprite sheet. Top row SAME small diamond soil plot with sugarcane through four stages: tiny emerging green shoots; short leafy shoots; medium height segmented stalks; tall ripe segmented cane stalks with long green leaves. Bottom row SAME small diamond soil plot with SAME three wooden trellis posts and horizontal strings at fixed positions in all 4 stages: tiny hops seedlings below bare trellis; small vines climbing low on trellis; leafy vines halfway up trellis; full mature green trellis loaded with hanging hop cones. Fixed camera, identical soil footprint and same world scale across ALL cells. Growth must change PLANT HEIGHT, not zoom. Bottom ground baseline fixed within each row. No cottages, signs or harvested items.",
+    "prompt": "Use case: stylized-concept. One production transparent sprite atlas for Dream Town. Cozy polished hand-painted isometric 3D game art, warm oak, cream plaster, terracotta, jewel green foliage, lighting upper left. EXACT 4 columns and 2 rows, 8 isolated sprites, row-major ordering. Crop growth sprite sheet. Top row SAME small diamond soil plot with sugarcane through four stages: tiny emerging green shoots; short leafy shoots; medium height segmented stalks; tall ripe segmented cane stalks with long green leaves. Bottom row SAME small diamond soil plot with SAME three wooden trellis posts and horizontal strings at fixed positions in all 4 stages: tiny hops seedlings below bare trellis; small vines climbing low on trellis; leafy vines halfway up trellis; full mature green trellis loaded with hanging hop cones. Fixed camera, identical soil footprint and same world scale across ALL cells. Growth must change PLANT HEIGHT, not zoom. Bottom ground baseline fixed within each row. No cottages, signs or harvested items. CRITICAL keep every sprite SMALL, centered in central 55% of each equally sized cell, huge fully transparent gutters on all sides, no touching or cropping. Truly transparent alpha background, no checkerboard, no captions, no lettering, no labels, no grids. Same orthographic 3/4 isometric camera for world objects; front view for UI. Crisp readable silhouettes."
+  }
+]

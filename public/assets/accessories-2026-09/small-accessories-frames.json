@@ -1,0 +1,86 @@
+{
+  "name": "small-accessories",
+  "label": "猎获物、动物园商店与助手气泡",
+  "image": "/assets/accessories-2026-09/small-accessories.webp",
+  "width": 2172,
+  "height": 724,
+  "columns": 4,
+  "rows": 1,
+  "activeFrames": 4,
+  "frames": {
+    "pelt": {
+      "x": 92,
+      "y": 273,
+      "w": 376,
+      "h": 280,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        188.0,
+        140.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "zoo-souvenir-shop": {
+      "x": 603,
+      "y": 111,
+      "w": 439,
+      "h": 496,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        219.5,
+        471.2
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "thought-bubble-idle": {
+      "x": 1195,
+      "y": 235,
+      "w": 342,
+      "h": 322,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        171.0,
+        161.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "thought-bubble-thinking": {
+      "x": 1734,
+      "y": 235,
+      "w": 342,
+      "h": 322,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        171.0,
+        161.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "alphaPercent": 77.94,
+  "webpBytes": 517380,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

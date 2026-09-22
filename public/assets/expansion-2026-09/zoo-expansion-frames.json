@@ -1,0 +1,150 @@
+{
+  "name": "zoo-expansion",
+  "label": "动物园",
+  "image": "/assets/expansion-2026-09/zoo-expansion.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "frames": {
+    "zoo-gate": {
+      "x": 65,
+      "y": 121,
+      "w": 346,
+      "h": 285,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        173.0,
+        270.75
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "zoo-enclosure": {
+      "x": 487,
+      "y": 86,
+      "w": 391,
+      "h": 328,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        195.5,
+        311.6
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "zoo-keeper": {
+      "x": 1025,
+      "y": 85,
+      "w": 157,
+      "h": 343,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        78.5,
+        325.85
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "zoo-feed": {
+      "x": 1423,
+      "y": 156,
+      "w": 250,
+      "h": 244,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        125.0,
+        231.8
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "elephant": {
+      "x": 90,
+      "y": 515,
+      "w": 311,
+      "h": 294,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        155.5,
+        279.3
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "giraffe": {
+      "x": 577,
+      "y": 471,
+      "w": 176,
+      "h": 358,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        88.0,
+        340.1
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "zebra": {
+      "x": 999,
+      "y": 523,
+      "w": 234,
+      "h": 294,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        117.0,
+        279.3
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "lion": {
+      "x": 1386,
+      "y": 517,
+      "w": 315,
+      "h": 300,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        157.5,
+        285.0
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    }
+  },
+  "alphaPercent": 73.55,
+  "webpBytes": 765956,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

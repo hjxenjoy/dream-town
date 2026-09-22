@@ -1,0 +1,5 @@
+{
+  "generator": "built-in image_gen",
+  "finalPrompt": "Create transparent-background game sprites: FOUR separate vehicles in ONE long horizontal row. Tiny green red-roof locomotive, tiny cream green airplane, tiny wooden sailing cargo ship, tiny blue white fishing trawler. Facing lower right, sunlight upper left. Each sprite VERY SMALL: occupies only 40 percent of its equally spaced cell, empty alpha all around, huge gaps between vehicles. Hand painted isometric fantasy farming game style. Absolutely transparent PNG background, no glow or shadows.",
+  "source": "output/readiness-assets-2026-09-21/raw/vehicles-return.png"
+}

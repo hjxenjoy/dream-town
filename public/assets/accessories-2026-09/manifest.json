@@ -1,0 +1,889 @@
+{
+  "created": "2026-09-21",
+  "generator": "built-in image_gen",
+  "runtimeIntegrated": false,
+  "activeFrames": 44,
+  "webpBytes": 3062278,
+  "atlases": [
+    {
+      "name": "island-products",
+      "label": "四岛特产",
+      "image": "/assets/accessories-2026-09/island-products.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "peach": {
+          "x": 147,
+          "y": 152,
+          "w": 191,
+          "h": 199,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            95.5,
+            99.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "watermelon": {
+          "x": 562,
+          "y": 145,
+          "w": 223,
+          "h": 217,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            111.5,
+            108.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "plum": {
+          "x": 1009,
+          "y": 162,
+          "w": 210,
+          "h": 193,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            105.0,
+            96.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "olive": {
+          "x": 1415,
+          "y": 150,
+          "w": 236,
+          "h": 206,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            118.0,
+            103.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "lime": {
+          "x": 122,
+          "y": 566,
+          "w": 228,
+          "h": 193,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            114.0,
+            96.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "banana": {
+          "x": 541,
+          "y": 533,
+          "w": 238,
+          "h": 239,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            119.0,
+            119.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "shrimp": {
+          "x": 994,
+          "y": 542,
+          "w": 237,
+          "h": 219,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            118.5,
+            109.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "lobster": {
+          "x": 1412,
+          "y": 535,
+          "w": 243,
+          "h": 238,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            121.5,
+            119.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "alphaPercent": 83.57,
+      "webpBytes": 465848,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "railway-parts",
+      "label": "铁路与枕木",
+      "image": "/assets/accessories-2026-09/railway-parts.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "rail-ne-sw": {
+          "x": 93,
+          "y": 125,
+          "w": 274,
+          "h": 210,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            137.0,
+            199.5
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "rail-nw-se": {
+          "x": 520,
+          "y": 125,
+          "w": 275,
+          "h": 210,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            137.5,
+            199.5
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "rail-curve-north": {
+          "x": 945,
+          "y": 161,
+          "w": 333,
+          "h": 163,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            166.5,
+            154.85
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "rail-curve-east": {
+          "x": 1483,
+          "y": 111,
+          "w": 166,
+          "h": 255,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            83.0,
+            242.25
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "rail-curve-south": {
+          "x": 73,
+          "y": 593,
+          "w": 334,
+          "h": 171,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            167.0,
+            162.45
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "rail-curve-west": {
+          "x": 578,
+          "y": 532,
+          "w": 172,
+          "h": 256,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            86.0,
+            243.2
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "rail-cross": {
+          "x": 967,
+          "y": 550,
+          "w": 288,
+          "h": 223,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            144.0,
+            211.85
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "rail-ties": {
+          "x": 1439,
+          "y": 563,
+          "w": 248,
+          "h": 204,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            124.0,
+            193.8
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        }
+      },
+      "alphaPercent": 84.41,
+      "webpBytes": 500482,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "wall-junctions",
+      "label": "城墙端头与丁字口",
+      "image": "/assets/accessories-2026-09/wall-junctions.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "wall-end-n": {
+          "x": 111,
+          "y": 112,
+          "w": 234,
+          "h": 219,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            117.0,
+            208.05
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "wall-end-e": {
+          "x": 546,
+          "y": 112,
+          "w": 234,
+          "h": 218,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            117.0,
+            207.1
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "wall-end-s": {
+          "x": 1008,
+          "y": 115,
+          "w": 223,
+          "h": 219,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            111.5,
+            208.05
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "wall-end-w": {
+          "x": 1436,
+          "y": 115,
+          "w": 221,
+          "h": 217,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            110.5,
+            206.15
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "wall-tee-n": {
+          "x": 69,
+          "y": 527,
+          "w": 311,
+          "h": 259,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            155.5,
+            246.05
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "wall-tee-e": {
+          "x": 510,
+          "y": 527,
+          "w": 313,
+          "h": 259,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            156.5,
+            246.05
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "wall-tee-s": {
+          "x": 953,
+          "y": 527,
+          "w": 299,
+          "h": 259,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            149.5,
+            246.05
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "wall-tee-w": {
+          "x": 1411,
+          "y": 527,
+          "w": 294,
+          "h": 259,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            147.0,
+            246.05
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        }
+      },
+      "alphaPercent": 81.05,
+      "webpBytes": 532912,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "small-accessories",
+      "label": "猎获物、动物园商店与助手气泡",
+      "image": "/assets/accessories-2026-09/small-accessories.webp",
+      "width": 2172,
+      "height": 724,
+      "columns": 4,
+      "rows": 1,
+      "activeFrames": 4,
+      "frames": {
+        "pelt": {
+          "x": 92,
+          "y": 273,
+          "w": 376,
+          "h": 280,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            188.0,
+            140.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "zoo-souvenir-shop": {
+          "x": 603,
+          "y": 111,
+          "w": 439,
+          "h": 496,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            219.5,
+            471.2
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "thought-bubble-idle": {
+          "x": 1195,
+          "y": 235,
+          "w": 342,
+          "h": 322,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            171.0,
+            161.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "thought-bubble-thinking": {
+          "x": 1734,
+          "y": 235,
+          "w": 342,
+          "h": 322,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            171.0,
+            161.0
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "alphaPercent": 77.94,
+      "webpBytes": 517380,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "duel-actions",
+      "label": "守卫与强盗决斗动作",
+      "image": "/assets/accessories-2026-09/duel-actions.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "guard-ready": {
+          "x": 0,
+          "y": 0,
+          "w": 444,
+          "h": 444,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            192.0,
+            377.0
+          ],
+          "origin": [
+            0.43243,
+            0.8491
+          ]
+        },
+        "guard-thrust": {
+          "x": 444,
+          "y": 0,
+          "w": 443,
+          "h": 444,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            153.0,
+            377.0
+          ],
+          "origin": [
+            0.34537,
+            0.8491
+          ]
+        },
+        "guard-block": {
+          "x": 887,
+          "y": 0,
+          "w": 443,
+          "h": 444,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            251.0,
+            371.0
+          ],
+          "origin": [
+            0.56659,
+            0.83559
+          ]
+        },
+        "guard-recover": {
+          "x": 1330,
+          "y": 0,
+          "w": 444,
+          "h": 444,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            163.0,
+            378.0
+          ],
+          "origin": [
+            0.36712,
+            0.85135
+          ]
+        },
+        "bandit-ready": {
+          "x": 0,
+          "y": 444,
+          "w": 444,
+          "h": 443,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            294.0,
+            338.0
+          ],
+          "origin": [
+            0.66216,
+            0.76298
+          ]
+        },
+        "bandit-lunge": {
+          "x": 444,
+          "y": 444,
+          "w": 443,
+          "h": 443,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            316.0,
+            335.0
+          ],
+          "origin": [
+            0.71332,
+            0.75621
+          ]
+        },
+        "bandit-recoil": {
+          "x": 887,
+          "y": 444,
+          "w": 443,
+          "h": 443,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            234.0,
+            339.0
+          ],
+          "origin": [
+            0.52822,
+            0.76524
+          ]
+        },
+        "bandit-retreat": {
+          "x": 1330,
+          "y": 444,
+          "w": 444,
+          "h": 443,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            195.0,
+            337.0
+          ],
+          "origin": [
+            0.43919,
+            0.76072
+          ]
+        }
+      },
+      "alphaPercent": 86.35,
+      "webpBytes": 416362,
+      "runtimeIntegrated": false,
+      "animation": "ordered sequences; fixed source-cell scale, per-frame ground anchors",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      },
+      "sequences": {
+        "guard-duel": {
+          "frames": [
+            "guard-ready",
+            "guard-thrust",
+            "guard-block",
+            "guard-recover"
+          ],
+          "frameRate": 4,
+          "loop": true
+        },
+        "bandit-duel": {
+          "frames": [
+            "bandit-ready",
+            "bandit-lunge",
+            "bandit-recoil",
+            "bandit-retreat"
+          ],
+          "frameRate": 4,
+          "loop": true
+        }
+      }
+    },
+    {
+      "name": "new-crop-stages",
+      "label": "甘蔗与啤酒花生长阶段",
+      "image": "/assets/accessories-2026-09/new-crop-stages.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "sugarcane-sprout": {
+          "x": 0,
+          "y": 0,
+          "w": 444,
+          "h": 444,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            221.0,
+            402.0
+          ],
+          "origin": [
+            0.49775,
+            0.90541
+          ]
+        },
+        "sugarcane-young": {
+          "x": 444,
+          "y": 0,
+          "w": 443,
+          "h": 444,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            220.0,
+            402.0
+          ],
+          "origin": [
+            0.49661,
+            0.90541
+          ]
+        },
+        "sugarcane-growing": {
+          "x": 887,
+          "y": 0,
+          "w": 443,
+          "h": 444,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            222.0,
+            403.0
+          ],
+          "origin": [
+            0.50113,
+            0.90766
+          ]
+        },
+        "sugarcane-ripe": {
+          "x": 1330,
+          "y": 0,
+          "w": 444,
+          "h": 444,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            224.0,
+            402.0
+          ],
+          "origin": [
+            0.5045,
+            0.90541
+          ]
+        },
+        "hops-sprout": {
+          "x": 0,
+          "y": 444,
+          "w": 444,
+          "h": 443,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            221.0,
+            372.0
+          ],
+          "origin": [
+            0.49775,
+            0.83973
+          ]
+        },
+        "hops-young": {
+          "x": 444,
+          "y": 444,
+          "w": 443,
+          "h": 443,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            221.0,
+            372.0
+          ],
+          "origin": [
+            0.49887,
+            0.83973
+          ]
+        },
+        "hops-growing": {
+          "x": 887,
+          "y": 444,
+          "w": 443,
+          "h": 443,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            222.0,
+            372.0
+          ],
+          "origin": [
+            0.50113,
+            0.83973
+          ]
+        },
+        "hops-ripe": {
+          "x": 1330,
+          "y": 444,
+          "w": 444,
+          "h": 443,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            223.0,
+            372.0
+          ],
+          "origin": [
+            0.50225,
+            0.83973
+          ]
+        }
+      },
+      "alphaPercent": 79.6,
+      "webpBytes": 629294,
+      "runtimeIntegrated": false,
+      "animation": "ordered sequences; fixed source-cell scale, per-frame ground anchors",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      },
+      "sequences": {
+        "sugarcane-growth": {
+          "frames": [
+            "sugarcane-sprout",
+            "sugarcane-young",
+            "sugarcane-growing",
+            "sugarcane-ripe"
+          ],
+          "frameRate": 1,
+          "loop": false
+        },
+        "hops-growth": {
+          "frames": [
+            "hops-sprout",
+            "hops-young",
+            "hops-growing",
+            "hops-ripe"
+          ],
+          "frameRate": 1,
+          "loop": false
+        }
+      }
+    }
+  ]
+}

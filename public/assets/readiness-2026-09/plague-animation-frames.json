@@ -1,0 +1,64 @@
+{
+  "name": "plague-animation",
+  "label": "瘟疫双帧",
+  "image": "/assets/readiness-2026-09/plague-animation.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 2,
+  "rows": 1,
+  "activeFrames": 2,
+  "frames": {
+    "plague-cloud-1": {
+      "x": 0,
+      "y": 0,
+      "w": 887,
+      "h": 887,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        443.5,
+        443.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "plague-cloud-2": {
+      "x": 887,
+      "y": 0,
+      "w": 887,
+      "h": 887,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        443.5,
+        443.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "alphaPercent": 80.68,
+  "webpBytes": 372776,
+  "runtimeIntegrated": false,
+  "animation": "ordered sequences with ground anchors",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  },
+  "sequences": {
+    "plague-pulse": {
+      "frames": [
+        "plague-cloud-1",
+        "plague-cloud-2"
+      ],
+      "frameRate": 4,
+      "loop": true
+    }
+  }
+}

@@ -1,0 +1,2026 @@
+{
+  "created": "2026-09-21",
+  "generator": "built-in image_gen; native SVG appended by generate-geometric-assets.mjs",
+  "runtimeIntegrated": false,
+  "activeFrames": 84,
+  "webpBytes": 8007796,
+  "atlases": [
+    {
+      "name": "islands-completion",
+      "label": "水果岛、橄榄岛、渔人岛",
+      "image": "/assets/readiness-2026-09/islands-completion.webp",
+      "width": 2172,
+      "height": 724,
+      "columns": 3,
+      "rows": 1,
+      "activeFrames": 3,
+      "frames": {
+        "fruit-island": {
+          "x": 18,
+          "y": 107,
+          "w": 683,
+          "h": 557,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            341.5,
+            529.15
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "olive-island": {
+          "x": 728,
+          "y": 29,
+          "w": 716,
+          "h": 642,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            358,
+            609.9
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "fisherman-island": {
+          "x": 1466,
+          "y": 119,
+          "w": 688,
+          "h": 547,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            344,
+            519.65
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        }
+      },
+      "alphaPercent": 43.11,
+      "webpBytes": 1709160,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "plague-animation",
+      "label": "瘟疫双帧",
+      "image": "/assets/readiness-2026-09/plague-animation.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 2,
+      "rows": 1,
+      "activeFrames": 2,
+      "frames": {
+        "plague-cloud-1": {
+          "x": 0,
+          "y": 0,
+          "w": 887,
+          "h": 887,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            443.5,
+            443.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "plague-cloud-2": {
+          "x": 887,
+          "y": 0,
+          "w": 887,
+          "h": 887,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            443.5,
+            443.5
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "alphaPercent": 80.68,
+      "webpBytes": 372776,
+      "runtimeIntegrated": false,
+      "animation": "ordered sequences with ground anchors",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      },
+      "sequences": {
+        "plague-pulse": {
+          "frames": [
+            "plague-cloud-1",
+            "plague-cloud-2"
+          ],
+          "frameRate": 4,
+          "loop": true
+        }
+      }
+    },
+    {
+      "name": "vehicles-return",
+      "label": "返程车辆",
+      "image": "/assets/readiness-2026-09/vehicles-return.webp",
+      "width": 2172,
+      "height": 724,
+      "columns": 4,
+      "rows": 1,
+      "activeFrames": 4,
+      "frames": {
+        "train-engine-right": {
+          "x": 176,
+          "y": 280,
+          "w": 180,
+          "h": 174,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            90,
+            165.3
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "cargo-plane-right": {
+          "x": 701,
+          "y": 269,
+          "w": 222,
+          "h": 178,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            111,
+            169.1
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "cargo-ship-right": {
+          "x": 1246,
+          "y": 226,
+          "w": 223,
+          "h": 237,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            111.5,
+            225.15
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        },
+        "fishing-boat-right": {
+          "x": 1812,
+          "y": 251,
+          "w": 189,
+          "h": 200,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            94.5,
+            190
+          ],
+          "origin": [
+            0.5,
+            0.95
+          ]
+        }
+      },
+      "alphaPercent": 93.82,
+      "webpBytes": 201258,
+      "runtimeIntegrated": false,
+      "animation": "static sprites; no animation sequences",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      }
+    },
+    {
+      "name": "crop-stages-1",
+      "label": "四阶段作物 wheat / carrot / corn",
+      "image": "/assets/readiness-2026-09/crop-stages-1.webp",
+      "width": 1448,
+      "height": 1086,
+      "columns": 4,
+      "rows": 3,
+      "activeFrames": 12,
+      "frames": {
+        "wheat-sprout": {
+          "x": 0,
+          "y": 0,
+          "w": 362,
+          "h": 362,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            182,
+            354
+          ],
+          "origin": [
+            0.50276,
+            0.9779
+          ]
+        },
+        "wheat-young": {
+          "x": 362,
+          "y": 0,
+          "w": 362,
+          "h": 362,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            181.5,
+            354
+          ],
+          "origin": [
+            0.50138,
+            0.9779
+          ]
+        },
+        "wheat-growing": {
+          "x": 724,
+          "y": 0,
+          "w": 362,
+          "h": 362,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            182,
+            354
+          ],
+          "origin": [
+            0.50276,
+            0.9779
+          ]
+        },
+        "wheat-ripe": {
+          "x": 1086,
+          "y": 0,
+          "w": 362,
+          "h": 362,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            180,
+            354
+          ],
+          "origin": [
+            0.49724,
+            0.9779
+          ]
+        },
+        "carrot-sprout": {
+          "x": 0,
+          "y": 362,
+          "w": 362,
+          "h": 341,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            182,
+            335
+          ],
+          "origin": [
+            0.50276,
+            0.9824
+          ]
+        },
+        "carrot-young": {
+          "x": 362,
+          "y": 362,
+          "w": 362,
+          "h": 341,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            182,
+            336
+          ],
+          "origin": [
+            0.50276,
+            0.98534
+          ]
+        },
+        "carrot-growing": {
+          "x": 724,
+          "y": 362,
+          "w": 362,
+          "h": 341,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            181,
+            335
+          ],
+          "origin": [
+            0.5,
+            0.9824
+          ]
+        },
+        "carrot-ripe": {
+          "x": 1086,
+          "y": 362,
+          "w": 362,
+          "h": 341,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            180,
+            335
+          ],
+          "origin": [
+            0.49724,
+            0.9824
+          ]
+        },
+        "corn-sprout": {
+          "x": 0,
+          "y": 703,
+          "w": 362,
+          "h": 383,
+          "row": 2,
+          "column": 0,
+          "pivot": [
+            182,
+            370
+          ],
+          "origin": [
+            0.50276,
+            0.96606
+          ]
+        },
+        "corn-young": {
+          "x": 362,
+          "y": 703,
+          "w": 362,
+          "h": 383,
+          "row": 2,
+          "column": 1,
+          "pivot": [
+            181,
+            370
+          ],
+          "origin": [
+            0.5,
+            0.96606
+          ]
+        },
+        "corn-growing": {
+          "x": 724,
+          "y": 703,
+          "w": 362,
+          "h": 383,
+          "row": 2,
+          "column": 2,
+          "pivot": [
+            181,
+            370
+          ],
+          "origin": [
+            0.5,
+            0.96606
+          ]
+        },
+        "corn-ripe": {
+          "x": 1086,
+          "y": 703,
+          "w": 362,
+          "h": 383,
+          "row": 2,
+          "column": 3,
+          "pivot": [
+            180.5,
+            371
+          ],
+          "origin": [
+            0.49862,
+            0.96867
+          ]
+        }
+      },
+      "alphaPercent": 70.05,
+      "webpBytes": 874800,
+      "runtimeIntegrated": false,
+      "animation": "ordered sequences with ground anchors",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      },
+      "sequences": {
+        "wheat-growth": {
+          "frames": [
+            "wheat-sprout",
+            "wheat-young",
+            "wheat-growing",
+            "wheat-ripe"
+          ],
+          "frameRate": 1,
+          "loop": false
+        },
+        "carrot-growth": {
+          "frames": [
+            "carrot-sprout",
+            "carrot-young",
+            "carrot-growing",
+            "carrot-ripe"
+          ],
+          "frameRate": 1,
+          "loop": false
+        },
+        "corn-growth": {
+          "frames": [
+            "corn-sprout",
+            "corn-young",
+            "corn-growing",
+            "corn-ripe"
+          ],
+          "frameRate": 1,
+          "loop": false
+        }
+      }
+    },
+    {
+      "name": "crop-stages-2",
+      "label": "四阶段作物 tomato / strawberry / pumpkin",
+      "image": "/assets/readiness-2026-09/crop-stages-2.webp",
+      "width": 1448,
+      "height": 1086,
+      "columns": 4,
+      "rows": 3,
+      "activeFrames": 12,
+      "frames": {
+        "tomato-sprout": {
+          "x": 0,
+          "y": 0,
+          "w": 362,
+          "h": 362,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            186,
+            352
+          ],
+          "origin": [
+            0.51381,
+            0.97238
+          ]
+        },
+        "tomato-young": {
+          "x": 362,
+          "y": 0,
+          "w": 362,
+          "h": 362,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            183,
+            352
+          ],
+          "origin": [
+            0.50552,
+            0.97238
+          ]
+        },
+        "tomato-growing": {
+          "x": 724,
+          "y": 0,
+          "w": 362,
+          "h": 362,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            181,
+            353
+          ],
+          "origin": [
+            0.5,
+            0.97514
+          ]
+        },
+        "tomato-ripe": {
+          "x": 1086,
+          "y": 0,
+          "w": 362,
+          "h": 362,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            180,
+            354
+          ],
+          "origin": [
+            0.49724,
+            0.9779
+          ]
+        },
+        "strawberry-sprout": {
+          "x": 0,
+          "y": 362,
+          "w": 362,
+          "h": 362,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            186,
+            337
+          ],
+          "origin": [
+            0.51381,
+            0.93094
+          ]
+        },
+        "strawberry-young": {
+          "x": 362,
+          "y": 362,
+          "w": 362,
+          "h": 362,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            183,
+            337
+          ],
+          "origin": [
+            0.50552,
+            0.93094
+          ]
+        },
+        "strawberry-growing": {
+          "x": 724,
+          "y": 362,
+          "w": 362,
+          "h": 362,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            182,
+            337
+          ],
+          "origin": [
+            0.50276,
+            0.93094
+          ]
+        },
+        "strawberry-ripe": {
+          "x": 1086,
+          "y": 362,
+          "w": 362,
+          "h": 362,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            179,
+            338
+          ],
+          "origin": [
+            0.49448,
+            0.9337
+          ]
+        },
+        "pumpkin-sprout": {
+          "x": 0,
+          "y": 724,
+          "w": 362,
+          "h": 362,
+          "row": 2,
+          "column": 0,
+          "pivot": [
+            184.5,
+            309
+          ],
+          "origin": [
+            0.50967,
+            0.85359
+          ]
+        },
+        "pumpkin-young": {
+          "x": 362,
+          "y": 724,
+          "w": 362,
+          "h": 362,
+          "row": 2,
+          "column": 1,
+          "pivot": [
+            182,
+            309
+          ],
+          "origin": [
+            0.50276,
+            0.85359
+          ]
+        },
+        "pumpkin-growing": {
+          "x": 724,
+          "y": 724,
+          "w": 362,
+          "h": 362,
+          "row": 2,
+          "column": 2,
+          "pivot": [
+            181,
+            308
+          ],
+          "origin": [
+            0.5,
+            0.85083
+          ]
+        },
+        "pumpkin-ripe": {
+          "x": 1086,
+          "y": 724,
+          "w": 362,
+          "h": 362,
+          "row": 2,
+          "column": 3,
+          "pivot": [
+            179,
+            310
+          ],
+          "origin": [
+            0.49448,
+            0.85635
+          ]
+        }
+      },
+      "alphaPercent": 71.92,
+      "webpBytes": 815698,
+      "runtimeIntegrated": false,
+      "animation": "ordered sequences with ground anchors",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      },
+      "sequences": {
+        "tomato-growth": {
+          "frames": [
+            "tomato-sprout",
+            "tomato-young",
+            "tomato-growing",
+            "tomato-ripe"
+          ],
+          "frameRate": 1,
+          "loop": false
+        },
+        "strawberry-growth": {
+          "frames": [
+            "strawberry-sprout",
+            "strawberry-young",
+            "strawberry-growing",
+            "strawberry-ripe"
+          ],
+          "frameRate": 1,
+          "loop": false
+        },
+        "pumpkin-growth": {
+          "frames": [
+            "pumpkin-sprout",
+            "pumpkin-young",
+            "pumpkin-growing",
+            "pumpkin-ripe"
+          ],
+          "frameRate": 1,
+          "loop": false
+        }
+      }
+    },
+    {
+      "name": "crop-stages-3",
+      "label": "四阶段作物 sunflower / grape / apple",
+      "image": "/assets/readiness-2026-09/crop-stages-3.webp",
+      "width": 1448,
+      "height": 1086,
+      "columns": 4,
+      "rows": 3,
+      "activeFrames": 12,
+      "frames": {
+        "sunflower-sprout": {
+          "x": 0,
+          "y": 0,
+          "w": 362,
+          "h": 373,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            178,
+            371
+          ],
+          "origin": [
+            0.49171,
+            0.99464
+          ]
+        },
+        "sunflower-young": {
+          "x": 362,
+          "y": 0,
+          "w": 362,
+          "h": 373,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            186,
+            370
+          ],
+          "origin": [
+            0.51381,
+            0.99196
+          ]
+        },
+        "sunflower-growing": {
+          "x": 724,
+          "y": 0,
+          "w": 362,
+          "h": 373,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            187,
+            370
+          ],
+          "origin": [
+            0.51657,
+            0.99196
+          ]
+        },
+        "sunflower-ripe": {
+          "x": 1086,
+          "y": 0,
+          "w": 362,
+          "h": 373,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            188,
+            370
+          ],
+          "origin": [
+            0.51934,
+            0.99196
+          ]
+        },
+        "grape-sprout": {
+          "x": 0,
+          "y": 373,
+          "w": 362,
+          "h": 370,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            176,
+            368
+          ],
+          "origin": [
+            0.48619,
+            0.99459
+          ]
+        },
+        "grape-young": {
+          "x": 362,
+          "y": 373,
+          "w": 362,
+          "h": 370,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            185,
+            368
+          ],
+          "origin": [
+            0.51105,
+            0.99459
+          ]
+        },
+        "grape-growing": {
+          "x": 724,
+          "y": 373,
+          "w": 362,
+          "h": 370,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            184,
+            368
+          ],
+          "origin": [
+            0.50829,
+            0.99459
+          ]
+        },
+        "grape-ripe": {
+          "x": 1086,
+          "y": 373,
+          "w": 362,
+          "h": 370,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            190,
+            367
+          ],
+          "origin": [
+            0.52486,
+            0.99189
+          ]
+        },
+        "apple-sprout": {
+          "x": 0,
+          "y": 743,
+          "w": 362,
+          "h": 343,
+          "row": 2,
+          "column": 0,
+          "pivot": [
+            177,
+            328
+          ],
+          "origin": [
+            0.48895,
+            0.95627
+          ]
+        },
+        "apple-young": {
+          "x": 362,
+          "y": 743,
+          "w": 362,
+          "h": 343,
+          "row": 2,
+          "column": 1,
+          "pivot": [
+            184,
+            328
+          ],
+          "origin": [
+            0.50829,
+            0.95627
+          ]
+        },
+        "apple-growing": {
+          "x": 724,
+          "y": 743,
+          "w": 362,
+          "h": 343,
+          "row": 2,
+          "column": 2,
+          "pivot": [
+            185,
+            328
+          ],
+          "origin": [
+            0.51105,
+            0.95627
+          ]
+        },
+        "apple-ripe": {
+          "x": 1086,
+          "y": 743,
+          "w": 362,
+          "h": 343,
+          "row": 2,
+          "column": 3,
+          "pivot": [
+            188,
+            328
+          ],
+          "origin": [
+            0.51934,
+            0.95627
+          ]
+        }
+      },
+      "alphaPercent": 65.42,
+      "webpBytes": 1003966,
+      "runtimeIntegrated": false,
+      "animation": "ordered sequences with ground anchors",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      },
+      "sequences": {
+        "sunflower-growth": {
+          "frames": [
+            "sunflower-sprout",
+            "sunflower-young",
+            "sunflower-growing",
+            "sunflower-ripe"
+          ],
+          "frameRate": 1,
+          "loop": false
+        },
+        "grape-growth": {
+          "frames": [
+            "grape-sprout",
+            "grape-young",
+            "grape-growing",
+            "grape-ripe"
+          ],
+          "frameRate": 1,
+          "loop": false
+        },
+        "apple-growth": {
+          "frames": [
+            "apple-sprout",
+            "apple-young",
+            "apple-growing",
+            "apple-ripe"
+          ],
+          "frameRate": 1,
+          "loop": false
+        }
+      }
+    },
+    {
+      "name": "animal-walk-1",
+      "label": "行走 elephant / giraffe",
+      "image": "/assets/readiness-2026-09/animal-walk-1.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "elephant-walk-1": {
+          "x": 0,
+          "y": 0,
+          "w": 444,
+          "h": 394,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            222,
+            351
+          ],
+          "origin": [
+            0.5,
+            0.89086
+          ]
+        },
+        "elephant-walk-2": {
+          "x": 444,
+          "y": 0,
+          "w": 443,
+          "h": 394,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            221.5,
+            345
+          ],
+          "origin": [
+            0.5,
+            0.87563
+          ]
+        },
+        "elephant-walk-3": {
+          "x": 887,
+          "y": 0,
+          "w": 443,
+          "h": 394,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            221.5,
+            353
+          ],
+          "origin": [
+            0.5,
+            0.89594
+          ]
+        },
+        "elephant-walk-4": {
+          "x": 1330,
+          "y": 0,
+          "w": 444,
+          "h": 394,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            222,
+            353
+          ],
+          "origin": [
+            0.5,
+            0.89594
+          ]
+        },
+        "giraffe-walk-1": {
+          "x": 0,
+          "y": 394,
+          "w": 444,
+          "h": 493,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            222,
+            425
+          ],
+          "origin": [
+            0.5,
+            0.86207
+          ]
+        },
+        "giraffe-walk-2": {
+          "x": 444,
+          "y": 394,
+          "w": 443,
+          "h": 493,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            221.5,
+            413
+          ],
+          "origin": [
+            0.5,
+            0.83773
+          ]
+        },
+        "giraffe-walk-3": {
+          "x": 887,
+          "y": 394,
+          "w": 443,
+          "h": 493,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            221.5,
+            423
+          ],
+          "origin": [
+            0.5,
+            0.85801
+          ]
+        },
+        "giraffe-walk-4": {
+          "x": 1330,
+          "y": 394,
+          "w": 444,
+          "h": 493,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            222,
+            430
+          ],
+          "origin": [
+            0.5,
+            0.87221
+          ]
+        }
+      },
+      "alphaPercent": 67.91,
+      "webpBytes": 739844,
+      "runtimeIntegrated": false,
+      "animation": "ordered sequences with ground anchors",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      },
+      "sequences": {
+        "elephant-walk": {
+          "frames": [
+            "elephant-walk-1",
+            "elephant-walk-2",
+            "elephant-walk-3",
+            "elephant-walk-4"
+          ],
+          "frameRate": 4,
+          "loop": true
+        },
+        "giraffe-walk": {
+          "frames": [
+            "giraffe-walk-1",
+            "giraffe-walk-2",
+            "giraffe-walk-3",
+            "giraffe-walk-4"
+          ],
+          "frameRate": 4,
+          "loop": true
+        }
+      }
+    },
+    {
+      "name": "animal-walk-2",
+      "label": "行走 zebra / lion",
+      "image": "/assets/readiness-2026-09/animal-walk-2.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "zebra-walk-1": {
+          "x": 0,
+          "y": 0,
+          "w": 444,
+          "h": 444,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            222,
+            401
+          ],
+          "origin": [
+            0.5,
+            0.90315
+          ]
+        },
+        "zebra-walk-2": {
+          "x": 444,
+          "y": 0,
+          "w": 443,
+          "h": 444,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            221.5,
+            401
+          ],
+          "origin": [
+            0.5,
+            0.90315
+          ]
+        },
+        "zebra-walk-3": {
+          "x": 887,
+          "y": 0,
+          "w": 443,
+          "h": 444,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            221.5,
+            401
+          ],
+          "origin": [
+            0.5,
+            0.90315
+          ]
+        },
+        "zebra-walk-4": {
+          "x": 1330,
+          "y": 0,
+          "w": 444,
+          "h": 444,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            222,
+            394
+          ],
+          "origin": [
+            0.5,
+            0.88739
+          ]
+        },
+        "lion-walk-1": {
+          "x": 0,
+          "y": 444,
+          "w": 444,
+          "h": 443,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            222,
+            385
+          ],
+          "origin": [
+            0.5,
+            0.86907
+          ]
+        },
+        "lion-walk-2": {
+          "x": 444,
+          "y": 444,
+          "w": 443,
+          "h": 443,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            221.5,
+            380
+          ],
+          "origin": [
+            0.5,
+            0.85779
+          ]
+        },
+        "lion-walk-3": {
+          "x": 887,
+          "y": 444,
+          "w": 443,
+          "h": 443,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            221.5,
+            385
+          ],
+          "origin": [
+            0.5,
+            0.86907
+          ]
+        },
+        "lion-walk-4": {
+          "x": 1330,
+          "y": 444,
+          "w": 444,
+          "h": 443,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            222,
+            383
+          ],
+          "origin": [
+            0.5,
+            0.86456
+          ]
+        }
+      },
+      "alphaPercent": 64.97,
+      "webpBytes": 893594,
+      "runtimeIntegrated": false,
+      "animation": "ordered sequences with ground anchors",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      },
+      "sequences": {
+        "zebra-walk": {
+          "frames": [
+            "zebra-walk-1",
+            "zebra-walk-2",
+            "zebra-walk-3",
+            "zebra-walk-4"
+          ],
+          "frameRate": 4,
+          "loop": true
+        },
+        "lion-walk": {
+          "frames": [
+            "lion-walk-1",
+            "lion-walk-2",
+            "lion-walk-3",
+            "lion-walk-4"
+          ],
+          "frameRate": 4,
+          "loop": true
+        }
+      }
+    },
+    {
+      "name": "animal-walk-3",
+      "label": "行走 lamb / sheep",
+      "image": "/assets/readiness-2026-09/animal-walk-3.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "lamb-walk-1": {
+          "x": 0,
+          "y": 0,
+          "w": 444,
+          "h": 444,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            222,
+            354
+          ],
+          "origin": [
+            0.5,
+            0.7973
+          ]
+        },
+        "lamb-walk-2": {
+          "x": 444,
+          "y": 0,
+          "w": 443,
+          "h": 444,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            221.5,
+            353
+          ],
+          "origin": [
+            0.5,
+            0.79505
+          ]
+        },
+        "lamb-walk-3": {
+          "x": 887,
+          "y": 0,
+          "w": 443,
+          "h": 444,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            221.5,
+            353
+          ],
+          "origin": [
+            0.5,
+            0.79505
+          ]
+        },
+        "lamb-walk-4": {
+          "x": 1330,
+          "y": 0,
+          "w": 444,
+          "h": 444,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            222,
+            353
+          ],
+          "origin": [
+            0.5,
+            0.79505
+          ]
+        },
+        "sheep-walk-1": {
+          "x": 0,
+          "y": 444,
+          "w": 444,
+          "h": 443,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            222,
+            368
+          ],
+          "origin": [
+            0.5,
+            0.8307
+          ]
+        },
+        "sheep-walk-2": {
+          "x": 444,
+          "y": 444,
+          "w": 443,
+          "h": 443,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            221.5,
+            359
+          ],
+          "origin": [
+            0.5,
+            0.81038
+          ]
+        },
+        "sheep-walk-3": {
+          "x": 887,
+          "y": 444,
+          "w": 443,
+          "h": 443,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            221.5,
+            365
+          ],
+          "origin": [
+            0.5,
+            0.82393
+          ]
+        },
+        "sheep-walk-4": {
+          "x": 1330,
+          "y": 444,
+          "w": 444,
+          "h": 443,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            222,
+            367
+          ],
+          "origin": [
+            0.5,
+            0.82844
+          ]
+        }
+      },
+      "alphaPercent": 74.78,
+      "webpBytes": 613868,
+      "runtimeIntegrated": false,
+      "animation": "ordered sequences with ground anchors",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      },
+      "sequences": {
+        "lamb-walk": {
+          "frames": [
+            "lamb-walk-1",
+            "lamb-walk-2",
+            "lamb-walk-3",
+            "lamb-walk-4"
+          ],
+          "frameRate": 4,
+          "loop": true
+        },
+        "sheep-walk": {
+          "frames": [
+            "sheep-walk-1",
+            "sheep-walk-2",
+            "sheep-walk-3",
+            "sheep-walk-4"
+          ],
+          "frameRate": 4,
+          "loop": true
+        }
+      }
+    },
+    {
+      "name": "animal-walk-4",
+      "label": "行走 calf / cow",
+      "image": "/assets/readiness-2026-09/animal-walk-4.webp",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "activeFrames": 8,
+      "frames": {
+        "calf-walk-1": {
+          "x": 0,
+          "y": 0,
+          "w": 444,
+          "h": 444,
+          "row": 0,
+          "column": 0,
+          "pivot": [
+            222,
+            363
+          ],
+          "origin": [
+            0.5,
+            0.81757
+          ]
+        },
+        "calf-walk-2": {
+          "x": 444,
+          "y": 0,
+          "w": 443,
+          "h": 444,
+          "row": 0,
+          "column": 1,
+          "pivot": [
+            221.5,
+            367
+          ],
+          "origin": [
+            0.5,
+            0.82658
+          ]
+        },
+        "calf-walk-3": {
+          "x": 887,
+          "y": 0,
+          "w": 443,
+          "h": 444,
+          "row": 0,
+          "column": 2,
+          "pivot": [
+            221.5,
+            363
+          ],
+          "origin": [
+            0.5,
+            0.81757
+          ]
+        },
+        "calf-walk-4": {
+          "x": 1330,
+          "y": 0,
+          "w": 444,
+          "h": 444,
+          "row": 0,
+          "column": 3,
+          "pivot": [
+            222,
+            368
+          ],
+          "origin": [
+            0.5,
+            0.82883
+          ]
+        },
+        "cow-walk-1": {
+          "x": 0,
+          "y": 444,
+          "w": 444,
+          "h": 443,
+          "row": 1,
+          "column": 0,
+          "pivot": [
+            222,
+            348
+          ],
+          "origin": [
+            0.5,
+            0.78555
+          ]
+        },
+        "cow-walk-2": {
+          "x": 444,
+          "y": 444,
+          "w": 443,
+          "h": 443,
+          "row": 1,
+          "column": 1,
+          "pivot": [
+            221.5,
+            353
+          ],
+          "origin": [
+            0.5,
+            0.79684
+          ]
+        },
+        "cow-walk-3": {
+          "x": 887,
+          "y": 444,
+          "w": 443,
+          "h": 443,
+          "row": 1,
+          "column": 2,
+          "pivot": [
+            221.5,
+            346
+          ],
+          "origin": [
+            0.5,
+            0.78104
+          ]
+        },
+        "cow-walk-4": {
+          "x": 1330,
+          "y": 444,
+          "w": 444,
+          "h": 443,
+          "row": 1,
+          "column": 3,
+          "pivot": [
+            222,
+            353
+          ],
+          "origin": [
+            0.5,
+            0.79684
+          ]
+        }
+      },
+      "alphaPercent": 68.12,
+      "webpBytes": 782832,
+      "runtimeIntegrated": false,
+      "animation": "ordered sequences with ground anchors",
+      "pivotStatus": "suggested anchors; calibrate when integrating",
+      "qa": {
+        "alphaPreserved": true,
+        "visiblePixelsLossless": true,
+        "edgeWarnings": []
+      },
+      "sequences": {
+        "calf-walk": {
+          "frames": [
+            "calf-walk-1",
+            "calf-walk-2",
+            "calf-walk-3",
+            "calf-walk-4"
+          ],
+          "frameRate": 4,
+          "loop": true
+        },
+        "cow-walk": {
+          "frames": [
+            "cow-walk-1",
+            "cow-walk-2",
+            "cow-walk-3",
+            "cow-walk-4"
+          ],
+          "frameRate": 4,
+          "loop": true
+        }
+      }
+    },
+    {
+      "name": "rail-curves-corrected",
+      "label": "精确等距弯轨",
+      "image": "/assets/readiness-2026-09/rail-curves-corrected.svg",
+      "width": 1280,
+      "height": 720,
+      "activeFrames": 4,
+      "frames": {
+        "rail-curve-north": {
+          "x": 0,
+          "y": 0,
+          "w": 640,
+          "h": 360,
+          "pivot": [
+            320,
+            180
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "rail-curve-east": {
+          "x": 640,
+          "y": 0,
+          "w": 640,
+          "h": 360,
+          "pivot": [
+            320,
+            180
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "rail-curve-south": {
+          "x": 0,
+          "y": 360,
+          "w": 640,
+          "h": 360,
+          "pivot": [
+            320,
+            180
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        },
+        "rail-curve-west": {
+          "x": 640,
+          "y": 360,
+          "w": 640,
+          "h": 360,
+          "pivot": [
+            320,
+            180
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "geometry": {
+        "rail-curve-north": {
+          "projection": {
+            "x": [
+              256,
+              -256
+            ],
+            "y": [
+              128,
+              128
+            ]
+          },
+          "endpoints": [
+            [
+              192,
+              116
+            ],
+            [
+              192,
+              244
+            ]
+          ],
+          "tangentSlopes": [
+            0.5,
+            -0.5
+          ],
+          "gaugeWorld": 0.09,
+          "groundDiamond": [
+            [
+              320,
+              52
+            ],
+            [
+              576,
+              180
+            ],
+            [
+              320,
+              308
+            ],
+            [
+              64,
+              180
+            ]
+          ]
+        },
+        "rail-curve-east": {
+          "projection": {
+            "x": [
+              256,
+              -256
+            ],
+            "y": [
+              128,
+              128
+            ]
+          },
+          "endpoints": [
+            [
+              448,
+              116
+            ],
+            [
+              192,
+              116
+            ]
+          ],
+          "tangentSlopes": [
+            -0.5,
+            0.5
+          ],
+          "gaugeWorld": 0.09,
+          "groundDiamond": [
+            [
+              320,
+              52
+            ],
+            [
+              576,
+              180
+            ],
+            [
+              320,
+              308
+            ],
+            [
+              64,
+              180
+            ]
+          ]
+        },
+        "rail-curve-south": {
+          "projection": {
+            "x": [
+              256,
+              -256
+            ],
+            "y": [
+              128,
+              128
+            ]
+          },
+          "endpoints": [
+            [
+              448,
+              244
+            ],
+            [
+              448,
+              116
+            ]
+          ],
+          "tangentSlopes": [
+            0.5,
+            -0.5
+          ],
+          "gaugeWorld": 0.09,
+          "groundDiamond": [
+            [
+              320,
+              52
+            ],
+            [
+              576,
+              180
+            ],
+            [
+              320,
+              308
+            ],
+            [
+              64,
+              180
+            ]
+          ]
+        },
+        "rail-curve-west": {
+          "projection": {
+            "x": [
+              256,
+              -256
+            ],
+            "y": [
+              128,
+              128
+            ]
+          },
+          "endpoints": [
+            [
+              192,
+              244
+            ],
+            [
+              448,
+              244
+            ]
+          ],
+          "tangentSlopes": [
+            -0.5,
+            0.5
+          ],
+          "gaugeWorld": 0.09,
+          "groundDiamond": [
+            [
+              320,
+              52
+            ],
+            [
+              576,
+              180
+            ],
+            [
+              320,
+              308
+            ],
+            [
+              64,
+              180
+            ]
+          ]
+        }
+      },
+      "generator": "native SVG geometry",
+      "runtimeIntegrated": false,
+      "pivotStatus": "exact projected tile center",
+      "qa": {
+        "edgeWarnings": [],
+        "endpointSlopeVerified": true
+      },
+      "webpBytes": 0,
+      "assetBytes": 38771
+    },
+    {
+      "name": "weather-tile-rain",
+      "label": "雨 · 无缝平铺",
+      "image": "/assets/readiness-2026-09/weather-tile-rain.svg",
+      "width": 512,
+      "height": 512,
+      "activeFrames": 1,
+      "frames": {
+        "rain": {
+          "x": 0,
+          "y": 0,
+          "w": 512,
+          "h": 512,
+          "pivot": [
+            256,
+            256
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "tileable": true,
+      "repeat": [
+        512,
+        512
+      ],
+      "generator": "native SVG periodic texture",
+      "seamMethod": "toroidal translated copies",
+      "runtimeIntegrated": false,
+      "pivotStatus": "texture center",
+      "qa": {
+        "edgeWarnings": []
+      },
+      "webpBytes": 0,
+      "assetBytes": 93987
+    },
+    {
+      "name": "weather-tile-snow",
+      "label": "雪 · 无缝平铺",
+      "image": "/assets/readiness-2026-09/weather-tile-snow.svg",
+      "width": 512,
+      "height": 512,
+      "activeFrames": 1,
+      "frames": {
+        "snow": {
+          "x": 0,
+          "y": 0,
+          "w": 512,
+          "h": 512,
+          "pivot": [
+            256,
+            256
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "tileable": true,
+      "repeat": [
+        512,
+        512
+      ],
+      "generator": "native SVG periodic texture",
+      "seamMethod": "toroidal translated copies",
+      "runtimeIntegrated": false,
+      "pivotStatus": "texture center",
+      "qa": {
+        "edgeWarnings": []
+      },
+      "webpBytes": 0,
+      "assetBytes": 50418
+    },
+    {
+      "name": "weather-tile-fog",
+      "label": "雾 · 无缝平铺",
+      "image": "/assets/readiness-2026-09/weather-tile-fog.svg",
+      "width": 512,
+      "height": 512,
+      "activeFrames": 1,
+      "frames": {
+        "fog": {
+          "x": 0,
+          "y": 0,
+          "w": 512,
+          "h": 512,
+          "pivot": [
+            256,
+            256
+          ],
+          "origin": [
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "tileable": true,
+      "repeat": [
+        512,
+        512
+      ],
+      "generator": "native SVG periodic texture",
+      "seamMethod": "SVG feTurbulence stitchTiles",
+      "runtimeIntegrated": false,
+      "pivotStatus": "texture center",
+      "qa": {
+        "edgeWarnings": []
+      },
+      "webpBytes": 0,
+      "assetBytes": 454
+    }
+  ]
+}

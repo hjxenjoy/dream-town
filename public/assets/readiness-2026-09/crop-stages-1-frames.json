@@ -1,0 +1,246 @@
+{
+  "name": "crop-stages-1",
+  "label": "四阶段作物 wheat / carrot / corn",
+  "image": "/assets/readiness-2026-09/crop-stages-1.webp",
+  "width": 1448,
+  "height": 1086,
+  "columns": 4,
+  "rows": 3,
+  "activeFrames": 12,
+  "frames": {
+    "wheat-sprout": {
+      "x": 0,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        182.0,
+        354.0
+      ],
+      "origin": [
+        0.50276,
+        0.9779
+      ]
+    },
+    "wheat-young": {
+      "x": 362,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        181.5,
+        354.0
+      ],
+      "origin": [
+        0.50138,
+        0.9779
+      ]
+    },
+    "wheat-growing": {
+      "x": 724,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        182.0,
+        354.0
+      ],
+      "origin": [
+        0.50276,
+        0.9779
+      ]
+    },
+    "wheat-ripe": {
+      "x": 1086,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        180.0,
+        354.0
+      ],
+      "origin": [
+        0.49724,
+        0.9779
+      ]
+    },
+    "carrot-sprout": {
+      "x": 0,
+      "y": 362,
+      "w": 362,
+      "h": 341,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        182.0,
+        335.0
+      ],
+      "origin": [
+        0.50276,
+        0.9824
+      ]
+    },
+    "carrot-young": {
+      "x": 362,
+      "y": 362,
+      "w": 362,
+      "h": 341,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        182.0,
+        336.0
+      ],
+      "origin": [
+        0.50276,
+        0.98534
+      ]
+    },
+    "carrot-growing": {
+      "x": 724,
+      "y": 362,
+      "w": 362,
+      "h": 341,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        181.0,
+        335.0
+      ],
+      "origin": [
+        0.5,
+        0.9824
+      ]
+    },
+    "carrot-ripe": {
+      "x": 1086,
+      "y": 362,
+      "w": 362,
+      "h": 341,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        180.0,
+        335.0
+      ],
+      "origin": [
+        0.49724,
+        0.9824
+      ]
+    },
+    "corn-sprout": {
+      "x": 0,
+      "y": 703,
+      "w": 362,
+      "h": 383,
+      "row": 2,
+      "column": 0,
+      "pivot": [
+        182.0,
+        370.0
+      ],
+      "origin": [
+        0.50276,
+        0.96606
+      ]
+    },
+    "corn-young": {
+      "x": 362,
+      "y": 703,
+      "w": 362,
+      "h": 383,
+      "row": 2,
+      "column": 1,
+      "pivot": [
+        181.0,
+        370.0
+      ],
+      "origin": [
+        0.5,
+        0.96606
+      ]
+    },
+    "corn-growing": {
+      "x": 724,
+      "y": 703,
+      "w": 362,
+      "h": 383,
+      "row": 2,
+      "column": 2,
+      "pivot": [
+        181.0,
+        370.0
+      ],
+      "origin": [
+        0.5,
+        0.96606
+      ]
+    },
+    "corn-ripe": {
+      "x": 1086,
+      "y": 703,
+      "w": 362,
+      "h": 383,
+      "row": 2,
+      "column": 3,
+      "pivot": [
+        180.5,
+        371.0
+      ],
+      "origin": [
+        0.49862,
+        0.96867
+      ]
+    }
+  },
+  "alphaPercent": 70.05,
+  "webpBytes": 874800,
+  "runtimeIntegrated": false,
+  "animation": "ordered sequences with ground anchors",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  },
+  "sequences": {
+    "wheat-growth": {
+      "frames": [
+        "wheat-sprout",
+        "wheat-young",
+        "wheat-growing",
+        "wheat-ripe"
+      ],
+      "frameRate": 1,
+      "loop": false
+    },
+    "carrot-growth": {
+      "frames": [
+        "carrot-sprout",
+        "carrot-young",
+        "carrot-growing",
+        "carrot-ripe"
+      ],
+      "frameRate": 1,
+      "loop": false
+    },
+    "corn-growth": {
+      "frames": [
+        "corn-sprout",
+        "corn-young",
+        "corn-growing",
+        "corn-ripe"
+      ],
+      "frameRate": 1,
+      "loop": false
+    }
+  }
+}

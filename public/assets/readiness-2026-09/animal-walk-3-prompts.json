@@ -1,0 +1,5 @@
+{
+  "generator": "built-in image_gen",
+  "finalPrompt": "Create a PNG with a TRANSPARENT BACKGROUND. Game sprite sheet: four walking cream wool lambs across top row, four walking adult cream wool sheep across bottom row. Eight small isolated animals, widely spaced with very generous outside margins, equal cells. Four successive distinct leg poses for each animal walking lower left. Fixed size and body location within each cell. Soft detailed painted isometric farming game style, natural wool, gentle upper left highlights. No ground, no scenery, no backdrop, no glow. Every animal occupies only central 60% of its cell, tails safely inside.",
+  "source": "output/readiness-assets-2026-09-21/raw/animal-walk-3.png"
+}

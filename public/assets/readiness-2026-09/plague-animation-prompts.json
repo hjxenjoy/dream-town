@@ -1,0 +1,5 @@
+{
+  "generator": "built-in image_gen",
+  "finalPrompt": "Use case: stylized-concept. Production sprite atlas for cozy hand-painted isometric farming game. True transparent background, no text, no labels, no grid lines. Warm cream/wood/green palette, light from upper LEFT. Orthographic 2:1 ground plane. Each sprite isolated inside central 65% of its equal grid cell, ample transparent gutters; no shared ground or backdrop. Exactly TWO cells, 2 columns one row. Same lime-green translucent curly magical sickness cloud with tiny green bubbles in both cells, same size and center. Frame1 curls clockwise with bubbles close, frame2 curls relaxed with bubbles slightly expanded, suitable for a two-frame pulse. No houses, no skulls, no ground. Preserve design of plague cloud in attached defense sheet.",
+  "source": "output/readiness-assets-2026-09-21/raw/plague-animation.png"
+}

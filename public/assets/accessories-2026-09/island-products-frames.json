@@ -1,0 +1,150 @@
+{
+  "name": "island-products",
+  "label": "四岛特产",
+  "image": "/assets/accessories-2026-09/island-products.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "frames": {
+    "peach": {
+      "x": 147,
+      "y": 152,
+      "w": 191,
+      "h": 199,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        95.5,
+        99.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "watermelon": {
+      "x": 562,
+      "y": 145,
+      "w": 223,
+      "h": 217,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        111.5,
+        108.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "plum": {
+      "x": 1009,
+      "y": 162,
+      "w": 210,
+      "h": 193,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        105.0,
+        96.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "olive": {
+      "x": 1415,
+      "y": 150,
+      "w": 236,
+      "h": 206,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        118.0,
+        103.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "lime": {
+      "x": 122,
+      "y": 566,
+      "w": 228,
+      "h": 193,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        114.0,
+        96.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "banana": {
+      "x": 541,
+      "y": 533,
+      "w": 238,
+      "h": 239,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        119.0,
+        119.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "shrimp": {
+      "x": 994,
+      "y": 542,
+      "w": 237,
+      "h": 219,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        118.5,
+        109.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "lobster": {
+      "x": 1412,
+      "y": 535,
+      "w": 243,
+      "h": 238,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        121.5,
+        119.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "alphaPercent": 83.57,
+  "webpBytes": 465848,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

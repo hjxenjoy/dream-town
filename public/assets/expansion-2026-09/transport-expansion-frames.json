@@ -1,0 +1,214 @@
+{
+  "name": "transport-expansion",
+  "label": "交通与岛屿贸易",
+  "image": "/assets/expansion-2026-09/transport-expansion.webp",
+  "width": 1448,
+  "height": 1086,
+  "columns": 4,
+  "rows": 3,
+  "activeFrames": 12,
+  "frames": {
+    "train-engine": {
+      "x": 22,
+      "y": 10,
+      "w": 334,
+      "h": 338,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        167.0,
+        321.1
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "train-wagon": {
+      "x": 375,
+      "y": 60,
+      "w": 330,
+      "h": 283,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        165.0,
+        268.85
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "rail-station": {
+      "x": 719,
+      "y": 37,
+      "w": 366,
+      "h": 319,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        183.0,
+        303.05
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "cargo-plane": {
+      "x": 1095,
+      "y": 60,
+      "w": 338,
+      "h": 267,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        169.0,
+        253.65
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "airfield": {
+      "x": 12,
+      "y": 377,
+      "w": 368,
+      "h": 320,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        184.0,
+        304.0
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "harbor": {
+      "x": 399,
+      "y": 386,
+      "w": 332,
+      "h": 328,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        166.0,
+        311.6
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "cargo-ship": {
+      "x": 744,
+      "y": 375,
+      "w": 327,
+      "h": 338,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        163.5,
+        321.1
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "fishing-boat": {
+      "x": 1116,
+      "y": 401,
+      "w": 301,
+      "h": 305,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        150.5,
+        289.75
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "island": {
+      "x": 24,
+      "y": 718,
+      "w": 352,
+      "h": 327,
+      "row": 2,
+      "column": 0,
+      "pivot": [
+        176.0,
+        310.65
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "coconut": {
+      "x": 424,
+      "y": 782,
+      "w": 302,
+      "h": 257,
+      "row": 2,
+      "column": 1,
+      "pivot": [
+        151.0,
+        244.15
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "pineapple": {
+      "x": 780,
+      "y": 726,
+      "w": 271,
+      "h": 319,
+      "row": 2,
+      "column": 2,
+      "pivot": [
+        135.5,
+        303.05
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "pearl-shell": {
+      "x": 1112,
+      "y": 769,
+      "w": 298,
+      "h": 256,
+      "row": 2,
+      "column": 3,
+      "pivot": [
+        149.0,
+        243.2
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    }
+  },
+  "alphaPercent": 50.84,
+  "webpBytes": 1489966,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

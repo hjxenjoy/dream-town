@@ -1,0 +1,5 @@
+{
+  "generator": "built-in image_gen",
+  "finalPrompt": "Create a PNG with a TRANSPARENT BACKGROUND. A game sprite sheet: four walking zebras across the top row, four walking male lions across the bottom row. Eight small isolated animals total, widely spaced, equal cells. Four successive different leg poses for each animal walking lower left. Same body size and position within each cell, only moving legs and tail. Cute painted isometric farm game style. No ground, no scenery, no backdrop, no lighting effects.",
+  "source": "output/readiness-assets-2026-09-21/raw/animal-walk-2.png"
+}

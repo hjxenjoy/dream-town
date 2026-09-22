@@ -142,7 +142,7 @@ test('sprite sizing stays inside a plausible range for the map scale',()=>{
   collect('CaravanCart.ts',/const (CART_WIDTH) = (\d+)/g);
   collect('SeasonalProps.ts',/const (PROP_WIDTH) = (\d+)/g);
   collect('Residents.ts',/const (PET_SIZE)=\s*(\d+)/g);
-  collect('TownScene.ts',/const (CROP_WIDTH|FARM_WIDTH) = (\d+)/g);
+  collect('TownScene.ts',/const (CROP_WIDTH|FARM_WIDTH|FARM_PLOT_WIDTH) = (\d+)/g);
   collect('../sim/machines.ts',/const (PART_WIDTH) = (\d+)/g);
   assert.ok(widths.length>=7,`found ${widths.length} render widths`);
   for(const [label,width] of widths){

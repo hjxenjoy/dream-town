@@ -1,0 +1,38 @@
+{
+  "name": "weather-tile-rain",
+  "label": "雨 · 无缝平铺",
+  "image": "/assets/readiness-2026-09/weather-tile-rain.svg",
+  "width": 512,
+  "height": 512,
+  "activeFrames": 1,
+  "frames": {
+    "rain": {
+      "x": 0,
+      "y": 0,
+      "w": 512,
+      "h": 512,
+      "pivot": [
+        256,
+        256
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "tileable": true,
+  "repeat": [
+    512,
+    512
+  ],
+  "generator": "native SVG periodic texture",
+  "seamMethod": "toroidal translated copies",
+  "runtimeIntegrated": false,
+  "pivotStatus": "texture center",
+  "qa": {
+    "edgeWarnings": []
+  },
+  "webpBytes": 0,
+  "assetBytes": 93987
+}

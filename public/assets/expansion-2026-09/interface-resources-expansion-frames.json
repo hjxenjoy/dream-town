@@ -1,0 +1,150 @@
+{
+  "name": "interface-resources-expansion",
+  "label": "助手面板与独立物品",
+  "image": "/assets/expansion-2026-09/interface-resources-expansion.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "frames": {
+    "assistant-panel": {
+      "x": 18,
+      "y": 181,
+      "w": 378,
+      "h": 233,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        189.0,
+        116.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "activity-panel": {
+      "x": 513,
+      "y": 19,
+      "w": 301,
+      "h": 400,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        150.5,
+        200.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "director-panel": {
+      "x": 919,
+      "y": 108,
+      "w": 397,
+      "h": 308,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        198.5,
+        154.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "tnt-crate": {
+      "x": 1439,
+      "y": 147,
+      "w": 286,
+      "h": 307,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        143.0,
+        153.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "sugarcane": {
+      "x": 34,
+      "y": 500,
+      "w": 401,
+      "h": 354,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        200.5,
+        177.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "hops": {
+      "x": 487,
+      "y": 519,
+      "w": 356,
+      "h": 325,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        178.0,
+        162.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "meat": {
+      "x": 925,
+      "y": 545,
+      "w": 389,
+      "h": 286,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        194.5,
+        143.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "sausages": {
+      "x": 1478,
+      "y": 494,
+      "w": 230,
+      "h": 352,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        115.0,
+        176.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "alphaPercent": 61.46,
+  "webpBytes": 897152,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

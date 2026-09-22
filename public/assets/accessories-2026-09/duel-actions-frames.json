@@ -1,0 +1,172 @@
+{
+  "name": "duel-actions",
+  "label": "守卫与强盗决斗动作",
+  "image": "/assets/accessories-2026-09/duel-actions.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "frames": {
+    "guard-ready": {
+      "x": 0,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        192.0,
+        377.0
+      ],
+      "origin": [
+        0.43243,
+        0.8491
+      ]
+    },
+    "guard-thrust": {
+      "x": 444,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        153.0,
+        377.0
+      ],
+      "origin": [
+        0.34537,
+        0.8491
+      ]
+    },
+    "guard-block": {
+      "x": 887,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        251.0,
+        371.0
+      ],
+      "origin": [
+        0.56659,
+        0.83559
+      ]
+    },
+    "guard-recover": {
+      "x": 1330,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        163.0,
+        378.0
+      ],
+      "origin": [
+        0.36712,
+        0.85135
+      ]
+    },
+    "bandit-ready": {
+      "x": 0,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        294.0,
+        338.0
+      ],
+      "origin": [
+        0.66216,
+        0.76298
+      ]
+    },
+    "bandit-lunge": {
+      "x": 444,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        316.0,
+        335.0
+      ],
+      "origin": [
+        0.71332,
+        0.75621
+      ]
+    },
+    "bandit-recoil": {
+      "x": 887,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        234.0,
+        339.0
+      ],
+      "origin": [
+        0.52822,
+        0.76524
+      ]
+    },
+    "bandit-retreat": {
+      "x": 1330,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        195.0,
+        337.0
+      ],
+      "origin": [
+        0.43919,
+        0.76072
+      ]
+    }
+  },
+  "alphaPercent": 86.35,
+  "webpBytes": 416362,
+  "runtimeIntegrated": false,
+  "animation": "ordered sequences; fixed source-cell scale, per-frame ground anchors",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  },
+  "sequences": {
+    "guard-duel": {
+      "frames": [
+        "guard-ready",
+        "guard-thrust",
+        "guard-block",
+        "guard-recover"
+      ],
+      "frameRate": 4,
+      "loop": true
+    },
+    "bandit-duel": {
+      "frames": [
+        "bandit-ready",
+        "bandit-lunge",
+        "bandit-recoil",
+        "bandit-retreat"
+      ],
+      "frameRate": 4,
+      "loop": true
+    }
+  }
+}

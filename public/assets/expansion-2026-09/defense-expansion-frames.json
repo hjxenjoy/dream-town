@@ -1,0 +1,214 @@
+{
+  "name": "defense-expansion",
+  "label": "军事与灾害",
+  "image": "/assets/expansion-2026-09/defense-expansion.webp",
+  "width": 1448,
+  "height": 1086,
+  "columns": 4,
+  "rows": 3,
+  "activeFrames": 12,
+  "frames": {
+    "barracks": {
+      "x": 64,
+      "y": 80,
+      "w": 276,
+      "h": 276,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        138.0,
+        262.2
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "guard-post": {
+      "x": 449,
+      "y": 72,
+      "w": 213,
+      "h": 286,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        106.5,
+        271.7
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "castle": {
+      "x": 779,
+      "y": 72,
+      "w": 258,
+      "h": 293,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        129.0,
+        278.35
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "wall-straight": {
+      "x": 1135,
+      "y": 158,
+      "w": 261,
+      "h": 196,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        130.5,
+        186.2
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "wall-corner": {
+      "x": 72,
+      "y": 487,
+      "w": 245,
+      "h": 192,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        122.5,
+        182.4
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "city-gate": {
+      "x": 414,
+      "y": 440,
+      "w": 278,
+      "h": 242,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        139.0,
+        229.9
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "guard": {
+      "x": 818,
+      "y": 427,
+      "w": 183,
+      "h": 261,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        91.5,
+        247.95
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "bandit": {
+      "x": 1179,
+      "y": 474,
+      "w": 177,
+      "h": 208,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        88.5,
+        197.6
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "bandit-camp": {
+      "x": 62,
+      "y": 761,
+      "w": 272,
+      "h": 255,
+      "row": 2,
+      "column": 0,
+      "pivot": [
+        136.0,
+        242.25
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "plague-house": {
+      "x": 426,
+      "y": 745,
+      "w": 253,
+      "h": 275,
+      "row": 2,
+      "column": 1,
+      "pivot": [
+        126.5,
+        261.25
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "plague-cloud": {
+      "x": 831,
+      "y": 829,
+      "w": 156,
+      "h": 153,
+      "row": 2,
+      "column": 2,
+      "pivot": [
+        78.0,
+        145.35
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "quarantine-marker": {
+      "x": 1187,
+      "y": 768,
+      "w": 160,
+      "h": 248,
+      "row": 2,
+      "column": 3,
+      "pivot": [
+        80.0,
+        235.6
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    }
+  },
+  "alphaPercent": 72.89,
+  "webpBytes": 820220,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

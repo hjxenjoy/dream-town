@@ -1,0 +1,172 @@
+{
+  "name": "animal-walk-4",
+  "label": "行走 calf / cow",
+  "image": "/assets/readiness-2026-09/animal-walk-4.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "frames": {
+    "calf-walk-1": {
+      "x": 0,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        222.0,
+        363.0
+      ],
+      "origin": [
+        0.5,
+        0.81757
+      ]
+    },
+    "calf-walk-2": {
+      "x": 444,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        221.5,
+        367.0
+      ],
+      "origin": [
+        0.5,
+        0.82658
+      ]
+    },
+    "calf-walk-3": {
+      "x": 887,
+      "y": 0,
+      "w": 443,
+      "h": 444,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        221.5,
+        363.0
+      ],
+      "origin": [
+        0.5,
+        0.81757
+      ]
+    },
+    "calf-walk-4": {
+      "x": 1330,
+      "y": 0,
+      "w": 444,
+      "h": 444,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        222.0,
+        368.0
+      ],
+      "origin": [
+        0.5,
+        0.82883
+      ]
+    },
+    "cow-walk-1": {
+      "x": 0,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        222.0,
+        348.0
+      ],
+      "origin": [
+        0.5,
+        0.78555
+      ]
+    },
+    "cow-walk-2": {
+      "x": 444,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        221.5,
+        353.0
+      ],
+      "origin": [
+        0.5,
+        0.79684
+      ]
+    },
+    "cow-walk-3": {
+      "x": 887,
+      "y": 444,
+      "w": 443,
+      "h": 443,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        221.5,
+        346.0
+      ],
+      "origin": [
+        0.5,
+        0.78104
+      ]
+    },
+    "cow-walk-4": {
+      "x": 1330,
+      "y": 444,
+      "w": 444,
+      "h": 443,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        222.0,
+        353.0
+      ],
+      "origin": [
+        0.5,
+        0.79684
+      ]
+    }
+  },
+  "alphaPercent": 68.12,
+  "webpBytes": 782832,
+  "runtimeIntegrated": false,
+  "animation": "ordered sequences with ground anchors",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  },
+  "sequences": {
+    "calf-walk": {
+      "frames": [
+        "calf-walk-1",
+        "calf-walk-2",
+        "calf-walk-3",
+        "calf-walk-4"
+      ],
+      "frameRate": 4,
+      "loop": true
+    },
+    "cow-walk": {
+      "frames": [
+        "cow-walk-1",
+        "cow-walk-2",
+        "cow-walk-3",
+        "cow-walk-4"
+      ],
+      "frameRate": 4,
+      "loop": true
+    }
+  }
+}

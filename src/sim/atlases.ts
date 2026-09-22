@@ -1,7 +1,7 @@
+import { EXPANSION_ATLASES } from './expansion-atlases.ts';
 import herdCatalog from '../../public/assets/herd-growth-frames.json' with { type: 'json' };
 import livingFarmCatalog from '../../public/assets/living-farm-frames.json' with { type: 'json' };
 import homesteadCatalog from '../../public/assets/homestead-frames.json' with { type: 'json' };
-import growingCatalog from '../../public/assets/crops-growing-frames.json' with { type: 'json' };
 import caravanCatalog from '../../public/assets/caravan-frames.json' with { type: 'json' };
 import chapelCatalog from '../../public/assets/chapel-frames.json' with { type: 'json' };
 import citizensCatalog from '../../public/assets/citizens-actions-frames.json' with { type: 'json' };
@@ -15,7 +15,7 @@ import portraitsCatalog from '../../public/assets/story-portraits-frames.json' w
 import streetCatalog from '../../public/assets/street-decor-frames.json' with { type: 'json' };
 import type { BuildingKind } from './data.ts';
 
-export interface SpriteFrame { x: number; y: number; w: number; h: number; clip?: number[][] }
+export interface SpriteFrame { x: number; y: number; w: number; h: number; clip?: number[][]; pivot?: number[]; origin?: number[] }
 
 /**
  * Every generated atlas, keyed by the name the renderer loads it under. The frame
@@ -23,10 +23,10 @@ export interface SpriteFrame { x: number; y: number; w: number; h: number; clip?
  * reads, so the two can never disagree about where a sprite lives.
  */
 export const GENERATED_ATLASES = {
+  ...EXPANSION_ATLASES,
   'living-farm':livingFarmCatalog,
   'herd-growth':herdCatalog,
   homestead:homesteadCatalog,
-  'crops-growing': growingCatalog,
   disasters: disastersCatalog,
   'citizens-actions': citizensCatalog,
   caravan: caravanCatalog,

@@ -1,0 +1,70 @@
+{
+  "name": "islands-completion",
+  "label": "水果岛、橄榄岛、渔人岛",
+  "image": "/assets/readiness-2026-09/islands-completion.webp",
+  "width": 2172,
+  "height": 724,
+  "columns": 3,
+  "rows": 1,
+  "activeFrames": 3,
+  "frames": {
+    "fruit-island": {
+      "x": 18,
+      "y": 107,
+      "w": 683,
+      "h": 557,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        341.5,
+        529.15
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "olive-island": {
+      "x": 728,
+      "y": 29,
+      "w": 716,
+      "h": 642,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        358.0,
+        609.9
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "fisherman-island": {
+      "x": 1466,
+      "y": 119,
+      "w": 688,
+      "h": 547,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        344.0,
+        519.65
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    }
+  },
+  "alphaPercent": 43.11,
+  "webpBytes": 1709160,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

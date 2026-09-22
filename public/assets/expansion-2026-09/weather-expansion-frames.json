@@ -1,0 +1,150 @@
+{
+  "name": "weather-expansion",
+  "label": "天气图层",
+  "image": "/assets/expansion-2026-09/weather-expansion.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "frames": {
+    "cloud-fair": {
+      "x": 126,
+      "y": 157,
+      "w": 194,
+      "h": 127,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        97.0,
+        63.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "cloud-storm": {
+      "x": 560,
+      "y": 149,
+      "w": 209,
+      "h": 134,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        104.5,
+        67.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "rain-light": {
+      "x": 1018,
+      "y": 141,
+      "w": 175,
+      "h": 174,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        87.5,
+        87.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "rain-heavy": {
+      "x": 1458,
+      "y": 126,
+      "w": 187,
+      "h": 204,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        93.5,
+        102.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "snow-light": {
+      "x": 147,
+      "y": 587,
+      "w": 150,
+      "h": 162,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        75.0,
+        81.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "snow-heavy": {
+      "x": 572,
+      "y": 576,
+      "w": 185,
+      "h": 180,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        92.5,
+        90.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "fog": {
+      "x": 1001,
+      "y": 614,
+      "w": 214,
+      "h": 108,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        107.0,
+        54.0
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "lightning": {
+      "x": 1488,
+      "y": 541,
+      "w": 117,
+      "h": 241,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        58.5,
+        120.5
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "alphaPercent": 90.97,
+  "webpBytes": 209856,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

@@ -1,0 +1,257 @@
+{
+  "name": "rail-curves-corrected",
+  "label": "精确等距弯轨",
+  "image": "/assets/readiness-2026-09/rail-curves-corrected.svg",
+  "width": 1280,
+  "height": 720,
+  "activeFrames": 4,
+  "frames": {
+    "rail-curve-north": {
+      "x": 0,
+      "y": 0,
+      "w": 640,
+      "h": 360,
+      "pivot": [
+        320,
+        180
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "rail-curve-east": {
+      "x": 640,
+      "y": 0,
+      "w": 640,
+      "h": 360,
+      "pivot": [
+        320,
+        180
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "rail-curve-south": {
+      "x": 0,
+      "y": 360,
+      "w": 640,
+      "h": 360,
+      "pivot": [
+        320,
+        180
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    },
+    "rail-curve-west": {
+      "x": 640,
+      "y": 360,
+      "w": 640,
+      "h": 360,
+      "pivot": [
+        320,
+        180
+      ],
+      "origin": [
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "geometry": {
+    "rail-curve-north": {
+      "projection": {
+        "x": [
+          256,
+          -256
+        ],
+        "y": [
+          128,
+          128
+        ]
+      },
+      "endpoints": [
+        [
+          192,
+          116
+        ],
+        [
+          192,
+          244
+        ]
+      ],
+      "tangentSlopes": [
+        0.5,
+        -0.5
+      ],
+      "gaugeWorld": 0.09,
+      "groundDiamond": [
+        [
+          320,
+          52
+        ],
+        [
+          576,
+          180
+        ],
+        [
+          320,
+          308
+        ],
+        [
+          64,
+          180
+        ]
+      ]
+    },
+    "rail-curve-east": {
+      "projection": {
+        "x": [
+          256,
+          -256
+        ],
+        "y": [
+          128,
+          128
+        ]
+      },
+      "endpoints": [
+        [
+          448,
+          116
+        ],
+        [
+          192,
+          116
+        ]
+      ],
+      "tangentSlopes": [
+        -0.5,
+        0.5
+      ],
+      "gaugeWorld": 0.09,
+      "groundDiamond": [
+        [
+          320,
+          52
+        ],
+        [
+          576,
+          180
+        ],
+        [
+          320,
+          308
+        ],
+        [
+          64,
+          180
+        ]
+      ]
+    },
+    "rail-curve-south": {
+      "projection": {
+        "x": [
+          256,
+          -256
+        ],
+        "y": [
+          128,
+          128
+        ]
+      },
+      "endpoints": [
+        [
+          448,
+          244
+        ],
+        [
+          448,
+          116
+        ]
+      ],
+      "tangentSlopes": [
+        0.5,
+        -0.5
+      ],
+      "gaugeWorld": 0.09,
+      "groundDiamond": [
+        [
+          320,
+          52
+        ],
+        [
+          576,
+          180
+        ],
+        [
+          320,
+          308
+        ],
+        [
+          64,
+          180
+        ]
+      ]
+    },
+    "rail-curve-west": {
+      "projection": {
+        "x": [
+          256,
+          -256
+        ],
+        "y": [
+          128,
+          128
+        ]
+      },
+      "endpoints": [
+        [
+          192,
+          244
+        ],
+        [
+          448,
+          244
+        ]
+      ],
+      "tangentSlopes": [
+        -0.5,
+        0.5
+      ],
+      "gaugeWorld": 0.09,
+      "groundDiamond": [
+        [
+          320,
+          52
+        ],
+        [
+          576,
+          180
+        ],
+        [
+          320,
+          308
+        ],
+        [
+          64,
+          180
+        ]
+      ]
+    }
+  },
+  "generator": "native SVG geometry",
+  "runtimeIntegrated": false,
+  "pivotStatus": "exact projected tile center",
+  "qa": {
+    "edgeWarnings": [],
+    "endpointSlopeVerified": true
+  },
+  "webpBytes": 0,
+  "assetBytes": 38771
+}

@@ -1,0 +1,246 @@
+{
+  "name": "crop-stages-2",
+  "label": "四阶段作物 tomato / strawberry / pumpkin",
+  "image": "/assets/readiness-2026-09/crop-stages-2.webp",
+  "width": 1448,
+  "height": 1086,
+  "columns": 4,
+  "rows": 3,
+  "activeFrames": 12,
+  "frames": {
+    "tomato-sprout": {
+      "x": 0,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        186.0,
+        352.0
+      ],
+      "origin": [
+        0.51381,
+        0.97238
+      ]
+    },
+    "tomato-young": {
+      "x": 362,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        183.0,
+        352.0
+      ],
+      "origin": [
+        0.50552,
+        0.97238
+      ]
+    },
+    "tomato-growing": {
+      "x": 724,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        181.0,
+        353.0
+      ],
+      "origin": [
+        0.5,
+        0.97514
+      ]
+    },
+    "tomato-ripe": {
+      "x": 1086,
+      "y": 0,
+      "w": 362,
+      "h": 362,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        180.0,
+        354.0
+      ],
+      "origin": [
+        0.49724,
+        0.9779
+      ]
+    },
+    "strawberry-sprout": {
+      "x": 0,
+      "y": 362,
+      "w": 362,
+      "h": 362,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        186.0,
+        337.0
+      ],
+      "origin": [
+        0.51381,
+        0.93094
+      ]
+    },
+    "strawberry-young": {
+      "x": 362,
+      "y": 362,
+      "w": 362,
+      "h": 362,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        183.0,
+        337.0
+      ],
+      "origin": [
+        0.50552,
+        0.93094
+      ]
+    },
+    "strawberry-growing": {
+      "x": 724,
+      "y": 362,
+      "w": 362,
+      "h": 362,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        182.0,
+        337.0
+      ],
+      "origin": [
+        0.50276,
+        0.93094
+      ]
+    },
+    "strawberry-ripe": {
+      "x": 1086,
+      "y": 362,
+      "w": 362,
+      "h": 362,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        179.0,
+        338.0
+      ],
+      "origin": [
+        0.49448,
+        0.9337
+      ]
+    },
+    "pumpkin-sprout": {
+      "x": 0,
+      "y": 724,
+      "w": 362,
+      "h": 362,
+      "row": 2,
+      "column": 0,
+      "pivot": [
+        184.5,
+        309.0
+      ],
+      "origin": [
+        0.50967,
+        0.85359
+      ]
+    },
+    "pumpkin-young": {
+      "x": 362,
+      "y": 724,
+      "w": 362,
+      "h": 362,
+      "row": 2,
+      "column": 1,
+      "pivot": [
+        182.0,
+        309.0
+      ],
+      "origin": [
+        0.50276,
+        0.85359
+      ]
+    },
+    "pumpkin-growing": {
+      "x": 724,
+      "y": 724,
+      "w": 362,
+      "h": 362,
+      "row": 2,
+      "column": 2,
+      "pivot": [
+        181.0,
+        308.0
+      ],
+      "origin": [
+        0.5,
+        0.85083
+      ]
+    },
+    "pumpkin-ripe": {
+      "x": 1086,
+      "y": 724,
+      "w": 362,
+      "h": 362,
+      "row": 2,
+      "column": 3,
+      "pivot": [
+        179.0,
+        310.0
+      ],
+      "origin": [
+        0.49448,
+        0.85635
+      ]
+    }
+  },
+  "alphaPercent": 71.92,
+  "webpBytes": 815698,
+  "runtimeIntegrated": false,
+  "animation": "ordered sequences with ground anchors",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  },
+  "sequences": {
+    "tomato-growth": {
+      "frames": [
+        "tomato-sprout",
+        "tomato-young",
+        "tomato-growing",
+        "tomato-ripe"
+      ],
+      "frameRate": 1,
+      "loop": false
+    },
+    "strawberry-growth": {
+      "frames": [
+        "strawberry-sprout",
+        "strawberry-young",
+        "strawberry-growing",
+        "strawberry-ripe"
+      ],
+      "frameRate": 1,
+      "loop": false
+    },
+    "pumpkin-growth": {
+      "frames": [
+        "pumpkin-sprout",
+        "pumpkin-young",
+        "pumpkin-growing",
+        "pumpkin-ripe"
+      ],
+      "frameRate": 1,
+      "loop": false
+    }
+  }
+}

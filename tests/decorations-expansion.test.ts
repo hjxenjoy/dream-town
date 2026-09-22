@@ -114,7 +114,7 @@ test('every generated atlas frame the renderer asks for actually exists',()=>{
 test('the registry matches the shipped catalogs on disk',()=>{
   // Guards against editing the registry without regenerating the assets.
   for(const atlas of GENERATED_ATLAS_KEYS){
-    const onDisk=JSON.parse(readFileSync(new URL(`../public/assets/${atlas}-frames.json`,import.meta.url),'utf8'));
+    const onDisk=JSON.parse(readFileSync(new URL(`../public${GENERATED_ATLASES[atlas].image.replace(/\.(webp|svg|png)$/, '-frames.json')}`,import.meta.url),'utf8'));
     assert.equal(GENERATED_ATLASES[atlas].width,onDisk.width,`${atlas} width`);
     assert.equal(GENERATED_ATLASES[atlas].height,onDisk.height,`${atlas} height`);
     assert.deepEqual(Object.keys(atlasFrames(atlas)).sort(),Object.keys(onDisk.frames).sort(),`${atlas} frame list`);

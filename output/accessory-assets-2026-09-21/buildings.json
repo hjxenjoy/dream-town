@@ -1,0 +1,347 @@
+[
+  {
+    "id": "flowernursery",
+    "name": "四季花圃",
+    "category": "production"
+  },
+  {
+    "id": "orchardhouse",
+    "name": "果园小屋",
+    "category": "production"
+  },
+  {
+    "id": "chickencoop",
+    "name": "咯咯鸡舍",
+    "category": "production"
+  },
+  {
+    "id": "jamkitchen",
+    "name": "甜果果酱坊",
+    "category": "production"
+  },
+  {
+    "id": "teahouse",
+    "name": "河畔茶屋",
+    "category": "services"
+  },
+  {
+    "id": "homestead",
+    "name": "花窗农庄",
+    "category": "homes"
+  },
+  {
+    "id": "mine",
+    "name": "赤岩矿场",
+    "category": "production"
+  },
+  {
+    "id": "kiln",
+    "name": "松烟炭窑",
+    "category": "production"
+  },
+  {
+    "id": "smelter",
+    "name": "炉光冶炼坊",
+    "category": "production"
+  },
+  {
+    "id": "smithy",
+    "name": "叮当铁匠铺",
+    "category": "production"
+  },
+  {
+    "id": "feedmill",
+    "name": "谷穗饲料坊",
+    "category": "production"
+  },
+  {
+    "id": "pasture",
+    "name": "绵绵牧场",
+    "category": "production"
+  },
+  {
+    "id": "weaver",
+    "name": "蓝梭织布坊",
+    "category": "production"
+  },
+  {
+    "id": "tailor",
+    "name": "暖衣裁缝铺",
+    "category": "production"
+  },
+  {
+    "id": "farmhouse",
+    "name": "田园小院",
+    "category": "homes"
+  },
+  {
+    "id": "rowhouse",
+    "name": "彩窗联排屋",
+    "category": "homes"
+  },
+  {
+    "id": "apartment",
+    "name": "晴空公寓",
+    "category": "homes"
+  },
+  {
+    "id": "forester",
+    "name": "青林伐木屋",
+    "category": "production"
+  },
+  {
+    "id": "sawmill",
+    "name": "河谷锯木厂",
+    "category": "production"
+  },
+  {
+    "id": "fishpond",
+    "name": "碧水养鱼场",
+    "category": "production"
+  },
+  {
+    "id": "brickworks",
+    "name": "窑火建材坊",
+    "category": "production"
+  },
+  {
+    "id": "school",
+    "name": "晨读小学",
+    "category": "services"
+  },
+  {
+    "id": "clinic",
+    "name": "安心诊所",
+    "category": "services"
+  },
+  {
+    "id": "theatre",
+    "name": "星幕小剧院",
+    "category": "services"
+  },
+  {
+    "id": "chapel",
+    "name": "河畔小教堂",
+    "category": "services"
+  },
+  {
+    "id": "watertower",
+    "name": "蓝顶供水塔",
+    "category": "services"
+  },
+  {
+    "id": "firestation",
+    "name": "赤砖消防站",
+    "category": "services"
+  },
+  {
+    "id": "cottage",
+    "name": "林间小屋",
+    "category": "homes"
+  },
+  {
+    "id": "windmill",
+    "name": "风车磨坊",
+    "category": "production"
+  },
+  {
+    "id": "bakery",
+    "name": "晨光面包房",
+    "category": "production"
+  },
+  {
+    "id": "townhall",
+    "name": "小镇议事厅",
+    "category": "services"
+  },
+  {
+    "id": "lumber",
+    "name": "林间木工坊",
+    "category": "production"
+  },
+  {
+    "id": "quarry",
+    "name": "山麓采石场",
+    "category": "production"
+  },
+  {
+    "id": "fishery",
+    "name": "河畔渔屋",
+    "category": "production"
+  },
+  {
+    "id": "market",
+    "name": "旅行者集市",
+    "category": "services"
+  },
+  {
+    "id": "well",
+    "name": "清泉水井",
+    "category": "services"
+  },
+  {
+    "id": "warehouse",
+    "name": "丰收仓库",
+    "category": "services"
+  },
+  {
+    "id": "firetower",
+    "name": "森林瞭望塔",
+    "category": "services"
+  },
+  {
+    "id": "garden",
+    "name": "花语小花园",
+    "category": "decoration"
+  },
+  {
+    "id": "oak",
+    "name": "青荫橡树",
+    "category": "decoration"
+  },
+  {
+    "id": "cherry",
+    "name": "春樱花树",
+    "category": "decoration"
+  },
+  {
+    "id": "pine",
+    "name": "常青松树",
+    "category": "decoration"
+  },
+  {
+    "id": "maple",
+    "name": "晚霞红枫",
+    "category": "decoration"
+  },
+  {
+    "id": "fountain",
+    "name": "涟漪喷泉",
+    "category": "decoration"
+  },
+  {
+    "id": "gazebo",
+    "name": "听风凉亭",
+    "category": "decoration"
+  },
+  {
+    "id": "bench",
+    "name": "花畔长椅",
+    "category": "decoration"
+  },
+  {
+    "id": "flowerarch",
+    "name": "蔷薇花拱门",
+    "category": "decoration"
+  },
+  {
+    "id": "flowerbox",
+    "name": "临街花箱",
+    "category": "decoration"
+  },
+  {
+    "id": "trellis",
+    "name": "蔷薇花架",
+    "category": "decoration"
+  },
+  {
+    "id": "archlights",
+    "name": "串灯花门",
+    "category": "decoration"
+  },
+  {
+    "id": "boardwalk",
+    "name": "木栈道",
+    "category": "decoration"
+  },
+  {
+    "id": "railing",
+    "name": "滨河栏杆",
+    "category": "decoration"
+  },
+  {
+    "id": "parasol",
+    "name": "遮阳伞座",
+    "category": "decoration"
+  },
+  {
+    "id": "willow",
+    "name": "垂柳",
+    "category": "decoration"
+  },
+  {
+    "id": "dock",
+    "name": "浮动码头",
+    "category": "decoration"
+  },
+  {
+    "id": "crates",
+    "name": "木箱堆",
+    "category": "decoration"
+  },
+  {
+    "id": "barrels",
+    "name": "橡木酒桶",
+    "category": "decoration"
+  },
+  {
+    "id": "anvil",
+    "name": "旧铁砧",
+    "category": "decoration"
+  },
+  {
+    "id": "signflags",
+    "name": "彩旗招牌",
+    "category": "decoration"
+  },
+  {
+    "id": "cowbarn",
+    "name": "青草牛舍",
+    "category": "production"
+  },
+  {
+    "id": "dairy",
+    "name": "山泉奶坊",
+    "category": "production"
+  },
+  {
+    "id": "apiary",
+    "name": "百花蜂场",
+    "category": "production"
+  },
+  {
+    "id": "vineyard",
+    "name": "南坡葡萄园",
+    "category": "production"
+  },
+  {
+    "id": "winery",
+    "name": "木桶酿酒坊",
+    "category": "production"
+  },
+  {
+    "id": "cellar",
+    "name": "石阶酒窖",
+    "category": "production"
+  },
+  {
+    "id": "flowercart",
+    "name": "花车",
+    "category": "decoration"
+  },
+  {
+    "id": "picniccorner",
+    "name": "野餐角",
+    "category": "decoration"
+  },
+  {
+    "id": "harvestpile",
+    "name": "丰收堆",
+    "category": "decoration"
+  },
+  {
+    "id": "farm",
+    "name": "田园农田",
+    "category": "production"
+  }
+]

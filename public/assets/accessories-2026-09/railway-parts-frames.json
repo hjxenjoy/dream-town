@@ -1,0 +1,150 @@
+{
+  "name": "railway-parts",
+  "label": "铁路与枕木",
+  "image": "/assets/accessories-2026-09/railway-parts.webp",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "activeFrames": 8,
+  "frames": {
+    "rail-ne-sw": {
+      "x": 93,
+      "y": 125,
+      "w": 274,
+      "h": 210,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        137.0,
+        199.5
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "rail-nw-se": {
+      "x": 520,
+      "y": 125,
+      "w": 275,
+      "h": 210,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        137.5,
+        199.5
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "rail-curve-north": {
+      "x": 945,
+      "y": 161,
+      "w": 333,
+      "h": 163,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        166.5,
+        154.85
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "rail-curve-east": {
+      "x": 1483,
+      "y": 111,
+      "w": 166,
+      "h": 255,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        83.0,
+        242.25
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "rail-curve-south": {
+      "x": 73,
+      "y": 593,
+      "w": 334,
+      "h": 171,
+      "row": 1,
+      "column": 0,
+      "pivot": [
+        167.0,
+        162.45
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "rail-curve-west": {
+      "x": 578,
+      "y": 532,
+      "w": 172,
+      "h": 256,
+      "row": 1,
+      "column": 1,
+      "pivot": [
+        86.0,
+        243.2
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "rail-cross": {
+      "x": 967,
+      "y": 550,
+      "w": 288,
+      "h": 223,
+      "row": 1,
+      "column": 2,
+      "pivot": [
+        144.0,
+        211.85
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "rail-ties": {
+      "x": 1439,
+      "y": 563,
+      "w": 248,
+      "h": 204,
+      "row": 1,
+      "column": 3,
+      "pivot": [
+        124.0,
+        193.8
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    }
+  },
+  "alphaPercent": 84.41,
+  "webpBytes": 500482,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "name": "vehicles-return",
+  "label": "返程车辆",
+  "image": "/assets/readiness-2026-09/vehicles-return.webp",
+  "width": 2172,
+  "height": 724,
+  "columns": 4,
+  "rows": 1,
+  "activeFrames": 4,
+  "frames": {
+    "train-engine-right": {
+      "x": 176,
+      "y": 280,
+      "w": 180,
+      "h": 174,
+      "row": 0,
+      "column": 0,
+      "pivot": [
+        90.0,
+        165.3
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "cargo-plane-right": {
+      "x": 701,
+      "y": 269,
+      "w": 222,
+      "h": 178,
+      "row": 0,
+      "column": 1,
+      "pivot": [
+        111.0,
+        169.1
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "cargo-ship-right": {
+      "x": 1246,
+      "y": 226,
+      "w": 223,
+      "h": 237,
+      "row": 0,
+      "column": 2,
+      "pivot": [
+        111.5,
+        225.15
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    },
+    "fishing-boat-right": {
+      "x": 1812,
+      "y": 251,
+      "w": 189,
+      "h": 200,
+      "row": 0,
+      "column": 3,
+      "pivot": [
+        94.5,
+        190.0
+      ],
+      "origin": [
+        0.5,
+        0.95
+      ]
+    }
+  },
+  "alphaPercent": 93.82,
+  "webpBytes": 201258,
+  "runtimeIntegrated": false,
+  "animation": "static sprites; no animation sequences",
+  "pivotStatus": "suggested anchors; calibrate when integrating",
+  "qa": {
+    "alphaPreserved": true,
+    "visiblePixelsLossless": true,
+    "edgeWarnings": []
+  }
+}

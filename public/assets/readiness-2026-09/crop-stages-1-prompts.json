@@ -1,0 +1,5 @@
+{
+  "generator": "built-in image_gen",
+  "finalPrompt": "Transparent PNG sprite sheet, cozy hand-painted isometric farming game. Exactly 4 columns and 3 rows, 12 separate sprites. Each row is ONE crop over four stages left to right: sprout, young, growing, ripe. Row1 wheat, row2 carrot, row3 corn. All have the SAME small diamond soil bed and same camera and same ground position within each cell; plants grow naturally, maturity changes height only, never zoom. Each entire sprite occupies at most central 55% width and 65% height of its cell, plenty of completely transparent space between cells. Warm upper-left light, detailed organic leaves, 2:1 ground diamond. No writing or grid. True alpha transparent background, no backdrop or glow.",
+  "source": "output/readiness-assets-2026-09-21/raw/crop-stages-1.png"
+}
