@@ -13,6 +13,7 @@ import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, typ
 import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, GAME_DAY_SECONDS, LEISURE_GOODS, MAP_SIZE, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId } from './data.ts';
 import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, canStrike, damageCeiling, disasterOf, raidLoss, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
+import { plagueDue, plagueDuration, plagueHappinessCost, plagueSpoilage, type PlagueState } from './plague.ts';
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
 import { DESTINATION_IDS, availableDestinations, caravanDuration, caravanSlots, destinationOf, missingCargo, type DestinationId } from './destinations.ts';
@@ -148,6 +149,10 @@ export interface SimState {
   lastDisasterAt: number;
   /** When the next bulk commission may arrive. Absent on saves written before it existed. */
   nextBulkOrderAt?: number;
+  /** A plague running over the whole town, if one is. Absent otherwise. */
+  plague?: PlagueState;
+  /** When the last plague began, so the next one can wait its turn. */
+  lastPlagueAt?: number;
 }
 export type GameState = SimState;
 export interface ActionResult {
@@ -230,7 +235,7 @@ export function createInitialState(now = Date.now()): SimState {
     settings: { sound: true, disasters: false, autoMayor: false },
     stats: { collected: 0, ordersCompleted: 0, buildingsBuilt: 0, caravansCompleted: 0, coinsEarned: 0, festivals: 0, repairs: 0, toolsProduced: 0, clothingProduced: 0 },
     logs: [{ id: 'log-1', time: 0, message: '欢迎来到青岚小镇。麦田已经成熟，新的故事正等你开始。', type: 'info' }],
-    nextId: 100, festivalUntil: 0, lastMayorAt: 0, lastDisasterAt: 0,
+    nextId: 100, festivalUntil: 0, lastMayorAt: 0, lastDisasterAt: 0, lastPlagueAt: 0,
     // The first commission is due once the town reaches the unlock level, not before.
     nextBulkOrderAt: BULK_ORDER_UNLOCK_LEVEL * 140,
   };
@@ -369,6 +374,10 @@ export function validateSave(value: unknown): value is SimState {
   for (const order of value.orders) if (!isRecord(order) || typeof order.id !== 'string' || typeof order.npc !== 'string' || typeof order.title !== 'string' || !validItems(order.items) || !whole(order.rewardCoins) || !whole(order.rewardXp) || (order.cooldownUntil !== undefined && !nonnegative(order.cooldownUntil)) || (order.bulkUntil !== undefined && !nonnegative(order.bulkUntil)) || (order.bulk !== undefined && typeof order.bulk !== 'boolean')) return false;
   // Absent on saves written before bulk commissions, so only its type is checked.
   if (value.nextBulkOrderAt !== undefined && !nonnegative(value.nextBulkOrderAt)) return false;
+  // Additive, so both are optional; a plague with an unreadable end time would be a save the
+  // game could never finish, so its shape is checked rather than defaulted.
+  if (value.lastPlagueAt !== undefined && !nonnegative(value.lastPlagueAt)) return false;
+  if (value.plague !== undefined && (!isRecord(value.plague) || !nonnegative(value.plague.until))) return false;
   for (const quest of value.quests) if (!isRecord(quest) || typeof quest.id !== 'string' || typeof quest.title !== 'string' || typeof quest.description !== 'string' || !whole(quest.target) || !whole(quest.progress) || !whole(quest.rewardCoins) || !whole(quest.rewardXp) || !whole(quest.rewardPrestige) || typeof quest.claimed !== 'boolean') return false;
   if (!Array.isArray(value.caravans) || value.caravans.length < 1) return false;
   const caravanIds = new Set<string>();
@@ -1368,7 +1377,7 @@ export class SimWorld {
     // without a chapel or clinic keeps exactly the mood it had before this layer existed.
     const relief = needs.health / 100 * HEALTH_TAX_RELIEF + needs.faith / 100 * HEALTH_TAX_RELIEF;
     const softened = penalty > 0 ? penalty * (1 - Math.min(0.8, relief)) : penalty;
-    return clamp(needs.food * 0.4 + needs.water * 0.25 + needs.services * 0.2 + needs.environment * 0.15 - softened - damage + care + (this.state.festivalUntil > this.state.gameTime ? 12 : 0) + (this.activityActive() ? ACTIVITY_HAPPINESS : 0), 10, 100);
+    return clamp(needs.food * 0.4 + needs.water * 0.25 + needs.services * 0.2 + needs.environment * 0.15 - softened - damage + care + (this.state.festivalUntil > this.state.gameTime ? 12 : 0) + (this.activityActive() ? ACTIVITY_HAPPINESS : 0) - this.plagueMoodCost(), 10, 100);
   }
   private taxPerDay(happiness = this.state.happiness): number {
     if (this.state.needs.food <= 0 || happiness < 25) return 0;
@@ -1687,6 +1696,7 @@ export class SimWorld {
     const newDays = Math.floor(this.state.gameTime / GAME_DAY_SECONDS) - Math.floor(previousTime / GAME_DAY_SECONDS);
     for (let day = 0; day < newDays; day++) this.settleDay();
     if (this.disasterDue()) this.triggerDisaster();
+    this.updatePlague();
     this.maybeOfferBulkOrder();
     this.completeRepairs();this.completeActivities();
     if (this.state.settings.autoMayor && this.state.gameTime - this.state.lastMayorAt >= 5) this.runMayor();
@@ -1700,6 +1710,13 @@ export class SimWorld {
     this.reconcileWorkforce();
     let demand = Math.ceil(this.state.population / 4);
     for (const key of ['fish', 'bread'] as const) { const used = Math.min(demand, this.state.resources[key]); this.state.resources[key] -= used; demand -= used; }
+    // A plague wastes part of the larder on top of what the residents eat, which is the
+    // 粮食锐减 of docs/03 §5 — stores fall, and the shortage it can cause costs mood through
+    // the food need, exactly as any other shortage does.
+    if (this.state.plague) {
+      let spoil = plagueSpoilage(this.state.population);
+      for (const key of ['fish', 'bread'] as const) { if (spoil <= 0) break; const lost = Math.min(spoil, this.state.resources[key]); this.state.resources[key] -= lost; spoil -= lost; }
+    }
     if (this.state.season === 'winter') { const fuel = Math.min(this.state.resources.wood, Math.ceil(this.state.population / 8)); this.state.resources.wood -= fuel; if (fuel === 0) this.state.happiness = Math.max(10, this.state.happiness - 3); }
     // Worn and enjoyed, not only sold: residents get dressed and share a little every day.
     // What the town cannot supply is simply not supplied, which is why the two needs below
@@ -1734,6 +1751,35 @@ export class SimWorld {
     const damaged = this.state.buildings.filter(building => building.damaged).length;
     if (damaged >= damageCeiling(total)) return false;
     return this.state.gameTime - this.state.lastDisasterAt >= strikeInterval(total, damaged);
+  }
+
+  /** Mood the plague is currently taking, after whatever the clinic can hold off. */
+  private plagueMoodCost(): number {
+    if (!this.state.plague) return 0;
+    return plagueHappinessCost(this.state.needs.health);
+  }
+
+  /**
+   * Starts an outbreak when the town is due one, and ends it when its time is up. A plague
+   * is private to the town rather than aimed at a building, so it neither needs the damage
+   * ceiling nor counts against it: a town can be ill and also put out a fire.
+   */
+  private updatePlague(): void {
+    if (!this.state.settings.disasters) return;
+    if (this.state.plague) {
+      if (this.state.gameTime < this.state.plague.until) return;
+      this.state.plague = undefined;
+      this.log('疫情过去了，镇上重新有了人声。诊所的照料帮了大忙。', 'success');
+      return;
+    }
+    if (!plagueDue(this.state.plague, this.state.gameTime, this.state.lastPlagueAt ?? 0, this.state.population, MIN_DISASTER_POPULATION)) return;
+    const until = this.state.gameTime + plagueDuration(this.state.needs.health, GAME_DAY_SECONDS);
+    this.state.plague = { until };
+    this.state.lastPlagueAt = this.state.gameTime;
+    // The clinic's coverage is set by the buildings standing, so it is worth naming what it
+    // is currently doing: a fully covered town gets a shorter, gentler outbreak.
+    const covered = this.state.needs.health >= 50;
+    this.log(`镇上起了疫病，大家都不太舒服。${covered ? '诊所在全力照料，疫情会短一些。' : '建一座安心诊所能照料病人，让疫情更短更轻。'}`, 'warning');
   }
 
   private triggerDisaster(): void {
@@ -1896,6 +1942,17 @@ export class SimWorld {
     let demand = Math.ceil(this.state.population / 4) * days;
     let fed = 0;
     for (const key of ['fish', 'bread'] as const) { const used = Math.min(demand, this.state.resources[key]); this.state.resources[key] -= used; report.consumed[key] += used; demand -= used; fed += used; }
+    // A plague that ran while the player was away wastes stores for the days it overlapped,
+    // and is then over: the same rule the online tick uses, so a reload cannot extend it.
+    if (this.state.plague) {
+      const plaguedDays = Math.min(days, Math.max(0, Math.ceil((this.state.plague.until - originalTime) / GAME_DAY_SECONDS)));
+      let spoil = plagueSpoilage(this.state.population) * plaguedDays;
+      for (const key of ['fish', 'bread'] as const) { if (spoil <= 0) break; const lost = Math.min(spoil, this.state.resources[key]); this.state.resources[key] -= lost; report.consumed[key] += lost; spoil -= lost; }
+      if (this.state.plague.until <= this.state.gameTime) {
+        this.state.plague = undefined;
+        this.log('疫情在离线期间过去了，镇上重新有了人声。', 'success');
+      }
+    }
     // Clothes are worn and comforts shared over the days that passed, counted into the report
     // exactly like the rations above so the offline settlement still reconciles every resource.
     const goods = dailyGoods(this.state.population);
@@ -1954,6 +2011,12 @@ export class SimWorld {
       map: { size: MAP_SIZE-2, districts: Object.entries(DISTRICTS).map(([id,d])=>({id,...d,buildings:this.state.buildings.filter(b=>districtAt(b.x,b.y)===id).length})) },
       warehouseUsed: sum(this.state.resources), warehouseCapacity: this.state.capacity, warehouseFree: this.room(),
       taxPerDay: this.taxPerDay(), taxRate: this.state.taxRate, needs: clone(this.state.needs),
+      // A plague is a town-wide condition rather than a damaged building, so it is reported
+      // on its own: what it is costing the mood, and how long it has left.
+      plague: this.state.plague
+        ? { active: true, daysLeft: Math.max(0, Math.ceil((this.state.plague.until - this.state.gameTime) / GAME_DAY_SECONDS)), moodCost: Math.round(this.plagueMoodCost()) }
+        : { active: false, daysLeft: 0, moodCost: 0 },
+      illness: { clinicCoverage: this.state.needs.health },
       market: MARKET_GOODS.map(key => ({ resource: key, unit: this.marketPrice(key)! })),
       marketReady: this.state.buildings.some(building => building.kind === 'market' && !building.damaged),
       stockTargets: this.stockTargets(), woodReserve: this.woodReserve(), surplus: this.surplusQuote(),

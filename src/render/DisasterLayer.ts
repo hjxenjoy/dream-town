@@ -5,6 +5,10 @@ import type { Building } from '../sim/world';
 import { drawFrameWidth } from './atlasSprite';
 
 const MAX_EFFECTS = 24;
+/** The plague hangs over the whole town rather than one building, so it is drawn much wider. */
+const PLAGUE_WIDTH = 340;
+/** Plague frames, in the readiness pack that delivered the animation. */
+const PLAGUE_FRAMES = ['plague-cloud-1', 'plague-cloud-2'] as const;
 /** Hazard effects share one footprint so no kind looks arbitrarily larger than another. */
 const EFFECT_WIDTH = 112;
 /** The warning bell is a marker, not an effect, so it stays small. */
@@ -17,8 +21,27 @@ const BELL_WIDTH = 60;
 export class DisasterLayer {
   private effects = new Map<string, Phaser.GameObjects.Image>();
   private alerts = new Map<string, Phaser.GameObjects.Image>();
+  private plague?: Phaser.GameObjects.Image;
 
   constructor(private scene: Phaser.Scene) {}
+
+  /**
+   * The plague cloud sits over the town hall, so it reads as a condition of the whole
+   * settlement rather than damage to one building.
+   */
+  syncPlague(plaqued: boolean, townhall: { x: number; y: number } | undefined, time: number, reduced: boolean): void {
+    if (!plaqued || !townhall) {
+      this.plague?.destroy();
+      this.plague = undefined;
+      return;
+    }
+    const point = iso(townhall.x, townhall.y);
+    this.plague ??= this.scene.add.image(point.x, point.y, 'plague-animation').setOrigin(.5, .5);
+    // Reduced motion holds one frame, exactly like the other hazard effects.
+    const frame = PLAGUE_FRAMES[reduced ? 0 : Math.floor(time / HAZARD_FRAME_MS) % PLAGUE_FRAMES.length]!;
+    drawFrameWidth(this.plague, 'plague-animation', frame, PLAGUE_WIDTH);
+    this.plague.setPosition(point.x, point.y - 40).setDepth(point.y + 260).setAlpha(.72);
+  }
 
   sync(buildings: Building[], time: number, reduced: boolean): void {
     const view = this.scene.cameras.main.worldView;

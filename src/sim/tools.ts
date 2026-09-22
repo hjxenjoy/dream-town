@@ -47,7 +47,7 @@ export const GAME_TOOLS: ToolDefinition[] = [
   tool('get_production_flow', '查询生产配方、速度、暂停与缺料/满仓状态。'),
   tool('get_pending_orders', '查询当前订单的物资要求、奖励和冷却；bulk 为真的订单是远方商会的大单，不能取消。'),
   tool('get_caravan_routes', '查询已解锁的商队路线、各自货物与是否备齐。'),
-  tool('get_disaster_alerts', '查询当前受损建筑及位置。'),
+  tool('get_disaster_alerts', '查询当前受损建筑、位置，以及是否正在流行疫病。'),
   tool('adopt_pet', '领养一只小动物，它会跟着邻居在小镇里散步。', { kind: { type: 'string', enum: ['cat', 'dog'] } }, ['kind']),
   tool('release_pet', '送走最近领养的小动物。'),
   tool('start_seasonal_activity', '举办当前季节的自愿活动，只动用富余物资。'),
@@ -115,7 +115,7 @@ export function executeGameTool(world: SimWorld, name: string, args: unknown = {
     case 'get_town_clock': return { ok: true, data: world.observe().clock };
     case 'get_neighbour_stories': return { ok: true, data: world.observe().stories };
     case 'choose_story_option': return world.chooseStoryOption(String(values.neighbour), String(values.option));
-    case 'get_disaster_alerts': return { ok: true, data: world.observe().alerts };
+    case 'get_disaster_alerts': return { ok: true, data: { alerts: world.observe().alerts, plague: world.observe().plague, illness: world.observe().illness } };
     case 'adopt_pet': return world.adoptPet(values.kind as 'cat' | 'dog');
     case 'release_pet': return world.releasePet();
     case 'start_seasonal_activity': return world.startActivity();

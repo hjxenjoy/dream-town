@@ -10,7 +10,7 @@ import { ROAD_TYPES, type RoadKind } from '../sim/roads';
 import { DISTRICTS, DISTRICT_KEYS, districtAt, preferredDistrict, type District } from '../sim/terrain';
 import { valleyMap, districtButtons, type MapDestination } from './valleyMap';
 import { SimWorld, type Building, type BuildingKind, type Resource, type ActionResult, type OfflineReport } from '../sim/world';
-import { BUILDINGS, RESOURCES, RESOURCE_KEYS, SEASON_NAMES, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TECHNOLOGY_KEYS, INDUSTRY_KINDS, INDUSTRY_FRAMES, DECORATION_SPRITES, DECORATION_ATLAS, EXPANSION_SPRITES, EXPANSION_ATLAS, EXPANSION_FRAMES, DECORATION_FRAMES, type TechnologyId } from '../sim/data';
+import { BUILDINGS, GAME_DAY_SECONDS, RESOURCES, RESOURCE_KEYS, SEASON_NAMES, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TECHNOLOGY_KEYS, INDUSTRY_KINDS, INDUSTRY_FRAMES, DECORATION_SPRITES, DECORATION_ATLAS, EXPANSION_SPRITES, EXPANSION_ATLAS, EXPANSION_FRAMES, DECORATION_FRAMES, type TechnologyId } from '../sim/data';
 import { icon } from './icons';
 import { DISASTERS, REPAIR_SECONDS, type DisasterKind } from '../sim/disasters';
 import { SEASONAL_ACTIVITIES } from '../sim/seasonal';
@@ -230,7 +230,10 @@ export class GameUI {
     this.html(this.root.querySelector('#quest-peek')!,`<div class="quest-top"><span>${icon('leaf',16)} 我的田园 · Lv.${garden.level}</span><button data-action="open" data-value="farming" aria-label="打开田园">${icon('chevron',16)}</button></div><h3>${nextCrop?'下一份期待，'+CROPS[nextCrop].name:'把土地养成自己的风景'}</h3><p>${s.farming!.harvested} 份收获 · ${s.farming!.autoReplant?'收完自动续种':'自由选种，慢慢生长'}</p><div class="quest-progress"><i style="width:${garden.next?Math.min(100,garden.progress/garden.next*100):100}%"></i></div><div class="quest-bottom"><span>${garden.next?`${garden.progress} / ${garden.next} 园艺经验`:'园艺已满级'}</span><button data-action="open" data-value="farming">去田园 ${icon('arrow',14)}</button></div>`);
     this.html(this.root.querySelector('#sound-toggle')!,icon(s.settings.sound?'sound':'mute'));
     this.html(this.root.querySelector('#time-controls')!,`<button data-action="speed" data-value="${this.speed===0?1:0}" class="${this.speed===0?'active':''}" aria-label="${this.speed===0?'继续游戏':'暂停游戏'}">${icon(this.speed===0?'play':'pause',15)}</button>${[1,2,4].map(n=>`<button data-action="speed" data-value="${n}" class="${this.speed===n?'active':''}" aria-label="${n} 倍速">${n}×</button>`).join('')}`);
-    this.root.querySelector('#world-caption')!.textContent=this.buildKind?'为新的故事，留一块地方':this.speed===0?'时间暂停，慢慢想一想':ready?`${ready} 处收获，正在等你`:'春风正好，万物生长';
+    // A plague is a town-wide condition with no building to click, so the caption is where it
+    // is announced: otherwise the only sign would be a log line the player may have missed.
+    const plagueLeft=s.plague?Math.max(0,Math.ceil((s.plague.until-s.gameTime)/GAME_DAY_SECONDS)):0;
+    this.root.querySelector('#world-caption')!.textContent=s.plague?`疫病未退 · 还有 ${plagueLeft} 天，诊所照料能减轻` :this.buildKind?'为新的故事，留一块地方':this.speed===0?'时间暂停，慢慢想一想':ready?`${ready} 处收获，正在等你`:'春风正好，万物生长';
     this.root.querySelectorAll<HTMLElement>('.dock-button').forEach(b=>b.classList.toggle('selected',b.dataset.value===this.panel));
     // Each badge answers "is there something in here for me right now?" — a finished goal to
     // claim, a caravan to meet, or standing the town can spend. Two of these were wired to a

@@ -24,7 +24,7 @@ import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
 /** Generated atlases the scene draws. Preloading and frame registration both read this. */
-const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel','defense-expansion','wall-junctions','duel-actions','production-expansion'] as const;
+const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel','defense-expansion','wall-junctions','duel-actions','production-expansion','plague-animation'] as const;
 /** On-screen widths for the farm visuals, which are drawn from generated textures. */
 const FARM_WIDTH = 116;
 const FARM_HEIGHT = 86;
@@ -383,6 +383,7 @@ export class TownScene extends Phaser.Scene {
     this.machineLayer.sync(this.world.state.buildings,this.running,this.game.loop.delta*(this.simulationSpeed>0?1:0),reduced);
     this.atmosphere.update(this.game.loop.delta*(this.simulationSpeed>0?1:0),this.world.state.buildings,this.running,this.world.state.festivalUntil>this.world.state.gameTime,reduced);
     this.ambience.sync(this.world.state.buildings,this.running,this.cameras.main.midPoint,time);
+    this.disasterLayer.syncPlague(Boolean(this.world.state.plague),this.world.state.buildings.find(b=>b.kind==='townhall'),time,reduced);
     if(!reduced&&this.simulationSpeed>0)this.visuals.forEach((v,id)=>{if(v.ready){const b=this.world.state.buildings.find(b=>b.id===id)!;const p=iso(b.x,b.y);v.badge.y=p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)+Math.sin(time/430)*3;}});
     for(const b of this.world.state.buildings){
       const companion=this.visuals.get(b.id)?.companion;
