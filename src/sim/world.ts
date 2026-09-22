@@ -10,7 +10,7 @@ import { LOCAL_SUPPLY_RANGE, supplyFactor, supplyHauls } from './layout.ts';
 import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type RoadKind, type Tile } from './roads.ts';
 import { TownNavigation } from './navigation.ts';
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
-import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, FOCUS_RECIPES, GAME_DAY_SECONDS, LEISURE_GOODS, MAP_SIZE, TAVERN_GOODS, effectiveRecipe, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId } from './data.ts';
+import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, FOCUS_RECIPES, GAME_DAY_SECONDS, HERB_BOOST, LEISURE_GOODS, MAP_SIZE, TAVERN_GOODS, effectiveRecipe, herbCoverage, herbsPerDay, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId } from './data.ts';
 import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, canStrike, damageCeiling, disasterOf, raidLoss, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 import { plagueDue, plagueDuration, plagueHappinessCost, plagueSpoilage, type PlagueState } from './plague.ts';
@@ -1377,7 +1377,9 @@ export class SimWorld {
       .reduce((total, building) => total + (BUILDINGS[building.kind][field] ?? 0) * building.level, 0);
     const souls = Math.max(1, this.state.population);
     this.state.needs.faith = clamp(served('faith') / souls * 100, 0, 100);
-    this.state.needs.health = clamp(served('health') / souls * 100, 0, 100);
+    // A clinic with a herb store reaches further; with none it reaches exactly as far as it
+    // always did, which is what keeps this a supply post rather than a new requirement.
+    this.state.needs.health = clamp(served('health') * (1 + HERB_BOOST * herbCoverage(this.state.resources, souls) / 100) / souls * 100, 0, 100);
   }
   private targetHappiness(): number {
     const needs = this.state.needs;
@@ -1504,6 +1506,11 @@ export class SimWorld {
   }
 
   /** Whether the town has somewhere to serve a drink, which is what docs/05 §2 asked for. */
+  /** Whether a clinic is standing, which is the only thing that uses herbs. */
+  private clinicStanding(): boolean {
+    return this.state.buildings.some(building => building.kind === 'clinic' && !building.damaged);
+  }
+
   private tavernStanding(): boolean {
     return this.state.buildings.some(building => building.kind === 'tavern' && !building.damaged);
   }
@@ -1759,6 +1766,11 @@ export class SimWorld {
     let enjoyed = goods.luxury;
     const treats = this.tavernStanding() ? [...LEISURE_GOODS, ...TAVERN_GOODS] : LEISURE_GOODS;
     for (const key of treats) { if (enjoyed <= 0) break; const used = Math.min(enjoyed, this.state.resources[key]); this.state.resources[key] -= used; enjoyed -= used; }
+    // The clinic is the only thing that uses herbs, so nothing is spent when none stands.
+    if (this.clinicStanding()) {
+      const used = Math.min(herbsPerDay(this.state.population), this.state.resources.herbs);
+      this.state.resources.herbs -= used;
+    }
     this.updateNeeds();
     const tax = this.taxPerDay(); this.earn(tax);
     if (demand > 0) { this.state.happiness = Math.max(10, this.state.happiness - 8); this.log('食物不足，居民有些担忧。收取鲜鱼或烤一些面包吧。', 'warning'); }
@@ -1995,6 +2007,10 @@ export class SimWorld {
     let enjoyed = goods.luxury * days;
     const treats = this.tavernStanding() ? [...LEISURE_GOODS, ...TAVERN_GOODS] : LEISURE_GOODS;
     for (const key of treats) { const wanted = Math.min(enjoyed, this.state.resources[key]); this.state.resources[key] -= wanted; report.consumed[key] += wanted; enjoyed -= wanted; }
+    if (this.clinicStanding() && days > 0) {
+      const used = Math.min(herbsPerDay(this.state.population) * days, this.state.resources.herbs);
+      this.state.resources.herbs -= used; report.consumed.herbs += used;
+    }
     this.state.gameTime += elapsed;
     this.state.season = (['spring', 'summer', 'autumn', 'winter'] as const)[Math.floor(this.state.gameTime / SEASON_SECONDS) % 4];
     if (this.state.season === 'winter' && days > 0) {
@@ -2051,7 +2067,7 @@ export class SimWorld {
       plague: this.state.plague
         ? { active: true, daysLeft: Math.max(0, Math.ceil((this.state.plague.until - this.state.gameTime) / GAME_DAY_SECONDS)), moodCost: Math.round(this.plagueMoodCost()) }
         : { active: false, daysLeft: 0, moodCost: 0 },
-      illness: { clinicCoverage: this.state.needs.health },
+      illness: { clinicCoverage: this.state.needs.health, herbCoverage: Math.round(herbCoverage(this.state.resources, this.state.population)) },
       market: MARKET_GOODS.map(key => ({ resource: key, unit: this.marketPrice(key)! })),
       marketReady: this.state.buildings.some(building => building.kind === 'market' && !building.damaged),
       stockTargets: this.stockTargets(), woodReserve: this.woodReserve(), surplus: this.surplusQuote(),

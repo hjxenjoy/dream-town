@@ -1125,6 +1125,23 @@
       }
     },
     {
+      "name": "herbgarden",
+      "label": "栅栏药草园 · 田野微风与鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/herbgarden.wav",
+      "profile": "field",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.93
+      }
+    },
+    {
       "name": "pigfarm",
       "label": "橡树猪舍 · 低哞与草垫",
       "url": "/assets/accessories-2026-09/audio/pigfarm.wav",
@@ -1671,6 +1688,12 @@
       "profile": "field",
       "runtimeIntegrated": false
     },
+    "herbgarden": {
+      "url": "/assets/accessories-2026-09/audio/herbgarden.wav",
+      "source": "new",
+      "profile": "field",
+      "runtimeIntegrated": false
+    },
     "pigfarm": {
       "url": "/assets/accessories-2026-09/audio/pigfarm.wav",
       "source": "new",
@@ -1714,7 +1737,7 @@
       "runtimeIntegrated": false
     }
   },
-  "buildingCount": 78,
+  "buildingCount": 79,
   "existingReused": 5,
-  "newTracks": 73
+  "newTracks": 74
 }

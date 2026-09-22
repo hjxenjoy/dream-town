@@ -16,6 +16,8 @@ const WEIGHTS: ResourceMap = {
   hops: 3, beer: 4,
   // Meat buffers like the other intermediates; sausages are served, so they hold a little more.
   meat: 3, sausages: 3,
+  // Herbs are the clinic's working supply, so a small buffer is plenty.
+  herbs: 3,
 };
 
 export function stockTargets(state: SimState): ResourceMap {

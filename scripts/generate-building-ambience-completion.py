@@ -27,7 +27,7 @@ GROUPS={
  'water':'fishpond fishery well watertower fountain dock',
  'quiet':'clinic', 'bell':'chapel firestation firetower',
  'footsteps':'boardwalk bench gazebo', 'cloth':'railing archlights signflags',
- 'metal':'anvil quarry', 'cow':'cowbarn pigfarm', 'bees':'apiary', 'field':'farm canefield hopsfield',
+ 'metal':'anvil quarry', 'cow':'cowbarn pigfarm', 'bees':'apiary', 'field':'farm canefield hopsfield herbgarden',
  # Defence: a post is a flag and a distant bell, the barracks adds drill steps, and a wall
  # is masonry in the wind. Assigned on the profile that fits rather than inventing kinds.
  'bell':'chapel firestation firetower guardpost',
