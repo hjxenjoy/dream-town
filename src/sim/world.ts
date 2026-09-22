@@ -7,7 +7,7 @@ import { REGIONS, REGION_IDS, regionAt, validRegions, type RegionId } from './re
 import { CROPS, CROP_IDS, freshFarming, validFarming, gardenLevel, soilLevel, harvestQuote, type CropId, type CropHarvest, type FarmingState } from './farming.ts';
 import { PROJECT_IDS, PROJECTS, freshProjects, validProjects, projectMetrics, hasProjectTitle, type ProjectId, type ProjectState } from './projects.ts';
 import { stockTargets, woodReserve } from './economy.ts';
-import { LOCAL_SUPPLY_RANGE, supplyFactor, supplyHauls } from './layout.ts';
+import { FREIGHT_REACH, LOCAL_SUPPLY_RANGE, commuteDistances, commuteFactor, commuteShare, freightFactor, freightShare, supplyFactor, supplyHauls } from './layout.ts';
 import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type RoadKind, type Tile } from './roads.ts';
 import { TownNavigation } from './navigation.ts';
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
@@ -1761,7 +1761,7 @@ export class SimWorld {
    * is far too much work, so the result is cached against the town's layout: buildings and roads
    * are the only things that can change a haul, and moving one rebuilds the cache on next use.
    */
-  private supplyHaulCache?: { signature: string; hauls: Map<string, number> };
+  private supplyHaulCache?: { signature: string; hauls: Map<string, number>; commute: Map<string, number> };
   private supplyHauls(): Map<string, number> {
     const roads = this.state.roads ?? [];
     // The crop is part of the identity: a field switched from wheat to apples stops supplying
@@ -1769,13 +1769,24 @@ export class SimWorld {
     const signature = this.state.buildings.map(building => `${building.id}:${building.kind}:${building.x},${building.y}:${building.damaged ? 'broken' : 'well'}:${building.crop ?? ''}`).join('|')
       + ';' + roads.map(tileKey).join('|');
     if (this.supplyHaulCache?.signature !== signature) {
-      this.supplyHaulCache = { signature, hauls: supplyHauls(this.state.buildings, roads) };
+      this.supplyHaulCache = { signature, hauls: supplyHauls(this.state.buildings, roads, FREIGHT_REACH), commute: commuteDistances(this.state.buildings, roads) };
     }
     return this.supplyHaulCache.hauls;
   }
   /** How far this workshop's ingredients travel, or Infinity when nothing reaches it. */
   private haulOf(building: Building, hauls: Map<string, number>): number {
     return hauls.get(building.id) ?? Infinity;
+  }
+  /** How far this workshop's workers walk to reach it, or Infinity when no home reaches it. */
+  private commuteOf(building: Building): number {
+    this.supplyHauls();
+    return this.supplyHaulCache?.commute.get(building.id) ?? Infinity;
+  }
+  /** The journeys a building's batch pays for, for the interface to state. */
+  freightAt(building: Building): { haul: number; commute: number; carry: number; walk: number } {
+    const haul = this.haulOf(building, this.supplyHauls());
+    const commute = this.commuteOf(building);
+    return { haul, commute, carry: freightShare(haul), walk: commuteShare(commute) };
   }
   /** The cycle-time multiplier a haul of this length earns, for the interface to state. */
   supplyFactorAt(distance: number): number {
@@ -1841,7 +1852,12 @@ export class SimWorld {
     const workforce = assigned > this.state.population ? assigned / Math.max(1, this.state.population) : 1;
     const morale = this.state.happiness < 35 ? 1.5 : 1;
     const staffing = definition.workers ? definition.workers / Math.max(1, building.workers ?? definition.workers) : 1;
-    return (building.kind==='farm'?CROPS[building.crop??'wheat'].cycle:(definition.cycle??1)) * (building.kind==='farm'?1-soilLevel(building.tended).bonus*.04:1) * (this.state.researched.includes('efficiency') ? 0.9 : 1) * honourCycleFactor(this.state.honours ?? {}) * (hasProjectTitle(this.state,'craft')?0.95:1) * supplyFactor(this.haulOf(building, hauls)) * seasonal * watered * this.gradeSlowdown(building) * workforce * staffing * morale * Math.max(0.6, 1 - (building.level - 1) * 0.15);
+    return (building.kind==='farm'?CROPS[building.crop??'wheat'].cycle:(definition.cycle??1)) * (building.kind==='farm'?1-soilLevel(building.tended).bonus*.04:1) * (this.state.researched.includes('efficiency') ? 0.9 : 1) * honourCycleFactor(this.state.honours ?? {}) * (hasProjectTitle(this.state,'craft')?0.95:1) * supplyFactor(this.haulOf(building, hauls)) * seasonal * watered * this.gradeSlowdown(building) * workforce * staffing * morale * Math.max(0.6, 1 - (building.level - 1) * 0.15)
+      // Two real journeys the town never used to pay for: the walk to work, and the wait for the
+      // load. Both multiply, like every other cycle modifier, so research, honours and project
+      // titles keep meaning exactly what their cards say.
+      * commuteFactor(this.commuteOf(building))
+      * freightFactor(this.haulOf(building, hauls));
   }
   /**
    * A bulk commission: several goods the town can actually make, at volume. Like every other
@@ -2358,7 +2374,7 @@ export class SimWorld {
         repairingUntil: building.repairingUntil,
         x: building.x, y: building.y,
       })),
-      production: this.state.buildings.filter(building => BUILDINGS[building.kind].cycle).map(building => ({ buildingId: building.id, kind: building.kind, paused: building.paused, ready: building.ready, input: this.recipeInput(building), output: this.productionOutput(building, this.stockTargets(), false), cycle: this.cycleTime(building, hauls), haul: Number.isFinite(this.haulOf(building, hauls)) ? Math.round(this.haulOf(building, hauls)) : null, focus: building.productionFocus ?? 'balanced', blocked: this.productionBlock(building) })),
+      production: this.state.buildings.filter(building => BUILDINGS[building.kind].cycle).map(building => ({ buildingId: building.id, kind: building.kind, paused: building.paused, ready: building.ready, input: this.recipeInput(building), output: this.productionOutput(building, this.stockTargets(), false), cycle: this.cycleTime(building, hauls), haul: Number.isFinite(this.haulOf(building, hauls)) ? Math.round(this.haulOf(building, hauls)) : null, focus: building.productionFocus ?? 'balanced', blocked: this.productionBlock(building), freight: this.freightAt(building) })),
     };
   }
 }

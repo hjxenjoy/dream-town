@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { SimWorld, validateSave, migrateSave } from '../src/sim/world.ts';
 import { BUILDINGS, LEISURE_GOODS, RESOURCES, TAVERN_GOODS, TERMINAL_GOODS, careNeeds, emptyResources } from '../src/sim/data.ts';
+import { cycleOf } from './support.ts';
 
 function quiet() {
   const world = new SimWorld();
@@ -55,11 +56,11 @@ test('a winery set to beer actually brews beer from hops, end to end', () => {
   world.state.resources.hops = 0;
   // No hops means no batch, however many grapes are lying about.
   world.state.resources.grape = 40;
-  world.tick(BUILDINGS.winery.cycle! + 5);
+  world.tick(cycleOf(world, building, 5));
   assert.equal(building.ready, false, 'grapes do not make beer');
   // Hops do.
   world.state.resources.hops = 24;
-  world.tick(BUILDINGS.winery.cycle! + 5);
+  world.tick(cycleOf(world, building, 5));
   assert.equal(building.ready, true, 'the hops make a batch');
   assert.equal(world.collect(building.id).ok, true, 'the batch can be collected');
   assert.ok(world.state.resources.beer >= 3, 'and beer reaches the warehouse');

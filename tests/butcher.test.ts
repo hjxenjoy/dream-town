@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { SimWorld, validateSave, migrateSave } from '../src/sim/world.ts';
 import { BUILDINGS, PRODUCTION_SEQUENCE, RESOURCES, TAVERN_GOODS, TERMINAL_GOODS, careNeeds, emptyResources } from '../src/sim/data.ts';
 import { LIVESTOCK } from '../src/sim/livestock.ts';
+import { cycleOf } from './support.ts';
 
 function quiet() {
   const world = new SimWorld();
@@ -46,11 +47,11 @@ test('a pig farm fed on feed produces meat, and waits when the feed runs out', (
   farm.paused = false; farm.progress = 0; farm.ready = false; farm.stock = {};
   // No feed, no pork — however long it runs.
   world.state.resources.feed = 0;
-  world.tick(BUILDINGS.pigfarm.cycle! + 5);
+  world.tick(cycleOf(world, farm, 5));
   assert.equal(farm.ready, false, 'an unfed herd produces nothing');
   // With feed it works, and the feed is consumed exactly once.
   world.state.resources.feed = 10;
-  world.tick(BUILDINGS.pigfarm.cycle! + 5);
+  world.tick(cycleOf(world, farm, 5));
   assert.equal(farm.ready, true, 'fed, it makes a batch');
   assert.equal(world.state.resources.feed, 8, 'two sacks went into it');
   assert.equal(world.collect(farm.id).ok, true);
@@ -65,10 +66,10 @@ test('the butcher turns meat into sausages and never touches the fishermen', () 
   shop.paused = false; shop.progress = 0; shop.ready = false; shop.stock = {};
   // Fish is the town's staple food, not the butcher's input, despite docs/04 §28's eye-line.
   world.state.resources.fish = 60; world.state.resources.meat = 0;
-  world.tick(BUILDINGS.butcher.cycle! + 5);
+  world.tick(cycleOf(world, shop, 5));
   assert.equal(shop.ready, false, 'fish does not become sausages');
   world.state.resources.meat = 9;
-  world.tick(BUILDINGS.butcher.cycle! + 5);
+  world.tick(cycleOf(world, shop, 5));
   assert.equal(shop.ready, true);
   assert.equal(world.state.resources.meat, 6, 'three cuts went in');
   assert.equal(world.collect(shop.id).ok, true);

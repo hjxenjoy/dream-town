@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, FOCUS_RECIPES, RESOURCES, SOUVENIR_SHOP_MULTIPLIER, TERMINAL_GOODS, ZOO_SPECIES, ZOO_SPECIES_NAMES, emptyResources } from '../src/sim/data.ts';
 import { GENERATED_ATLASES, generatedSprite } from '../src/sim/atlases.ts';
+import { cycleOf } from './support.ts';
 
 /** A town with money, materials and husbandry, but nothing built yet. */
 function prepared(level = 20) {
@@ -93,10 +94,10 @@ test('a fed enclosure makes souvenirs and an unfed one waits', () => {
   const pen = world.state.buildings.find(building => building.id === built.buildingId)!;
   pen.workers = 1; pen.paused = false; pen.progress = 0; pen.ready = false; pen.stock = {};
   world.state.resources.feed = 0;
-  world.tick(BUILDINGS.zooenclosure.cycle! + 5);
+  world.tick(cycleOf(world, pen, 5));
   assert.equal(pen.ready, false, 'no feed, no visitors');
   world.state.resources.feed = 30;
-  world.tick(BUILDINGS.zooenclosure.cycle! + 5);
+  world.tick(cycleOf(world, pen, 5));
   assert.equal(pen.ready, true);
   assert.equal(world.collect(pen.id).ok, true);
   assert.equal(world.state.resources.souvenir, 3, 'the zebra brought three');

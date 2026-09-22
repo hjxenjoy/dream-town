@@ -4,6 +4,7 @@ import { SimWorld, createInitialState, migrateSave, validateSave } from '../src/
 import { BUILDINGS, RESOURCE_KEYS, emptyResources, INDUSTRY_KINDS, TECHNOLOGIES, type BuildingKind, type Resource, type TechnologyId } from '../src/sim/data.ts';
 import { executeGameTool } from '../src/sim/tools.ts';
 import { parseSave } from '../src/save/storage.ts';
+import { cycleOf } from './support.ts';
 
 function prepared() {
   const world = new SimWorld();
@@ -186,7 +187,7 @@ test('mine, kiln, smelter and smithy produce a real ore-to-tools chain with exac
   for (const [index, kind] of kinds.entries()) {
     const b = construct(world, kind, index + 1), def = BUILDINGS[kind];
     const before = {...world.state.resources};
-    world.tick(def.cycle! + 0.1); assert.equal(b.ready, true, kind);
+    world.tick(cycleOf(world, b, 0.1)); assert.equal(b.ready, true, kind);
     for (const [key, count] of Object.entries(def.input || {})) assert.equal(world.state.resources[key as Resource], before[key as Resource] - count!);
     assert.equal(world.collect(b.id).ok, true);
     b.paused = true;
@@ -201,7 +202,7 @@ test('feed, pasture, loom and tailor make clothing without a free intermediate r
   for (const [index, kind] of (['feedmill','pasture','weaver','tailor'] as BuildingKind[]).entries()) {
     const b = construct(world, kind, index + 1);
     if(kind==='pasture')world.tick(120); // New lambs finish their fed growth before yielding wool.
-    world.tick(BUILDINGS[kind].cycle! + 0.1); assert.equal(b.ready, true, kind);
+    world.tick(cycleOf(world, b, 0.1)); assert.equal(b.ready, true, kind);
     assert.equal(world.collect(b.id).ok, true); b.paused = true;
   }
   assert.equal(world.state.resources.clothing, 2); assert.equal(world.state.resources.cloth, 0);
@@ -211,10 +212,10 @@ test('feed, pasture, loom and tailor make clothing without a free intermediate r
 test('missing charcoal and absent workers both pause smelting without consuming ore', () => {
   const world = prepared(); research(world, 'mining', 'metallurgy');
   const b = construct(world, 'smelter', 1); world.state.resources.ore = 5;
-  world.tick(30); assert.equal(b.progress, 0); assert.equal(world.state.resources.ore, 5);
+  world.tick(cycleOf(world, b)); assert.equal(b.progress, 0); assert.equal(world.state.resources.ore, 5);
   world.state.resources.charcoal = 2; world.adjustWorkforce(b.id, 0);
-  world.tick(30); assert.equal(b.progress, 0); world.offline(100); assert.equal(world.state.resources.ore, 5);
-  world.adjustWorkforce(b.id, 2); world.tick(60); assert.equal(b.ready, true);
+  world.tick(cycleOf(world, b)); assert.equal(b.progress, 0); world.offline(100); assert.equal(world.state.resources.ore, 5);
+  world.adjustWorkforce(b.id, 2); world.tick(cycleOf(world, b)); assert.equal(b.ready, true);
   assert.equal(world.state.resources.ore, 0); assert.equal(world.state.resources.charcoal, 0);
 });
 

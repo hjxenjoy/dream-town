@@ -129,12 +129,16 @@ test('the bonus saves time without manufacturing extra goods', () => {
   assert.ok(cycle(near.w, near.mill.id) < cycle(far.w, far.mill.id), `the supplied mill is quicker: ${cycle(near.w, near.mill.id)} vs ${cycle(far.w, far.mill.id)}`);
   assert.ok(Number.isFinite(nearHaul!));
 
-  // Both finish the same batch; the supplied one simply gets there sooner.
-  near.w.tick(26); far.w.tick(26);
-  assert.equal(near.mill.ready, true, 'the supplied mill has finished after 26 seconds');
+  // Both finish the same batch; the supplied one simply gets there sooner. The spans are read
+  // from the reported cycles rather than written in, because the walk and the load are part of
+  // the cycle now and a fixed number would drift out from under the claim.
+  const nearCycle = cycle(near.w, near.mill.id), farCycle = cycle(far.w, far.mill.id);
+  assert.ok(nearCycle < farCycle, `the supplied mill is quicker: ${nearCycle} vs ${farCycle}`);
+  near.w.tick(nearCycle + 0.5); far.w.tick(nearCycle + 0.5);
+  assert.equal(near.mill.ready, true, `the supplied mill has finished after ${nearCycle} seconds`);
   assert.equal(far.mill.ready, false, 'the mill with the distant supplier has not');
   assert.deepEqual(near.mill.stock, BUILDINGS.feedmill.output, `batch is the ordinary size: ${JSON.stringify(near.mill.stock)}`);
-  far.w.tick(14);
+  far.w.tick(farCycle - nearCycle + 0.5);
   assert.deepEqual(far.mill.stock, near.mill.stock, 'and the far one eventually holds exactly the same batch');
   assert.equal(validateSave(near.w.state), true);
 });

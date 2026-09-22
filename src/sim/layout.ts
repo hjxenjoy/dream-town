@@ -64,6 +64,118 @@ export function supplyFactor(distance: number): number {
 }
 
 /**
+ * The carriage, as a share of the batch rather than a number of seconds.
+ *
+ * This is deliberately a *factor* and not an added leg. Every other thing that changes a cycle
+ * time — research, honours, project titles, seasons, the proximity bonus above — multiplies it,
+ * and an added leg would quietly break each of their promises: efficiency's "-10% to every
+ * workshop" would come out as "-10% of the recipe only", and the town's own cards would be
+ * wrong. Keeping the carriage multiplicative means the journeys compose with everything else
+ * instead of quietly eroding it.
+ */
+export const FREIGHT_REACH = 18;
+
+/** The most of a batch the load's journey can take — the same order as the proximity bonus. */
+export const FREIGHT_MAX_SHARE = 0.18;
+
+/** The share of a batch spent waiting for the load: proportional to the walk, capped. */
+export function freightShare(distance: number): number {
+  // No supplier at all means no journey and no wait. A workshop in that state is already
+  // refused the proximity bonus and stopped for want of its ingredients.
+  if (!Number.isFinite(distance)) return 0;
+  return Math.min(Math.max(distance, 0) / FREIGHT_REACH, 1) * FREIGHT_MAX_SHARE;
+}
+
+/** The cycle-time multiplier a load of this length costs. Never a bonus, never a punishment. */
+export function freightFactor(distance: number): number {
+  return 1 + freightShare(distance);
+}
+
+/**
+ * The most of the day a resident will spend walking to work, however far away they live.
+ *
+ * Kept in the same order as the proximity bonus — about a tenth — so that "put the work near the
+ * homes" and "put the suppliers near the workshop" pull with comparable force.
+ */
+export const COMMUTE_MAX_SHARE = 0.12;
+
+/** How far a commute is followed: past this the layout is not tight, it is broken. */
+export const COMMUTE_REACH = 18;
+
+/**
+ * The share of the working day a resident spends walking to work.
+ *
+ * A share of the day rather than a duration, because it applies to the whole day: a worker who
+ * walks a tenth of the day does not lose a tenth of one batch, they lose a tenth of every batch.
+ * Capped, so a town that puts its homes clear across the map is slow but never stalled.
+ */
+export function commuteShare(distance: number, reach = COMMUTE_REACH): number {
+  if (!Number.isFinite(distance)) return 0;
+  return Math.min(Math.max(distance, 0) / reach, 1) * COMMUTE_MAX_SHARE;
+}
+
+/** The cycle-time multiplier a commute of this length costs — always at least 1. */
+export function commuteFactor(distance: number): number {
+  // Walking is time not at the bench, so the same work takes proportionally longer.
+  return 1 / (1 - commuteShare(distance));
+}
+
+/**
+ * Walking distance from every workplace to the nearest home.
+ *
+ * One sweep seeded from every home at once, so the cost does not grow with the pair count.
+ *
+ * This is a purely geographic reading, so — like `supplyHauls` — it deliberately does NOT skip
+ * damaged buildings. A burnt house still shelters the people who live in it, and treating it as
+ * gone would let a fire shorten everyone's walk: a disaster quietly granting a production bonus,
+ * which is exactly the bug the haul rule already had to be fixed for once.
+ */
+export function commuteDistances(buildings: readonly Placed[], roads: readonly Road[] = [], reach = COMMUTE_REACH): Map<string, number> {
+  const navigation = new TownNavigation([...buildings], [...roads]);
+  const homes = buildings.filter(building => BUILDINGS[building.kind].housing);
+  const distances = new Map<string, number>();
+  if (!homes.length) return distances;
+
+  // Every workplace's own tile and doors, worked out once rather than per step.
+  const workplaces = buildings
+    .filter(building => BUILDINGS[building.kind].workers)
+    .map(building => ({ id: building.id, tiles: [tileKey(building), ...navigation.entrances(building).map(tileKey)] }));
+
+  const seen = new Set<string>();
+  let frontier: Tile[] = [];
+  for (const home of homes) for (const door of navigation.entrances(home)) {
+    const key = tileKey(door);
+    if (seen.has(key)) continue;
+    seen.add(key); frontier.push(door);
+  }
+
+  let steps = 0;
+  while (frontier.length && steps <= reach) {
+    steps++;
+    for (const workplace of workplaces) {
+      if (distances.has(workplace.id)) continue;
+      // A workplace counts as reached when the walk touches its tile or any of its doors — the
+      // same reading `haulFrom` uses for a delivery.
+      if (workplace.tiles.some(key => seen.has(key))) distances.set(workplace.id, steps);
+    }
+    const next: Tile[] = [];
+    for (const tile of frontier) for (const neighbour of navigation.entrances(tile)) {
+      const key = tileKey(neighbour);
+      if (seen.has(key)) continue;
+      seen.add(key); next.push(neighbour);
+    }
+    frontier = next;
+  }
+  // A workplace the walk never reaches is the worst case, not a free pass: residents cannot get
+  // there in a reasonable time, so the day's walking is as bad as it gets. Only a town with no
+  // homes at all is left unmeasured — there is no commute to speak of.
+  for (const workplace of workplaces) {
+    if (!distances.has(workplace.id)) distances.set(workplace.id, reach + 1);
+  }
+  return distances;
+}
+
+/**
  * Walking distance from every workshop to the nearest producer of anything it consumes.
  *
  * One breadth-first sweep per resource — seeded from every building that makes it — is far

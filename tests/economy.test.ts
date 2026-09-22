@@ -4,6 +4,7 @@ import { SimWorld, validateSave, type Building } from '../src/sim/world.ts';
 import { BUILDINGS, BULK_ORDER_MIN, BULK_ORDER_RATIO, FOCUS_RECIPES, BULK_ORDER_UNLOCK_LEVEL, CARE_BONUS, LEISURE_GOODS, TERMINAL_GOODS, MARKET_GOODS, MARKET_MARKUP, RESOURCES, RESOURCE_KEYS, dailyGoods, emptyResources, type BuildingKind, type Resource } from '../src/sim/data.ts';
 import { DESTINATIONS } from '../src/sim/destinations.ts';
 import { executeGameTool } from '../src/sim/tools.ts';
+import { cycleOf } from './support.ts';
 
 function isolated(kind: BuildingKind) {
   const world = new SimWorld();
@@ -17,7 +18,7 @@ function isolated(kind: BuildingKind) {
 test('full warehouses still allow equal-volume and space-saving processing', () => {
   const {world,b}=isolated('windmill');
   world.state.resources.wheat=world.state.capacity;
-  world.tick(28);
+  world.tick(cycleOf(world,b));
   assert.equal(b.ready,true);
   assert.equal(world.collect(b.id).ok,true);
   assert.equal(world.state.resources.flour,3);
@@ -50,9 +51,9 @@ test('wood directions persist, validate, and never rewrite completed harvests', 
   assert.equal(world.setProductionFocus(b.id,'gold').ok,false);
   assert.equal(JSON.stringify(world.state),before);
   assert.equal(executeGameTool(world,'set_production_focus',{buildingId:b.id,recipeId:'wood'}).ok,true);
-  world.tick(24); assert.deepEqual(b.stock,{wood:10});
+  world.tick(cycleOf(world,b)); assert.deepEqual(b.stock,{wood:10});
   world.setProductionFocus(b.id,'plank'); assert.deepEqual(b.stock,{wood:10});
-  world.collect(b.id); world.tick(24); assert.deepEqual(b.stock,{wood:2,plank:4});
+  world.collect(b.id); world.tick(cycleOf(world,b)); assert.deepEqual(b.stock,{wood:2,plank:4});
   const restored=new SimWorld(world.state);
   assert.equal(restored.state.buildings.find(x=>x.id===b.id)!.productionFocus,'plank');
   const invalid=structuredClone(world.state); invalid.buildings[0].productionFocus='wood';
@@ -62,7 +63,7 @@ test('wood directions persist, validate, and never rewrite completed harvests', 
 test('full boards never block replenishing wood in balanced mode', () => {
   const {world,b}=isolated('lumber');
   world.state.resources.plank=world.stockTargets().plank;
-  world.tick(24); assert.deepEqual(b.stock,{wood:10});
+  world.tick(cycleOf(world,b)); assert.deepEqual(b.stock,{wood:10});
 });
 
 test('kilns protect construction timber online and offline, kitchens can still bake', () => {
@@ -72,10 +73,10 @@ test('kilns protect construction timber online and offline, kitchens can still b
   const kiln: Building={id:'test-kiln',kind:'kiln',x:2,y:2,level:1,paused:false,ready:false,stock:{},progress:.5,workers:1};
   world.state.buildings.push(kiln);
   world.state.resources.wood=world.woodReserve(); world.state.resources.flour=6; world.state.resources.sugar=6;
-  world.tick(32); assert.equal(kiln.progress,.5);
+  world.tick(cycleOf(world,kiln) + 30); assert.equal(kiln.progress,.5);
   world.offline(100); assert.equal(world.state.resources.wood,world.woodReserve());
   const bakery=world.state.buildings.find(b=>b.kind==='bakery')!;
-  bakery.workers=2; world.tick(38);
+  bakery.workers=2; world.tick(cycleOf(world,bakery));
   assert.equal(bakery.ready,true); assert.equal(world.state.resources.sugar,5,'the bakery spends sugar, not timber');
 });
 

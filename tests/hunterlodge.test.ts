@@ -5,6 +5,7 @@ import { SimWorld, validateSave, migrateSave } from '../src/sim/world.ts';
 import { BUILDINGS, RESOURCES, TERMINAL_GOODS, emptyResources } from '../src/sim/data.ts';
 import { DISASTER_KINDS } from '../src/sim/disasters.ts';
 import { LIVESTOCK } from '../src/sim/livestock.ts';
+import { cycleOf } from './support.ts';
 
 function quiet() {
   const world = new SimWorld();
@@ -36,7 +37,7 @@ test('a hunt yields every round and never runs dry', () => {
   for (let round = 0; round < 10; round++) {
     lodge.progress = 0; lodge.ready = false; lodge.stock = {};
     world.state.resources.pelt = 0; world.state.resources.meat = 0;
-    world.tick(BUILDINGS.hunterlodge.cycle! + 1);
+    world.tick(cycleOf(world, lodge));
     if (!lodge.ready) { yields.push(-1); continue; }
     world.collect(lodge.id);
     yields.push(world.state.resources.pelt);
