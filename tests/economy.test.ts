@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave, type Building } from '../src/sim/world.ts';
-import { BUILDINGS, BULK_ORDER_MIN, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARE_BONUS, LEISURE_GOODS, TERMINAL_GOODS, MARKET_GOODS, MARKET_MARKUP, RESOURCES, RESOURCE_KEYS, dailyGoods, emptyResources, type BuildingKind, type Resource } from '../src/sim/data.ts';
+import { BUILDINGS, BULK_ORDER_MIN, BULK_ORDER_RATIO, FOCUS_RECIPES, BULK_ORDER_UNLOCK_LEVEL, CARE_BONUS, LEISURE_GOODS, TERMINAL_GOODS, MARKET_GOODS, MARKET_MARKUP, RESOURCES, RESOURCE_KEYS, dailyGoods, emptyResources, type BuildingKind, type Resource } from '../src/sim/data.ts';
 import { DESTINATIONS } from '../src/sim/destinations.ts';
 import { executeGameTool } from '../src/sim/tools.ts';
 
@@ -298,8 +298,16 @@ test('the markup outruns every processing chain the recipe book allows, at every
   const sellValue = (items: Partial<Record<string, number>>) =>
     Object.entries(items).reduce((n, [key, amount]) => n + RESOURCES[key as Resource].sellPrice * amount, 0);
   const scaledOutput = (level: number, amount: number) => Math.max(1, Math.floor(amount * (1 + (level - 1) * 0.5)));
-  const recipes = (Object.entries(BUILDINGS) as [BuildingKind, typeof BUILDINGS.cottage][])
-    .filter(([, def]) => def.input && def.output);
+  // The whole recipe book, including the recipes a workshop can be switched to. A variant
+  // left out here would look like a good nothing consumes, and the guard would clear a loop
+  // it cannot see — which is exactly how hops would have slipped through as a market good.
+  const recipes: [string, { input: Partial<Record<Resource, number>>; output: Partial<Record<Resource, number>> }][] = [
+    ...(Object.entries(BUILDINGS) as [BuildingKind, typeof BUILDINGS.cottage][])
+      .filter(([, def]) => def.input && def.output)
+      .map(([kind, def]) => [kind, { input: def.input!, output: def.output! }] as [string, { input: Partial<Record<Resource, number>>; output: Partial<Record<Resource, number>> }]),
+    ...Object.entries(FOCUS_RECIPES).flatMap(([kind, variants]) =>
+      Object.entries(variants ?? {}).map(([focus, recipe]) => [`${kind}:${focus}`, recipe] as [string, { input: Partial<Record<Resource, number>>; output: Partial<Record<Resource, number>> }])),
+  ];
 
   let worstOverAllLevels = { resource: '', amplification: 0, level: 0 };
   for (const level of [1, 2, 3]) {
@@ -309,9 +317,9 @@ test('the markup outruns every processing chain the recipe book allows, at every
     for (let pass = 0; pass < 60; pass++) {
       let changed = false;
       for (const [, def] of recipes) {
-        const spend = Object.entries(def.input!).reduce((n, [key, amount]) => n + cost[key as Resource]! * amount, 0);
+        const spend = Object.entries(def.input).reduce((n, [key, amount]) => n + cost[key as Resource]! * amount, 0);
         if (!Number.isFinite(spend) || spend <= 0) continue;
-        for (const [out, amount] of Object.entries(def.output!)) {
+        for (const [out, amount] of Object.entries(def.output)) {
           const per = spend / scaledOutput(level, amount);
           if (per < cost[out]! - 1e-9) { cost[out] = per; changed = true; }
         }
@@ -332,7 +340,7 @@ test('the markup outruns every processing chain the recipe book allows, at every
   // And the reason it is safe: what the market sells is exactly what nothing consumes, so
   // there is no recipe to launder a purchase through in the first place.
   const consumed = new Set<string>();
-  for (const [, def] of recipes) for (const key of Object.keys(def.input!)) consumed.add(key);
+  for (const [, def] of recipes) for (const key of Object.keys(def.input)) consumed.add(key);
   for (const key of MARKET_GOODS) assert.ok(!consumed.has(key), `${key} is sold but also consumed — that reopens the loop`);
   for (const key of RESOURCE_KEYS) if (key !== 'materials' && !consumed.has(key)) assert.ok(MARKET_GOODS.includes(key), `${key} is finished, so the market should trade it`);
 

@@ -1,4 +1,4 @@
-import { BUILDINGS, RESOURCE_KEYS, emptyResources, type ResourceMap } from './data.ts';
+import { RESOURCE_KEYS, effectiveRecipe, emptyResources, type ResourceMap } from './data.ts';
 import type { SimState } from './world.ts';
 
 // Reserve most shelf space for construction and food. Intermediates need only a
@@ -11,13 +11,19 @@ const WEIGHTS: ResourceMap = {
   milk: 3, cheese: 3, honey: 2, grape: 3, wine: 3, vintage: 2,
   // Cane and sugar are intermediates on the way to bread, so they hold a working buffer only.
   sugarcane: 3, sugar: 3,
+  // Hops buffer like cane; beer is a finished drink and keeps a slightly larger one, since
+  // the tavern draws on it every day.
+  hops: 3, beer: 4,
 };
 
 export function stockTargets(state: SimState): ResourceMap {
   const active = new Set(['wood', 'stone', 'bread', 'fish', 'plank', 'materials']);
   for (const b of state.buildings) {
-    for (const key of Object.keys(BUILDINGS[b.kind].input ?? {})) active.add(key);
-    for (const key of Object.keys(BUILDINGS[b.kind].output ?? {})) active.add(key);
+    // The recipe the workshop is actually set to, so a winery switched to beer reserves shelf
+    // space for hops and beer rather than for grapes and wine.
+    const recipe = effectiveRecipe(b);
+    for (const key of Object.keys(recipe.input)) active.add(key);
+    for (const key of Object.keys(recipe.output)) active.add(key);
   }
   for (const key of RESOURCE_KEYS) if (state.resources[key] > 0) active.add(key);
   const weight = RESOURCE_KEYS.reduce((n, key) => n + (active.has(key) ? WEIGHTS[key] : 0), 0);

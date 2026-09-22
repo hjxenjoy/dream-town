@@ -10,7 +10,7 @@ import { LOCAL_SUPPLY_RANGE, supplyFactor, supplyHauls } from './layout.ts';
 import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type RoadKind, type Tile } from './roads.ts';
 import { TownNavigation } from './navigation.ts';
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
-import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, GAME_DAY_SECONDS, LEISURE_GOODS, MAP_SIZE, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId } from './data.ts';
+import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, FOCUS_RECIPES, GAME_DAY_SECONDS, LEISURE_GOODS, MAP_SIZE, TAVERN_GOODS, effectiveRecipe, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId } from './data.ts';
 import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, canStrike, damageCeiling, disasterOf, raidLoss, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 import { plagueDue, plagueDuration, plagueHappinessCost, plagueSpoilage, type PlagueState } from './plague.ts';
@@ -55,7 +55,11 @@ export interface Building {
   tended?: number;
   fallow?: boolean;
   cropHarvest?: CropHarvest;
-  productionFocus?: 'balanced' | 'wood' | 'plank';
+  /**
+   * What a workshop with more than one recipe is set to make. The lumber mill chooses
+   * between timber and boards; the winery, per docs/04 §24, brews wine or beer.
+   */
+  productionFocus?: 'balanced' | 'wood' | 'plank' | 'wine' | 'beer';
 }
 export interface Order {
   id: string;
@@ -338,7 +342,12 @@ export function validateSave(value: unknown): value is SimState {
     if(building.fallow!==undefined&&typeof building.fallow!=='boolean')return false;
     if(building.cropHarvest!==undefined){const h=building.cropHarvest;if(!isRecord(h)||!building.ready||h.crop!==building.crop||h.crop==='wheat'||!CROP_IDS.includes(h.crop as CropId)||!whole(h.quantity)||h.quantity<1||typeof h.rare!=='boolean'||sum(building.stock as Partial<ResourceMap>)>0)return false;}
     if(building.kind==='farm'&&building.crop&&building.crop!=='wheat'&&building.ready&&building.cropHarvest===undefined)return false;
-    if (building.productionFocus !== undefined && (building.kind !== 'lumber' || !['balanced', 'wood', 'plank'].includes(building.productionFocus as string))) return false;
+    const FOCUS_BY_KIND: Partial<Record<BuildingKind, readonly string[]>> = {
+      lumber: ['balanced', 'wood', 'plank'],
+      winery: ['wine', 'beer'],
+    };
+    if (building.productionFocus !== undefined
+      && !(FOCUS_BY_KIND[building.kind as BuildingKind] ?? []).includes(building.productionFocus as string)) return false;
     if (building.damaged !== undefined && typeof building.damaged !== 'boolean') return false;
     if (building.damageKind !== undefined && !DISASTER_KINDS.includes(building.damageKind as DisasterKind)) return false;
     // A hazard kind and a repair timer only make sense on a building that is out of action.
@@ -975,6 +984,13 @@ export class SimWorld {
       building.productionFocus = focus; building.paused = false;
       return this.success(`木工坊已切换为${focus === 'wood' ? '木材优先' : focus === 'plank' ? '木板优先' : '均衡补货'}。已完成的产物保持不变。`, { buildingId: id });
     }
+    // The winery brews either of the two drinks docs/04 §24 gives it.
+    if (building.kind === 'winery' && ['default', 'winery', 'wine', 'beer'].includes(recipeId)) {
+      const focus = (recipeId === 'default' || recipeId === 'winery' ? 'wine' : recipeId) as NonNullable<Building['productionFocus']>;
+      if ((building.productionFocus ?? 'wine') === focus && !building.paused) return this.fail('已经采用这个生产方向。', 'NO_CHANGE');
+      building.productionFocus = focus; building.paused = false;
+      return this.success(`酿酒坊已改为${focus === 'beer' ? '酿啤酒（6 篮啤酒花 → 3 桶）' : '酿葡萄酒（6 串葡萄 → 3 桶）'}。已完成的产物保持不变。`, { buildingId: id });
+    }
     if (recipeId !== building.kind && recipeId !== 'default') return this.fail('这座工坊尚未解锁该配方。', 'RECIPE_LOCKED');
     if (!building.paused) return this.fail('当前配方已经在生产中。', 'NO_CHANGE');
     building.paused = false;
@@ -1352,7 +1368,7 @@ export class SimWorld {
     this.state.needs.water = homes.length ? watered.reduce((n, b) => n + BUILDINGS[b.kind].housing! * b.level, 0) / this.housingCapacity() * 100 : 0;
     this.state.needs.services = clamp(this.state.buildings.filter(building => BUILDINGS[building.kind].services && !building.damaged).reduce((total, building) => total + building.level * BUILDINGS[building.kind].services!, 10), 0, 100);
     this.state.needs.environment = clamp(60 + this.state.buildings.filter(building => !building.damaged).reduce((total, building) => total + building.level * (BUILDINGS[building.kind].environment ?? 0), 0) + collectionEnvironment(this.state.collections ?? {}) + storyEnvironment(this.state.stories ?? {}), 0, 100);
-    const care = careNeeds(this.state.resources, this.state.population);
+    const care = careNeeds(this.state.resources, this.state.population, this.tavernStanding());
     this.state.needs.comfort = care.comfort;
     this.state.needs.leisure = care.leisure;
     // Faith and health are counted in residents served, against the people living here.
@@ -1457,6 +1473,16 @@ export class SimWorld {
       (1 - this.state.resources[key] / Math.max(1, targets[key])) * (['wood', 'bread', 'fish'].includes(key) ? 2 : 1)));
   }
 
+  /**
+   * What a workshop is currently set to make, and what that recipe consumes. A workshop with
+   * more than one recipe must agree with itself everywhere: the tick, the offline settlement,
+   * the blocked-state check and the panel all read this, so a winery set to beer does not ask
+   * for grapes in one place and hops in another.
+   */
+  private recipeInput(building: Building): Partial<ResourceMap> {
+    return effectiveRecipe(building).input;
+  }
+
   private productionOutput(building: Building, targets = this.stockTargets(), limitStock = true): Partial<ResourceMap> {
     if(building.kind==='farm'&&building.crop&&building.crop!=='wheat')return {};
     let recipe = BUILDINGS[building.kind].output;
@@ -1465,6 +1491,7 @@ export class SimWorld {
       recipe = focus === 'wood' ? { wood: 10 } : focus === 'plank' ? { wood: 2, plank: 4 }
         : this.state.resources.plank >= targets.plank ? { wood: 10 } : { wood: 6, plank: 2 };
     }
+    if (FOCUS_RECIPES[building.kind]?.[building.productionFocus ?? '']) recipe = effectiveRecipe(building).output;
     const output: Partial<ResourceMap> = {};
     for (const key of RESOURCE_KEYS) {
       const amount = recipe?.[key];
@@ -1476,13 +1503,18 @@ export class SimWorld {
     return output;
   }
 
+  /** Whether the town has somewhere to serve a drink, which is what docs/05 §2 asked for. */
+  private tavernStanding(): boolean {
+    return this.state.buildings.some(building => building.kind === 'tavern' && !building.damaged);
+  }
+
   private productionBlock(building: Building, targets = this.stockTargets()): 'damaged' | 'workers' | 'materials' | 'reserve' | 'target' | 'warehouse' | 'fallow' | null {
     const def = BUILDINGS[building.kind];
     if (building.damaged) return 'damaged';
     if(building.kind==='farm'&&building.fallow)return 'fallow';
     if(building.kind==='farm'&&building.crop&&building.crop!=='wheat')return null;
     if (def.workers && building.workers === 0) return 'workers';
-    const input = def.input ?? {}, output = this.productionOutput(building, targets);
+    const input = this.recipeInput(building), output = this.productionOutput(building, targets);
     if (!this.has(input)) return 'materials';
     // Heating and building come before charcoal stockpiles; baking is still
     // allowed to use fuel so a low timber reserve cannot starve residents.
@@ -1549,7 +1581,7 @@ export class SimWorld {
   }
   /** The workshop that actually makes this building's ingredients, and stands closest. */
   private nearestSupplier(building: Building, standing: Building[]): Building | undefined {
-    const inputs = Object.keys(BUILDINGS[building.kind].input ?? {}) as Resource[];
+    const inputs = Object.keys(this.recipeInput(building)) as Resource[];
     let best: Building | undefined;
     let bestDistance = Infinity;
     for (const candidate of standing) {
@@ -1678,13 +1710,14 @@ export class SimWorld {
     for (const building of this.state.buildings) {
       const definition = BUILDINGS[building.kind];
       if(definition.autoCollect&&building.ready&&!building.paused&&!building.damaged)this.collect(building.id);
+      // A switched workshop takes the ingredients for what it is actually making.
       if (!definition.cycle || building.ready || building.paused || building.damaged || (definition.workers && building.workers === 0)) continue;
       const productionElapsed=raiseChicks(building,this.state.resources,elapsed);
       if(productionElapsed<=0)continue;
       const output = this.productionOutput(building, targets);
       if (this.productionBlock(building, targets)) continue;
       building.progress = Math.min(1, building.progress + productionElapsed / this.cycleTime(building, hauls));
-      if (building.progress >= 1) { recordOrchard(building); this.deduct(definition.input ?? {}); building.stock = output; building.ready = true;if(building.kind==='farm'&&building.crop&&building.crop!=='wheat')building.cropHarvest=harvestQuote(building.crop,building.level,building.tended??0,Number(building.id.replace(/\D/g,''))||1); }
+      if (building.progress >= 1) { recordOrchard(building); this.deduct(this.recipeInput(building)); building.stock = output; building.ready = true;if(building.kind==='farm'&&building.crop&&building.crop!=='wheat')building.cropHarvest=harvestQuote(building.crop,building.level,building.tended??0,Number(building.id.replace(/\D/g,''))||1); }
     }
     for (const caravan of this.caravanFleet()) {
       if (caravan.status === 'traveling' && this.state.gameTime >= caravan.returnAt) {
@@ -1724,7 +1757,8 @@ export class SimWorld {
     const goods = dailyGoods(this.state.population);
     this.state.resources.clothing -= Math.min(goods.clothing, this.state.resources.clothing);
     let enjoyed = goods.luxury;
-    for (const key of LEISURE_GOODS) { if (enjoyed <= 0) break; const used = Math.min(enjoyed, this.state.resources[key]); this.state.resources[key] -= used; enjoyed -= used; }
+    const treats = this.tavernStanding() ? [...LEISURE_GOODS, ...TAVERN_GOODS] : LEISURE_GOODS;
+    for (const key of treats) { if (enjoyed <= 0) break; const used = Math.min(enjoyed, this.state.resources[key]); this.state.resources[key] -= used; enjoyed -= used; }
     this.updateNeeds();
     const tax = this.taxPerDay(); this.earn(tax);
     if (demand > 0) { this.state.happiness = Math.max(10, this.state.happiness - 8); this.log('食物不足，居民有些担忧。收取鲜鱼或烤一些面包吧。', 'warning'); }
@@ -1920,7 +1954,7 @@ export class SimWorld {
       const cycle = this.cycleTime(building, hauls);
       const totalProgress = productionElapsed / cycle + building.progress;
       const desired = Math.floor(totalProgress);
-      const input = BUILDINGS[kind].input ?? {};
+      const input = this.recipeInput(building);
       const output = this.productionOutput(building);
       let possible = desired;
       for (const key of RESOURCE_KEYS) if ((input[key] ?? 0) > 0) possible = Math.min(possible, Math.floor(this.state.resources[key] / input[key]!));
@@ -1959,7 +1993,8 @@ export class SimWorld {
     const worn = Math.min(goods.clothing * days, this.state.resources.clothing);
     this.state.resources.clothing -= worn; report.consumed.clothing += worn;
     let enjoyed = goods.luxury * days;
-    for (const key of LEISURE_GOODS) { if (enjoyed <= 0) break; const used = Math.min(enjoyed, this.state.resources[key]); this.state.resources[key] -= used; report.consumed[key] += used; enjoyed -= used; }
+    const treats = this.tavernStanding() ? [...LEISURE_GOODS, ...TAVERN_GOODS] : LEISURE_GOODS;
+    for (const key of treats) { const wanted = Math.min(enjoyed, this.state.resources[key]); this.state.resources[key] -= wanted; report.consumed[key] += wanted; enjoyed -= wanted; }
     this.state.gameTime += elapsed;
     this.state.season = (['spring', 'summer', 'autumn', 'winter'] as const)[Math.floor(this.state.gameTime / SEASON_SECONDS) % 4];
     if (this.state.season === 'winter' && days > 0) {
@@ -2053,7 +2088,7 @@ export class SimWorld {
         repairingUntil: building.repairingUntil,
         x: building.x, y: building.y,
       })),
-      production: this.state.buildings.filter(building => BUILDINGS[building.kind].cycle).map(building => ({ buildingId: building.id, kind: building.kind, paused: building.paused, ready: building.ready, input: BUILDINGS[building.kind].input ?? {}, output: this.productionOutput(building, this.stockTargets(), false), cycle: this.cycleTime(building, hauls), haul: Number.isFinite(this.haulOf(building, hauls)) ? Math.round(this.haulOf(building, hauls)) : null, focus: building.productionFocus ?? 'balanced', blocked: this.productionBlock(building) })),
+      production: this.state.buildings.filter(building => BUILDINGS[building.kind].cycle).map(building => ({ buildingId: building.id, kind: building.kind, paused: building.paused, ready: building.ready, input: this.recipeInput(building), output: this.productionOutput(building, this.stockTargets(), false), cycle: this.cycleTime(building, hauls), haul: Number.isFinite(this.haulOf(building, hauls)) ? Math.round(this.haulOf(building, hauls)) : null, focus: building.productionFocus ?? 'balanced', blocked: this.productionBlock(building) })),
     };
   }
 }

@@ -21,13 +21,13 @@ GROUPS={
  'leaves':'flowernursery orchardhouse garden oak cherry pine maple flowerarch flowerbox trellis willow vineyard flowercart harvestpile',
  'home':'homestead cottage farmhouse rowhouse apartment',
  'chicken':'chickencoop', 'bubbles':'jamkitchen dairy winery cellar',
- 'crowd':'market teahouse school theatre townhall picniccorner parasol',
+ 'crowd':'market teahouse school theatre townhall picniccorner parasol tavern',
  'fire':'kiln smelter brickworks', 'wood':'lumber forester warehouse crates barrels',
  'machine':'feedmill weaver tailor sawmill sugarmill',
  'water':'fishpond fishery well watertower fountain dock',
  'quiet':'clinic', 'bell':'chapel firestation firetower',
  'footsteps':'boardwalk bench gazebo', 'cloth':'railing archlights signflags',
- 'metal':'anvil quarry', 'cow':'cowbarn', 'bees':'apiary', 'field':'farm canefield',
+ 'metal':'anvil quarry', 'cow':'cowbarn', 'bees':'apiary', 'field':'farm canefield hopsfield',
  # Defence: a post is a flag and a distant bell, the barracks adds drill steps, and a wall
  # is masonry in the wind. Assigned on the profile that fits rather than inventing kinds.
  'bell':'chapel firestation firetower guardpost',

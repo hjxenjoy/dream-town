@@ -128,9 +128,9 @@ test('the build catalog grows by twelve decorations without disturbing existing 
   assert.equal(BUILDINGS.cottage.name,'林间小屋');
   assert.equal(BUILDINGS.windmill.cycle,28);
   // 41 base buildings, plus the street decorations, the dairy/wine industries, the
-  // street-style ornaments, the chapel, the homestead buildings, the defence trio, and the
-  // two buildings of the sugar chain.
-  assert.equal(Object.keys(BUILDINGS).length,74,'69 before + 3 defence (guardpost, barracks, wall) + 2 sugar chain (canefield, sugarmill)');
+  // street-style ornaments, the chapel, the homestead buildings, the defence trio, the two
+  // buildings of the sugar chain, and the hops field with the tavern that serves the beer.
+  assert.equal(Object.keys(BUILDINGS).length,76,'69 before + 3 defence + 2 sugar + 2 beer (hopsfield, tavern)');
   assert.equal(Object.keys(BUILDINGS).filter(kind=>BUILDINGS[kind as keyof typeof BUILDINGS].category==='decoration').length,25,'nine trees and garden pieces plus twelve street decorations plus three ornaments plus the wall');
   // The ornaments are awarded by collecting a street style, never by research.
   assert.deepEqual(ORNAMENT_KINDS.filter(kind=>BUILDINGS[kind]).sort(),['flowercart','harvestpile','picniccorner']);

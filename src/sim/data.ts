@@ -1,10 +1,10 @@
 /** Short names for the two construction materials, used in costs and refusals. */
 export const RESOURCE_LABELS: Record<'wood' | 'stone', string> = { wood: '木材', stone: '石料' };
 
-export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage' | 'sugarcane' | 'sugar';
+export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage' | 'sugarcane' | 'sugar' | 'hops' | 'beer';
 export type ResourceMap = Record<Resource, number>;
 export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
-export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile' | 'barracks' | 'guardpost' | 'wall' | 'canefield' | 'sugarmill';
+export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile' | 'barracks' | 'guardpost' | 'wall' | 'canefield' | 'sugarmill' | 'hopsfield' | 'tavern';
 
 export interface BuildingDefinition {
   name: string;
@@ -61,6 +61,7 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
   brickworks: { name: '窑火建材坊', description: '将 6 份石料和 1 份木炭制成 1 包建材，补充商队带回的物资，支持住宅与市政扩建。', category: 'production', cost: 980, wood: 14, stone: 24, frame: null, technology: 'mining', cycle: 65, input: { stone: 6, charcoal: 1 }, output: { materials: 1 }, workers: 2 },
   school: { name: '晨读小学', description: '铃声响起，孩子们有了课堂。每级增加 12 位社区人口名额与 18 点社区服务。', category: 'services', cost: 1100, wood: 20, stone: 18, materials: { materials: 5 }, frame: null, populationCap: 12, services: 18 },
   clinic: { name: '安心诊所', description: '照顾邻居的日常健康。每级让 10 位居民康健，并增加 10 位社区人口名额与 25 点社区服务。', category: 'services', cost: 900, wood: 12, stone: 20, materials: { materials: 4 }, frame: null, populationCap: 10, services: 25, health: 10 },
+  tavern: { name: '晚风酒馆', description: '有酒的酒馆才热闹。啤酒会在这里被喝掉，让邻居们多几分好心情；镇上没有酒馆时，啤酒只是能卖的货。', category: 'services', cost: 760, wood: 18, stone: 12, materials: { materials: 2 }, frame: null, technology: 'viniculture', services: 22, populationCap: 4 },
   theatre: { name: '星幕小剧院', description: '灯光与戏剧丰富夜晚。每级增加 16 位社区人口名额、30 点社区服务与 5 点环境值。', category: 'services', cost: 1800, wood: 24, stone: 28, materials: { materials: 8 }, frame: null, technology: 'civics', populationCap: 16, services: 30, environment: 5 },
   chapel: { name: '河畔小教堂', description: '钟声安顿人心。每级为 14 户邻居带来信仰与安定的生活，并增加 8 位社区人口名额。', category: 'services', cost: 1500, wood: 22, stone: 26, materials: { materials: 6 }, frame: null, populationCap: 8, faith: 14 },
   guardpost: { name: '路口岗哨', description: '巡逻半径 5 格，把打家劫舍的强盗挡在外面。每级扩大 1 格。', category: 'services', cost: 350, wood: 12, stone: 8, frame: null, guardRadius: 5 },
@@ -104,12 +105,13 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
   dairy: { name: '山泉奶坊', description: '把 4 桶鲜奶做成 2 块奶酪，存放越久越值钱。', category: 'production', cost: 780, wood: 18, stone: 14, materials: { materials: 2 }, technology: 'husbandry', frame: null, cycle: 42, input: { milk: 4 }, output: { cheese: 2 }, workers: 2 },
   apiary: { name: '百花蜂场', description: '沿着花田放蜂箱，每轮自然采集 3 罐蜂蜜，不需要原料。', category: 'production', cost: 360, wood: 12, stone: 4, frame: null, technology: 'husbandry', cycle: 30, output: { honey: 3 }, workers: 1 },
   vineyard: { name: '南坡葡萄园', description: '向阳的坡地适合种葡萄，每轮自然结出 6 串。', category: 'production', cost: 460, wood: 14, stone: 6, frame: null, technology: 'viniculture', cycle: 38, output: { grape: 6 }, workers: 1 },
-  winery: { name: '木桶酿酒坊', description: '把 6 串葡萄酿成 3 桶葡萄酒，是小镇最能卖出价钱的手艺。', category: 'production', cost: 860, wood: 20, stone: 16, materials: { materials: 3 }, technology: 'viniculture', frame: null, cycle: 56, input: { grape: 6 }, output: { wine: 3 }, workers: 2 },
+  winery: { name: '木桶酿酒坊', description: '把 6 串葡萄酿成 3 桶葡萄酒，也可以在「生产方向」里改酿啤酒（6 篮啤酒花 → 3 桶）。', category: 'production', cost: 860, wood: 20, stone: 16, materials: { materials: 3 }, technology: 'viniculture', frame: null, cycle: 56, input: { grape: 6 }, output: { wine: 3 }, workers: 2 },
   cellar: { name: '石阶酒窖', description: '把 3 桶葡萄酒再存成 2 瓶陈年佳酿，慢慢来的味道更好，也更值得上远方的订单。', category: 'production', cost: 980, wood: 16, stone: 26, materials: { materials: 4 }, technology: 'viniculture', frame: null, cycle: 70, input: { wine: 3 }, output: { vintage: 2 }, workers: 1 },
   // The sugar chain, per docs/04 §2: 农田 → 甘蔗 → 糖厂 → 糖 → 面包房. The field is its own
   // building rather than a selectable crop, which is how the vineyard already works, and the
   // shipped art agrees: `sugarcane-field` is a whole field, not a stage of a farm plot.
   canefield: { name: '河湾甘蔗田', description: '湿热的水边适合甘蔗，每轮收 6 捆，送往糖厂熬成砂糖。', category: 'production', cost: 400, wood: 12, stone: 6, frame: null, cycle: 34, output: { sugarcane: 6 } },
+  hopsfield: { name: '棚架啤酒花园', description: '架起藤棚种啤酒花，每轮收 6 篮，交给酿酒坊酿成啤酒。', category: 'production', cost: 430, wood: 14, stone: 4, frame: null, technology: 'viniculture', cycle: 36, output: { hops: 6 } },
   sugarmill: { name: '老石糖厂', description: '把 6 捆甘蔗熬成 3 份砂糖。糖是面包房的新配方，也是远方才见得着的好价钱。', category: 'production', cost: 640, wood: 16, stone: 14, frame: null, cycle: 40, input: { sugarcane: 6 }, output: { sugar: 3 }, workers: 1 },
   flowercart: { name: '花车', description: '花巷成型后立起的纪念花车，四季都装着刚剪下的花。环境 +6。', category: 'decoration', cost: 160, wood: 6, stone: 1, frame: null, environment: 6 },
   picniccorner: { name: '野餐角', description: '滨河步道连成一线后添的野餐桌，晴天总有人坐着。环境 +6。', category: 'decoration', cost: 160, wood: 7, stone: 1, frame: null, environment: 6 },
@@ -145,9 +147,13 @@ export const RESOURCES: Record<Resource, { name: string; icon: string; sellPrice
   // TERMINAL_GOODS, so the market neither buys nor sells it.
   sugarcane: { name: '甘蔗', icon: 'sugarcane', sellPrice: 4 },
   sugar: { name: '砂糖', icon: 'sugar', sellPrice: 9 },
+  // Hops are an ingredient like cane; beer is a finished drink, worth more than the wine
+  // it sits beside on the tavern shelf.
+  hops: { name: '啤酒花', icon: 'hops', sellPrice: 5 },
+  beer: { name: '啤酒', icon: 'beer', sellPrice: 18 },
 };
 
-export const RESOURCE_KEYS = ['flowers','fruit','eggs','jam','wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage', 'sugarcane', 'sugar'] as Resource[];
+export const RESOURCE_KEYS = ['flowers','fruit','eggs','jam','wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage', 'sugarcane', 'sugar', 'hops', 'beer'] as Resource[];
 export const BUILDING_KEYS = Object.keys(BUILDINGS) as BuildingKind[];
 export { MAP_SIZE } from './terrain.ts';
 export const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
@@ -207,7 +213,7 @@ export const HEALTH_TAX_RELIEF = 0.4;
 export const HEALTH_REPAIR_RELIEF = 0.3;
 
 export function emptyResources(): ResourceMap {
-  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0, sugarcane: 0, sugar: 0 };
+  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0, sugarcane: 0, sugar: 0, hops: 0, beer: 0 };
 }
 
 /**
@@ -220,6 +226,8 @@ export const LUXURY_RESIDENTS_PER_UNIT = 10;
 
 /** Enjoyed by residents, drawn cheapest first so a rare vintage is left for trade. */
 export const LEISURE_GOODS: Resource[] = ['jam', 'honey', 'cheese', 'wine', 'vintage'];
+/** Served over a counter rather than kept at home, so it needs a tavern to count. */
+export const TAVERN_GOODS: Resource[] = ['beer'];
 
 /**
  * The most happiness a well-dressed, well-supplied town gains. It is a bonus and never a
@@ -238,9 +246,13 @@ export function dailyGoods(population: number): { clothing: number; luxury: numb
  * against a three-day reserve — the same shape as rations, so one number still answers
  * "am I stocked?".
  */
-export function careNeeds(resources: ResourceMap, population: number): { comfort: number; leisure: number } {
+export function careNeeds(resources: ResourceMap, population: number, tavernStanding = false): { comfort: number; leisure: number } {
   const goods = dailyGoods(population);
-  const luxury = LEISURE_GOODS.reduce((total, key) => total + resources[key], 0);
+  // Beer is a drink you go out for. It only counts towards a town's good cheer once there is
+  // a tavern to serve it, which is the "载體建筑" docs/05 §2 said these goods were missing.
+  // Anywhere else it is simply a trade good, and its absence costs nothing.
+  const treats = tavernStanding ? [...LEISURE_GOODS, ...TAVERN_GOODS] : LEISURE_GOODS;
+  const luxury = treats.reduce((total, key) => total + resources[key], 0);
   // Both are measured against a three-day reserve, the same shape rations already use.
   const comfort = Math.min(100, Math.max(0, resources.clothing / Math.max(1, goods.clothing * 3) * 100));
   const leisure = Math.min(100, Math.max(0, luxury / Math.max(1, goods.luxury * 3) * 100));
@@ -268,8 +280,49 @@ export const MARKET_MARKUP = 18;
  * for those in bulk could be structurally impossible to fill. Terminal goods are never
  * drained, so stockpiling them always works.
  */
+/**
+ * The recipes a workshop can be switched to, for the workshops that have more than one. These
+ * are held here rather than inside the sim so that everything which needs to know what a
+ * workshop can consume — the tick, the panel, and the market guard below — reads one table.
+ *
+ * This matters most for the market. `TERMINAL_GOODS` decides what may be bought and sold, and
+ * it works by asking which goods nothing consumes. A recipe that only exists behind a switch
+ * would be invisible to that question, so hops would look like a finished good and the market
+ * would happily sell them — reopening the very loop the markup was sized to close, since hops
+ * brew into beer. Every variant is therefore listed here and included in that check.
+ */
+export const FOCUS_RECIPES: Partial<Record<BuildingKind, Record<string, { input: Partial<ResourceMap>; output: Partial<ResourceMap> }>>> = {
+  lumber: {
+    balanced: { input: {}, output: { wood: 6, plank: 2 } },
+    wood: { input: {}, output: { wood: 10 } },
+    plank: { input: { wood: 2 }, output: { wood: 2, plank: 4 } },
+  },
+  winery: {
+    wine: { input: { grape: 6 }, output: { wine: 3 } },
+    beer: { input: { hops: 6 }, output: { beer: 3 } },
+  },
+};
+
+/**
+ * What a workshop is set to make and consume right now: its switchable recipe when it has one
+ * selected, and its base recipe otherwise. The tick, the offline settlement, the shelf plan
+ * and the panel all read this one function, so a workshop switched to another recipe cannot
+ * ask for one ingredient in one place and a different one somewhere else.
+ */
+export function effectiveRecipe(building: { kind: BuildingKind; productionFocus?: string }): { input: Partial<ResourceMap>; output: Partial<ResourceMap> } {
+  const variant = FOCUS_RECIPES[building.kind]?.[building.productionFocus ?? ''];
+  const definition = BUILDINGS[building.kind];
+  return variant ?? { input: definition.input ?? {}, output: definition.output ?? {} };
+}
+
+/** Every resource any recipe consumes, base recipes and switchable ones alike. */
+export const CONSUMED_RESOURCES: readonly Resource[] = RESOURCE_KEYS.filter(key =>
+  BUILDING_KEYS.some(kind =>
+    (BUILDINGS[kind].input?.[key] ?? 0) > 0
+    || Object.values(FOCUS_RECIPES[kind] ?? {}).some(recipe => (recipe.input[key] ?? 0) > 0)));
+
 export const TERMINAL_GOODS: Resource[] = RESOURCE_KEYS.filter(key =>
-  key !== 'materials' && !BUILDING_KEYS.some(kind => (BUILDINGS[kind].input?.[key] ?? 0) > 0));
+  key !== 'materials' && !CONSUMED_RESOURCES.includes(key));
 
 /**
  * What the traveller's market will sell in — the same finished articles a trading company
@@ -308,7 +361,7 @@ export const TECHNOLOGIES: Record<TechnologyId, TechnologyDefinition> = {
   mining: { name: '山岩的馈赠', description: '发现矿脉，掌握烧炭手艺。', branch: 'industry', icon: 'ore', level: 3, prestige: 4, coins: 240, items: { materials: 2 }, requires: [], unlocks: ['mine', 'kiln', 'sawmill', 'brickworks'] },
   metallurgy: { name: '炉火与铁器', description: '将矿石变成金属与工具，接下更有价值的邻里委托。', branch: 'industry', icon: 'tools', level: 4, prestige: 6, coins: 480, items: { materials: 4 }, requires: ['mining'], unlocks: ['smelter', 'smithy', 'firestation'] },
   husbandry: { name: '牧野的新朋友', description: '用麦穗养育小羊，把农田延伸成牧场。', branch: 'pastoral', icon: 'wool', level: 3, prestige: 4, coins: 240, items: { materials: 2 }, requires: [], unlocks: ['feedmill', 'pasture', 'fishpond'] },
-  viniculture: { name: '葡萄与酒', description: '顺着南坡种下葡萄，学会酿酒，再把好年份存进酒窖。', branch: 'pastoral', icon: 'wine', level: 5, prestige: 8, coins: 520, items: { materials: 4, plank: 6 }, requires: ['husbandry'], unlocks: ['vineyard', 'winery', 'cellar'] },
+  viniculture: { name: '葡萄与酒', description: '顺着南坡种下葡萄与啤酒花，学会酿酒、也学会开店：葡萄酒存进酒窖，啤酒送到酒馆。', branch: 'pastoral', icon: 'wine', level: 5, prestige: 8, coins: 520, items: { materials: 4, plank: 6 }, requires: ['husbandry'], unlocks: ['vineyard', 'winery', 'cellar', 'hopsfield', 'tavern'] },
   tailoring: { name: '一针一线', description: '织出布料，缝制暖衣，发展小镇的纺织手艺。', branch: 'pastoral', icon: 'clothing', level: 4, prestige: 6, coins: 480, items: { materials: 4 }, requires: ['husbandry'], unlocks: ['weaver', 'tailor'] },
   efficiency: { name: '精工巧作', description: '所有生产建筑每轮所需时间减少 10%，离线生产同样生效。', branch: 'town', icon: 'clock', level: 5, prestige: 8, coins: 600, items: { tools: 2, materials: 5 }, requires: ['metallurgy'], unlocks: [] },
   logistics: { name: '井然有序', description: '现有仓储和今后每次扩建容量增加 20%。', branch: 'town', icon: 'box', level: 5, prestige: 8, coins: 600, items: { cloth: 2, materials: 5 }, requires: ['tailoring'], unlocks: [] },
@@ -317,7 +370,7 @@ export const TECHNOLOGIES: Record<TechnologyId, TechnologyDefinition> = {
 export const TECHNOLOGY_KEYS = Object.keys(TECHNOLOGIES) as TechnologyId[];
 export const INDUSTRY_KINDS: BuildingKind[] = ['mine', 'kiln', 'smelter', 'smithy', 'feedmill', 'pasture', 'weaver', 'tailor'];
 // Stable source-to-product order used by offline settlement.
-export const PRODUCTION_SEQUENCE: BuildingKind[] = ['flowernursery','orchardhouse','jamkitchen','lumber', 'forester', 'quarry', 'farm', 'fishery', 'apiary', 'vineyard', 'canefield', 'mine', 'kiln', 'sawmill', 'windmill', 'feedmill', 'chickencoop', 'fishpond', 'sugarmill', 'bakery', 'pasture', 'cowbarn', 'smelter', 'brickworks', 'dairy', 'weaver', 'winery', 'smithy', 'cellar', 'tailor'];
+export const PRODUCTION_SEQUENCE: BuildingKind[] = ['flowernursery','orchardhouse','jamkitchen','lumber', 'forester', 'quarry', 'farm', 'fishery', 'apiary', 'vineyard', 'canefield', 'hopsfield', 'mine', 'kiln', 'sawmill', 'windmill', 'feedmill', 'chickencoop', 'fishpond', 'sugarmill', 'bakery', 'pasture', 'cowbarn', 'smelter', 'brickworks', 'dairy', 'weaver', 'winery', 'smithy', 'cellar', 'tailor'];
 export const INDUSTRY_FRAMES = {
   mine: { x: 0, y: 0, w: 440, h: 435 }, kiln: { x: 443, y: 0, w: 440, h: 435 },
   smelter: { x: 888, y: 0, w: 441, h: 439 }, smithy: { x: 1332, y: 0, w: 442, h: 435 },

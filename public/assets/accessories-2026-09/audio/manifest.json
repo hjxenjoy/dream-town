@@ -343,6 +343,23 @@
       }
     },
     {
+      "name": "tavern",
+      "label": "晚风酒馆 · 无词人群低语、脚步与杯盏",
+      "url": "/assets/accessories-2026-09/audio/tavern.wav",
+      "profile": "crowd",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.12
+      }
+    },
+    {
       "name": "theatre",
       "label": "星幕小剧院 · 无词人群低语、脚步与杯盏",
       "url": "/assets/accessories-2026-09/audio/theatre.wav",
@@ -1091,6 +1108,23 @@
       }
     },
     {
+      "name": "hopsfield",
+      "label": "棚架啤酒花园 · 田野微风与鸟鸣",
+      "url": "/assets/accessories-2026-09/audio/hopsfield.wav",
+      "profile": "field",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -10.54
+      }
+    },
+    {
       "name": "sugarmill",
       "label": "老石糖厂 · 机械转动与节律敲击",
       "url": "/assets/accessories-2026-09/audio/sugarmill.wav",
@@ -1313,6 +1347,12 @@
       "url": "/assets/accessories-2026-09/audio/clinic.wav",
       "source": "new",
       "profile": "quiet",
+      "runtimeIntegrated": false
+    },
+    "tavern": {
+      "url": "/assets/accessories-2026-09/audio/tavern.wav",
+      "source": "new",
+      "profile": "crowd",
       "runtimeIntegrated": false
     },
     "theatre": {
@@ -1591,6 +1631,12 @@
       "profile": "field",
       "runtimeIntegrated": false
     },
+    "hopsfield": {
+      "url": "/assets/accessories-2026-09/audio/hopsfield.wav",
+      "source": "new",
+      "profile": "field",
+      "runtimeIntegrated": false
+    },
     "sugarmill": {
       "url": "/assets/accessories-2026-09/audio/sugarmill.wav",
       "source": "new",
@@ -1622,7 +1668,7 @@
       "runtimeIntegrated": false
     }
   },
-  "buildingCount": 74,
+  "buildingCount": 76,
   "existingReused": 5,
-  "newTracks": 69
+  "newTracks": 71
 }
