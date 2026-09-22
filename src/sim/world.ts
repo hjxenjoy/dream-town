@@ -10,7 +10,7 @@ import { LOCAL_SUPPLY_RANGE, supplyFactor, supplyHauls } from './layout.ts';
 import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type RoadKind, type Tile } from './roads.ts';
 import { TownNavigation } from './navigation.ts';
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
-import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, FOCUS_RECIPES, GAME_DAY_SECONDS, HERB_BOOST, SOUVENIR_SHOP_MULTIPLIER, ZOO_DEFAULT_SPECIES, ZOO_SPECIES, ZOO_SPECIES_NAMES, LEISURE_GOODS, MAP_SIZE, TAVERN_GOODS, effectiveRecipe, herbCoverage, herbsPerDay, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId, type ZooSpecies } from './data.ts';
+import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, FOCUS_RECIPES, GAME_DAY_SECONDS, HERB_BOOST, MINE_GRADES, MINE_GRADE_NAMES, ORE_GRADES, SOUVENIR_SHOP_MULTIPLIER, ZOO_DEFAULT_SPECIES, ZOO_SPECIES, ZOO_SPECIES_NAMES, LEISURE_GOODS, MAP_SIZE, TAVERN_GOODS, effectiveRecipe, herbCoverage, herbsPerDay, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type MineGrade, type TechnologyId, type ZooSpecies } from './data.ts';
 import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, canStrike, damageCeiling, disasterOf, raidLoss, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 import { WEATHER, weatherAt, weatherGrowthFactor, weatherRemaining, type WeatherKind } from './weather.ts';
@@ -60,7 +60,7 @@ export interface Building {
    * What a workshop with more than one recipe is set to make. The lumber mill chooses
    * between timber and boards; the winery, per docs/04 §24, brews wine or beer.
    */
-  productionFocus?: 'balanced' | 'wood' | 'plank' | 'wine' | 'beer' | ZooSpecies;
+  productionFocus?: 'balanced' | 'wood' | 'plank' | 'wine' | 'beer' | ZooSpecies | MineGrade;
 }
 export interface Order {
   id: string;
@@ -350,6 +350,7 @@ export function validateSave(value: unknown): value is SimState {
       lumber: ['balanced', 'wood', 'plank'],
       winery: ['wine', 'beer'],
       zooenclosure: ['zebra', 'giraffe', 'elephant', 'lion'],
+      mine: ['copper', 'silver', 'gold', 'platinum'],
     };
     if (building.productionFocus !== undefined
       && !(FOCUS_BY_KIND[building.kind as BuildingKind] ?? []).includes(building.productionFocus as string)) return false;
@@ -774,7 +775,7 @@ export class SimWorld {
     if (!this.has(materials)) return this.fail(`建造需要${resourceLabel(materials)}。`, 'INSUFFICIENT_RESOURCES');
     this.state.coins -= definition.cost; this.deduct(materials);
     const availableWorkers = Math.max(0, this.state.population - this.assignedWorkers());
-    const building: Building = { ...(livestockSpec(kind)?{animalAge:0}:{}), ...(kind==='zooenclosure'?{productionFocus:ZOO_DEFAULT_SPECIES}:{}), id: this.id('building'), kind, x, y, level: 1, progress: 0, ready: false, paused: false, stock: {}, workers: Math.min(definition.workers ?? 0, availableWorkers) };
+    const building: Building = { ...(livestockSpec(kind)?{animalAge:0}:{}), ...(kind==='zooenclosure'?{productionFocus:ZOO_DEFAULT_SPECIES}:{}), ...(kind==='mine'?{productionFocus:'copper'}:{}), id: this.id('building'), kind, x, y, level: 1, progress: 0, ready: false, paused: false, stock: {}, workers: Math.min(definition.workers ?? 0, availableWorkers) };
     this.state.buildings.push(building); this.state.stats.buildingsBuilt++;
     if (kind === 'warehouse') this.state.capacity += this.warehouseIncrement();
     this.earn(0, 15); this.updateNeeds();
@@ -996,6 +997,12 @@ export class SimWorld {
       if ((building.productionFocus ?? 'balanced') === focus && !building.paused) return this.fail('已经采用这个生产方向。', 'NO_CHANGE');
       building.productionFocus = focus; building.paused = false;
       return this.success(`木工坊已切换为${focus === 'wood' ? '木材优先' : focus === 'plank' ? '木板优先' : '均衡补货'}。已完成的产物保持不变。`, { buildingId: id });
+    }
+    // A mine is set to one seam, chosen the same way a workshop chooses a recipe.
+    if (building.kind === 'mine' && MINE_GRADES.includes(recipeId as MineGrade)) {
+      if ((building.productionFocus ?? 'copper') === recipeId && !building.paused) return this.fail('这条矿脉已经在开采了。', 'NO_CHANGE');
+      building.productionFocus = recipeId as MineGrade; building.paused = false;
+      return this.success(`矿场改为开采${MINE_GRADE_NAMES[recipeId as MineGrade]}。矿脉越深，出得越慢也越值钱。`, { buildingId: id });
     }
     // A zoo enclosure houses one species, chosen the same way a workshop chooses a recipe.
     if (building.kind === 'zooenclosure' && ZOO_SPECIES.includes(recipeId as ZooSpecies)) {
@@ -1521,6 +1528,21 @@ export class SimWorld {
    * for grapes in one place and hops in another.
    */
   private recipeInput(building: Building): Partial<ResourceMap> {
+    // The smelter has no grade of its own: docs/02 §5 says five of ANY ore make an ingot, so it
+    // works the richest grade it has enough of, and falls back to the base one when it has none.
+    // That keeps the choice in one place — which seam the mine digs — rather than asking the
+    // player to set the same thing twice.
+    if (building.kind === 'smelter') {
+      const base = BUILDINGS.smelter.input!;
+      const need = base.ore!;
+      const grade = [...ORE_GRADES].reverse().find(key => this.state.resources[key] >= need);
+      // Only the ORE part of the recipe is swapped. Everything else — the charcoal, in
+      // particular — must survive, or the fuel check is quietly bypassed and the smelter would
+      // run on no fuel at all.
+      if (!grade || grade === 'ore') return { ...base };
+      const { ore: _ore, ...rest } = base;
+      return { ...rest, [grade]: need };
+    }
     return effectiveRecipe(building).input;
   }
 
@@ -1689,6 +1711,14 @@ export class SimWorld {
     }
     return best;
   }
+  /** How much longer a deeper seam takes to work, as a multiplier on the mine's cycle. */
+  private gradeSlowdown(building: Building): number {
+    if (building.kind !== 'mine') return 1;
+    const step = MINE_GRADES.indexOf((building.productionFocus ?? 'copper') as MineGrade);
+    // Three tenths per step: copper 1.0, silver 1.3, gold 1.6, platinum 1.9.
+    return 1 + Math.max(0, step) * 0.3;
+  }
+
   private cycleTime(building: Building, hauls: Map<string, number> = this.supplyHauls()): number {
     const definition = BUILDINGS[building.kind];
     const seasonal = building.kind === 'farm' && this.state.season === 'winter' ? 2.5 : building.kind === 'farm' && this.state.season === 'autumn' ? 0.85 : 1;
@@ -1700,7 +1730,7 @@ export class SimWorld {
     const workforce = assigned > this.state.population ? assigned / Math.max(1, this.state.population) : 1;
     const morale = this.state.happiness < 35 ? 1.5 : 1;
     const staffing = definition.workers ? definition.workers / Math.max(1, building.workers ?? definition.workers) : 1;
-    return (building.kind==='farm'?CROPS[building.crop??'wheat'].cycle:(definition.cycle??1)) * (building.kind==='farm'?1-soilLevel(building.tended).bonus*.04:1) * (this.state.researched.includes('efficiency') ? 0.9 : 1) * honourCycleFactor(this.state.honours ?? {}) * (hasProjectTitle(this.state,'craft')?0.95:1) * supplyFactor(this.haulOf(building, hauls)) * seasonal * watered * workforce * staffing * morale * Math.max(0.6, 1 - (building.level - 1) * 0.15);
+    return (building.kind==='farm'?CROPS[building.crop??'wheat'].cycle:(definition.cycle??1)) * (building.kind==='farm'?1-soilLevel(building.tended).bonus*.04:1) * (this.state.researched.includes('efficiency') ? 0.9 : 1) * honourCycleFactor(this.state.honours ?? {}) * (hasProjectTitle(this.state,'craft')?0.95:1) * supplyFactor(this.haulOf(building, hauls)) * seasonal * watered * this.gradeSlowdown(building) * workforce * staffing * morale * Math.max(0.6, 1 - (building.level - 1) * 0.15);
   }
   /**
    * A bulk commission: several goods the town can actually make, at volume. Like every other

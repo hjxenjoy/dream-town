@@ -1,7 +1,7 @@
 /** Short names for the two construction materials, used in costs and refusals. */
 export const RESOURCE_LABELS: Record<'wood' | 'stone', string> = { wood: '木材', stone: '石料' };
 
-export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage' | 'sugarcane' | 'sugar' | 'hops' | 'beer' | 'meat' | 'sausages' | 'herbs' | 'pelt' | 'souvenir' | 'peach' | 'watermelon' | 'plum' | 'olive' | 'lime' | 'banana' | 'coconut' | 'pineapple' | 'shrimp' | 'lobster';
+export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage' | 'sugarcane' | 'sugar' | 'hops' | 'beer' | 'meat' | 'sausages' | 'herbs' | 'pelt' | 'souvenir' | 'peach' | 'watermelon' | 'plum' | 'olive' | 'lime' | 'banana' | 'coconut' | 'pineapple' | 'shrimp' | 'lobster' | 'silverore' | 'goldore' | 'platinumore';
 export type ResourceMap = Record<Resource, number>;
 export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
 export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile' | 'barracks' | 'guardpost' | 'wall' | 'canefield' | 'sugarmill' | 'hopsfield' | 'tavern' | 'pigfarm' | 'butcher' | 'herbgarden' | 'hunterlodge' | 'castle' | 'zoogate' | 'zooenclosure' | 'zooshop' | 'harbor';
@@ -136,7 +136,12 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
 
 export const RESOURCES: Record<Resource, { name: string; icon: string; sellPrice: number }> = {
   flowers:{name:'花束',icon:'flowers',sellPrice:6},fruit:{name:'鲜果',icon:'fruit',sellPrice:4},eggs:{name:'鸡蛋',icon:'eggs',sellPrice:5},jam:{name:'果酱',icon:'jam',sellPrice:10},
-  ore: { name: '矿石', icon: 'ore', sellPrice: 5 },
+  ore: { name: '铜矿石', icon: 'ore', sellPrice: 5 },
+  // The deeper grades of docs/02 §5. Five of ANY grade smelt into one ingot, so the grades
+  // differ in what they are worth and in how hard they are to dig — not in what they become.
+  silverore: { name: '银矿石', icon: 'silverore', sellPrice: 22 },
+  goldore: { name: '金矿石', icon: 'goldore', sellPrice: 45 },
+  platinumore: { name: '铂金矿石', icon: 'platinumore', sellPrice: 90 },
   charcoal: { name: '木炭', icon: 'charcoal', sellPrice: 7 },
   ingot: { name: '金属锭', icon: 'ingot', sellPrice: 60 },
   tools: { name: '工具', icon: 'tools', sellPrice: 48 },
@@ -197,7 +202,8 @@ export const RESOURCES: Record<Resource, { name: string; icon: string; sellPrice
 };
 
 export const RESOURCE_KEYS = ['flowers','fruit','eggs','jam','wood', 'stone', 'wheat', 'flour', 'bread', 'fish', 'plank', 'materials', 'ore', 'charcoal', 'ingot', 'tools', 'feed', 'wool', 'cloth', 'clothing', 'milk', 'cheese', 'honey', 'grape', 'wine', 'vintage', 'sugarcane', 'sugar', 'hops', 'beer', 'meat', 'sausages', 'herbs', 'pelt', 'souvenir',
-  'peach', 'watermelon', 'plum', 'olive', 'lime', 'banana', 'coconut', 'pineapple', 'shrimp', 'lobster'] as Resource[];
+  'peach', 'watermelon', 'plum', 'olive', 'lime', 'banana', 'coconut', 'pineapple', 'shrimp', 'lobster',
+  'silverore', 'goldore', 'platinumore'] as Resource[];
 export const BUILDING_KEYS = Object.keys(BUILDINGS) as BuildingKind[];
 export { MAP_SIZE } from './terrain.ts';
 export const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
@@ -257,7 +263,7 @@ export const HEALTH_TAX_RELIEF = 0.4;
 export const HEALTH_REPAIR_RELIEF = 0.3;
 
 export function emptyResources(): ResourceMap {
-  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0, sugarcane: 0, sugar: 0, hops: 0, beer: 0, meat: 0, sausages: 0, herbs: 0, pelt: 0, souvenir: 0, peach: 0, watermelon: 0, plum: 0, olive: 0, lime: 0, banana: 0, coconut: 0, pineapple: 0, shrimp: 0, lobster: 0 };
+  return { flowers:0,fruit:0,eggs:0,jam:0,ore: 0, charcoal: 0, ingot: 0, tools: 0, feed: 0, wool: 0, cloth: 0, clothing: 0, wood: 0, stone: 0, wheat: 0, flour: 0, bread: 0, fish: 0, plank: 0, materials: 0, milk: 0, cheese: 0, honey: 0, grape: 0, wine: 0, vintage: 0, sugarcane: 0, sugar: 0, hops: 0, beer: 0, meat: 0, sausages: 0, herbs: 0, pelt: 0, souvenir: 0, peach: 0, watermelon: 0, plum: 0, olive: 0, lime: 0, banana: 0, coconut: 0, pineapple: 0, shrimp: 0, lobster: 0, silverore: 0, goldore: 0, platinumore: 0 };
 }
 
 /**
@@ -312,6 +318,13 @@ export const SOUVENIR_SHOP_MULTIPLIER = 1.8;
  * appetite and drawing power live in `FOCUS_RECIPES`, so the enclosure is set up exactly like a
  * workshop with more than one recipe.
  */
+export const MINE_GRADES = ['copper', 'silver', 'gold', 'platinum'] as const;
+export type MineGrade = typeof MINE_GRADES[number];
+export const MINE_GRADE_NAMES: Record<MineGrade, string> = {
+  copper: '铜矿脉', silver: '银矿脉', gold: '金矿脉', platinum: '铂金矿脉',
+};
+/** Every grade a mine can bring up, so the smelter knows what to look for. */
+export const ORE_GRADES: Resource[] = ['ore', 'silverore', 'goldore', 'platinumore'];
 export const ZOO_SPECIES = ['zebra', 'giraffe', 'elephant', 'lion'] as const;
 export type ZooSpecies = typeof ZOO_SPECIES[number];
 export const ZOO_SPECIES_NAMES: Record<ZooSpecies, string> = {
@@ -391,6 +404,14 @@ export const FOCUS_RECIPES: Partial<Record<BuildingKind, Record<string, { input:
   winery: {
     wine: { input: { grape: 6 }, output: { wine: 3 } },
     beer: { input: { hops: 6 }, output: { beer: 3 } },
+  },
+  // Which grade a mine digs. A deeper seam takes longer to work and is worth more; five of any
+  // one grade smelt into a single ingot, so the choice is about value and patience, not output.
+  mine: {
+    copper: { input: {}, output: { ore: 5 } },
+    silver: { input: {}, output: { silverore: 4 } },
+    gold: { input: {}, output: { goldore: 3 } },
+    platinum: { input: {}, output: { platinumore: 2 } },
   },
   // A zoo enclosure's species is the same shape of choice as a winery's recipe: one building,
   // several things it can be set to do. A lion eats more and draws a bigger crowd.

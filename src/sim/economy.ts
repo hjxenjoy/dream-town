@@ -24,6 +24,8 @@ const WEIGHTS: ResourceMap = {
   souvenir: 3,
   // Island specialities arrive in small lots, so they hold a small buffer.
   peach: 2, watermelon: 2, plum: 2, olive: 2, lime: 2, banana: 2, coconut: 2, pineapple: 2, shrimp: 2, lobster: 2,
+  // Deeper ores buffer like the base one.
+  silverore: 3, goldore: 2, platinumore: 2,
 };
 
 export function stockTargets(state: SimState): ResourceMap {

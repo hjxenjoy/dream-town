@@ -13,6 +13,10 @@ const paths: Record<string, string> = {
  back: '<path d="M20 12H5m6-6-6 6 6 6"/>',
  lock: '<rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V6a4 4 0 0 1 8 0v4m-4 5v2"/>',
  ore: '<path d="m3 17 3-9 8-5 7 7-2 10H7Z" fill="#b77c5b"/><path d="m6 8 6 5 9-3m-9 3-5 7" stroke="#e3ae7e"/>',
+ // The deeper grades: same rock, brighter seam, so they read as one family at a glance.
+ silverore: '<path d="m3 17 3-9 8-5 7 7-2 10H7Z" fill="#8f949c"/><path d="m6 8 6 5 9-3m-9 3-5 7" stroke="#d6dde4"/><circle cx="10" cy="14" r="1.4" fill="#f2f5f8"/>',
+ goldore: '<path d="m3 17 3-9 8-5 7 7-2 10H7Z" fill="#a88a4a"/><path d="m6 8 6 5 9-3m-9 3-5 7" stroke="#f0d68a"/><circle cx="10" cy="14" r="1.4" fill="#fdf0bc"/>',
+ platinumore: '<path d="m3 17 3-9 8-5 7 7-2 10H7Z" fill="#9aa8a4"/><path d="m6 8 6 5 9-3m-9 3-5 7" stroke="#dff0ea"/><circle cx="10" cy="14" r="1.4" fill="#ffffff"/><circle cx="15" cy="11" r="1" fill="#eafaf5"/>',
  charcoal: '<path d="m2 17 4-8 6 2 3-6 7 5-2 11H5Z" fill="#53625c"/><path d="m6 9 3 6 3-4m3-6 1 8 6-3" stroke="#91a49b"/>',
  ingot: '<path d="m3 15 4-8h11l4 8-4 5H6Z" fill="#8baebb"/><path d="M7 7l-1 8h12V7M3 15h19m-4 0v5" stroke="#d5e7dc"/>',
  tools: '<path d="m5 20 11-13 3 3L8 22Z" fill="#b78855"/><path d="m10 4 4-2 8 7-4 4-3-4Z" fill="#83a4b0"/>',
