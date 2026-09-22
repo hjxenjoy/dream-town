@@ -28,6 +28,11 @@ GROUPS={
  'quiet':'clinic', 'bell':'chapel firestation firetower',
  'footsteps':'boardwalk bench gazebo', 'cloth':'railing archlights signflags',
  'metal':'anvil quarry', 'cow':'cowbarn', 'bees':'apiary', 'field':'farm',
+ # Defence: a post is a flag and a distant bell, the barracks adds drill steps, and a wall
+ # is masonry in the wind. Assigned on the profile that fits rather than inventing kinds.
+ 'bell':'chapel firestation firetower guardpost',
+ 'footsteps':'boardwalk bench gazebo barracks',
+ 'cloth':'railing archlights signflags wall',
 }
 assigned={name:group for group,names in GROUPS.items() for name in names.split()}
 assert set(assigned)|REUSE=={b['id'] for b in buildings}

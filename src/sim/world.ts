@@ -11,7 +11,7 @@ import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type
 import { TownNavigation } from './navigation.ts';
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
 import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, GAME_DAY_SECONDS, LEISURE_GOODS, MAP_SIZE, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type TechnologyId } from './data.ts';
-import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, canStrike, damageCeiling, disasterOf, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
+import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, canStrike, damageCeiling, disasterOf, raidLoss, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetrics } from './achievements.ts';
@@ -1740,9 +1740,14 @@ export class SimWorld {
     const guards = this.state.buildings.filter(building => !building.damaged && (building.kind === 'firetower' || building.kind === 'firestation'));
     const guarded = (building: Building): boolean => guards.some(tower =>
       Math.hypot(building.x - tower.x, building.y - tower.y) <= (tower.kind === 'firestation' ? 7 : 4) + tower.level - 1);
+    // Guardposts and barracks answer bandits, not fires: the same shape of check, a different
+    // set of buildings, so a defence you build is a defence that works.
+    const watch = this.state.buildings.filter(building => !building.damaged && BUILDINGS[building.kind].guardRadius);
+    const watched = (building: Building): boolean => watch.some(post =>
+      Math.hypot(building.x - post.x, building.y - post.y) <= BUILDINGS[post.kind].guardRadius! + post.level - 1);
 
     const kind = DISASTER_KINDS[Math.floor(this.state.gameTime / DISASTER_INTERVAL) % DISASTER_KINDS.length];
-    const candidates = this.state.buildings.filter(building => canStrike(kind, building, season, guarded(building)));
+    const candidates = this.state.buildings.filter(building => canStrike(kind, building, season, guarded(building), watched(building)));
     if (candidates.length === 0) {
       this.log(`巡查结束：${disasterOf(kind).name}没有威胁到小镇，一切平安。`, 'info');
       return;
@@ -1750,7 +1755,20 @@ export class SimWorld {
     const building = candidates[Math.floor(this.state.gameTime / DISASTER_INTERVAL) % candidates.length];
     building.damaged = true; building.damageKind = kind;
     this.state.happiness = Math.max(10, this.state.happiness - (kind === 'fire' ? 5 : 3));
-    this.log(disasterOf(kind).log.replace('%s', BUILDINGS[building.kind].name), 'warning');
+    const looted = this.applyRaidLoss(kind);
+    this.log(disasterOf(kind).log.replace('%s', BUILDINGS[building.kind].name) + looted, 'warning');
+  }
+
+  /**
+   * A raid carries goods off; the message names what went so the loss is never a silent
+   * change in the numbers. Returns a sentence to append to the log line, or ''.
+   */
+  private applyRaidLoss(kind: DisasterKind): string {
+    const lost = raidLoss(kind, this.state.resources);
+    const entries = Object.entries(lost) as [Resource, number][];
+    if (entries.length === 0) return '';
+    for (const [key, amount] of entries) this.state.resources[key] = Math.max(0, this.state.resources[key] - amount);
+    return ` 被抢走 ${entries.map(([key, amount]) => `${amount} ${RESOURCES[key].name}`).join('、')}。`;
   }
 
   private runMayor(): void {

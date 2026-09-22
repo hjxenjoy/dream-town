@@ -18,12 +18,13 @@ import { SimWorld, type Building, type BuildingKind } from '../sim/world';
 import { BUILDINGS, EXPANSION_SPRITES, EXPANSION_FRAMES, INDUSTRY_KINDS, INDUSTRY_FRAMES, DECORATION_SPRITES, DECORATION_FRAMES } from '../sim/data';
 import { GENERATED_ATLASES, atlasFrames, generatedSprite, housingLevelFrame } from '../sim/atlases';
 import { drawFrameWidth, drawFrameScale } from './atlasSprite';
+import { wallKeys, wallMask, wallPiece } from '../sim/walls';
 import { MAP_SIZE, TILE_W, TILE_H, iso, terrainAt, terrainReason, DISTRICTS, type District } from '../sim/terrain';
 import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
 /** Generated atlases the scene draws. Preloading and frame registration both read this. */
-const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel'] as const;
+const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel','defense-expansion','wall-junctions','duel-actions'] as const;
 /** On-screen widths for the farm visuals, which are drawn from generated textures. */
 const FARM_WIDTH = 116;
 const FARM_HEIGHT = 86;
@@ -35,6 +36,8 @@ const FARM_HEIGHT = 86;
  */
 const FARM_PLOT_WIDTH = 104;
 const FARM_SOIL_DROP = 21;
+/** A wall tile is drawn one tile wide, so a run meets its neighbours edge to edge. */
+const WALL_WIDTH = 116;
 
 const deiso = (x: number, y: number) => ({ x: Math.round(x / TILE_W + y / TILE_H), y: Math.round(y / TILE_H - x / TILE_W) });
 type BuildingVisual = { sprite: Phaser.GameObjects.Image; badge: Phaser.GameObjects.Container; progress: Phaser.GameObjects.Graphics; ready: boolean; soil: Phaser.GameObjects.Graphics; soilLevel: number; homeStyle?: string; companion?: Phaser.GameObjects.Image };
@@ -231,8 +234,15 @@ export class TownScene extends Phaser.Scene {
         v={sprite,badge,progress,ready:false,soil,soilLevel:0};this.visuals.set(b.id,v);
         this.tweens.add({targets:sprite,alpha:{from:0,to:1},duration:300});
       }
+      // A wall tile draws whichever piece its neighbours call for, so the frame depends on
+      // the town's layout rather than on the building alone.
+      if(b.kind==='wall'){
+        const piece=wallPiece(wallMask(b,wallKeys(this.world.state.buildings)));
+        drawFrameWidth(v.sprite,piece.atlas,piece.frame,WALL_WIDTH);
+        v.sprite.setFlipX(piece.flipX===true);
+      }
       // Cottage and farmhouse art is per-level, so an upgrade swaps the frame in place.
-      if(b.kind!=='farm'){
+      else if(b.kind!=='farm'){
         const source=this.spriteSource(b.kind,b.level);
         const current=v.sprite.texture.key;
         if(source.frame&&(current!==source.texture||v.sprite.frame.name!==source.frame)){

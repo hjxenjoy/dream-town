@@ -377,6 +377,57 @@
       }
     },
     {
+      "name": "guardpost",
+      "label": "路口岗哨 · 远钟与轻风",
+      "url": "/assets/accessories-2026-09/audio/guardpost.wav",
+      "profile": "bell",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.77
+      }
+    },
+    {
+      "name": "barracks",
+      "label": "青岚兵营 · 木板脚步与微风",
+      "url": "/assets/accessories-2026-09/audio/barracks.wav",
+      "profile": "footsteps",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -9.97
+      }
+    },
+    {
+      "name": "wall",
+      "label": "石砌城墙 · 织物与风",
+      "url": "/assets/accessories-2026-09/audio/wall.wav",
+      "profile": "cloth",
+      "seconds": 8,
+      "sampleRate": 22050,
+      "channels": 1,
+      "loop": true,
+      "runtimeIntegrated": false,
+      "generator": "original deterministic procedural synthesis",
+      "qa": {
+        "clippedSamples": 0,
+        "seamDelta": 0,
+        "peakDbFS": -8.38
+      }
+    },
+    {
       "name": "watertower",
       "label": "蓝顶供水塔 · 水波、滴水与水流",
       "url": "/assets/accessories-2026-09/audio/watertower.wav",
@@ -1242,6 +1293,24 @@
       "profile": "bell",
       "runtimeIntegrated": false
     },
+    "guardpost": {
+      "url": "/assets/accessories-2026-09/audio/guardpost.wav",
+      "source": "new",
+      "profile": "bell",
+      "runtimeIntegrated": false
+    },
+    "barracks": {
+      "url": "/assets/accessories-2026-09/audio/barracks.wav",
+      "source": "new",
+      "profile": "footsteps",
+      "runtimeIntegrated": false
+    },
+    "wall": {
+      "url": "/assets/accessories-2026-09/audio/wall.wav",
+      "source": "new",
+      "profile": "cloth",
+      "runtimeIntegrated": false
+    },
     "watertower": {
       "url": "/assets/accessories-2026-09/audio/watertower.wav",
       "source": "new",
@@ -1507,7 +1576,7 @@
       "runtimeIntegrated": false
     }
   },
-  "buildingCount": 69,
+  "buildingCount": 72,
   "existingReused": 5,
-  "newTracks": 64
+  "newTracks": 67
 }

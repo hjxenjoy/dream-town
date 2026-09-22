@@ -4,7 +4,7 @@ export const RESOURCE_LABELS: Record<'wood' | 'stone', string> = { wood: '木材
 export type Resource = 'flowers' | 'fruit' | 'eggs' | 'jam' | 'wood' | 'stone' | 'wheat' | 'flour' | 'bread' | 'fish' | 'plank' | 'materials' | 'ore' | 'charcoal' | 'ingot' | 'tools' | 'feed' | 'wool' | 'cloth' | 'clothing' | 'milk' | 'cheese' | 'honey' | 'grape' | 'wine' | 'vintage';
 export type ResourceMap = Record<Resource, number>;
 export type BuildingCategory = 'homes' | 'production' | 'services' | 'decoration';
-export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile';
+export type BuildingKind = 'flowernursery' | 'orchardhouse' | 'chickencoop' | 'jamkitchen' | 'teahouse' | 'homestead' | 'cottage' | 'windmill' | 'bakery' | 'townhall' | 'lumber' | 'quarry' | 'fishery' | 'market' | 'well' | 'warehouse' | 'firetower' | 'garden' | 'farm' | 'mine' | 'kiln' | 'smelter' | 'smithy' | 'feedmill' | 'pasture' | 'weaver' | 'tailor' | 'oak' | 'cherry' | 'pine' | 'maple' | 'fountain' | 'gazebo' | 'bench' | 'flowerarch' | 'flowerbox' | 'trellis' | 'archlights' | 'boardwalk' | 'railing' | 'parasol' | 'willow' | 'dock' | 'crates' | 'barrels' | 'anvil' | 'signflags' | 'cowbarn' | 'dairy' | 'apiary' | 'vineyard' | 'winery' | 'cellar' | 'farmhouse' | 'rowhouse' | 'apartment' | 'forester' | 'sawmill' | 'fishpond' | 'brickworks' | 'school' | 'clinic' | 'theatre' | 'watertower' | 'firestation' | 'chapel' | 'flowercart' | 'picniccorner' | 'harvestpile' | 'barracks' | 'guardpost' | 'wall';
 
 export interface BuildingDefinition {
   name: string;
@@ -31,6 +31,8 @@ export interface BuildingDefinition {
   faith?: number;
   waterRadius?: number;
   fireRadius?: number;
+  /** Tile radius within which a guardpost or barracks turns bandits away. */
+  guardRadius?: number;
   preserveWood?: boolean;
 }
 
@@ -61,6 +63,9 @@ export const BUILDINGS: Record<BuildingKind, BuildingDefinition> = {
   clinic: { name: '安心诊所', description: '照顾邻居的日常健康。每级让 10 位居民康健，并增加 10 位社区人口名额与 25 点社区服务。', category: 'services', cost: 900, wood: 12, stone: 20, materials: { materials: 4 }, frame: null, populationCap: 10, services: 25, health: 10 },
   theatre: { name: '星幕小剧院', description: '灯光与戏剧丰富夜晚。每级增加 16 位社区人口名额、30 点社区服务与 5 点环境值。', category: 'services', cost: 1800, wood: 24, stone: 28, materials: { materials: 8 }, frame: null, technology: 'civics', populationCap: 16, services: 30, environment: 5 },
   chapel: { name: '河畔小教堂', description: '钟声安顿人心。每级为 14 户邻居带来信仰与安定的生活，并增加 8 位社区人口名额。', category: 'services', cost: 1500, wood: 22, stone: 26, materials: { materials: 6 }, frame: null, populationCap: 8, faith: 14 },
+  guardpost: { name: '路口岗哨', description: '巡逻半径 5 格，把打家劫舍的强盗挡在外面。每级扩大 1 格。', category: 'services', cost: 350, wood: 12, stone: 8, frame: null, guardRadius: 5 },
+  barracks: { name: '青岚兵营', description: '常驻守备队，警戒半径 8 格，挡住强盗的洗劫。每级扩大 1 格。', category: 'services', cost: 1500, wood: 28, stone: 30, materials: { materials: 8 }, frame: null, technology: 'metallurgy', guardRadius: 8 },
+  wall: { name: '石砌城墙', description: '一段城墙，连成一片就成一道防线。相邻的墙会自动接上。', category: 'decoration', cost: 90, wood: 0, stone: 6, frame: null, environment: 1 },
   watertower: { name: '蓝顶供水塔', description: '为半径 7 格内的住宅供水，每次升级扩大 1 格，适合扩张中的住宅区。', category: 'services', cost: 780, wood: 10, stone: 24, materials: { materials: 3 }, frame: null, waterRadius: 7 },
   firestation: { name: '赤砖消防站', description: '守护半径 7 格内的建筑，每次升级扩大 1 格，让工业区也能安心生产。', category: 'services', cost: 1050, wood: 16, stone: 24, materials: { materials: 4 }, frame: null, technology: 'metallurgy', fireRadius: 7 },
   cottage: { name: '林间小屋', description: '温暖的新家，提供 6 个床位。居民幸福、粮食充足时会迎来新邻居。', category: 'homes', cost: 320, wood: 12, stone: 5, frame: 0, housing: 6 },

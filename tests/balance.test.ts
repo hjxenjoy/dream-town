@@ -209,7 +209,17 @@ test('idle time alone never runs a value away or to nothing', () => {
     const check = (ok: boolean, why: string) => { if (!ok && !seen.includes(why)) seen.push(why); };
     check(Number.isFinite(s.coins) && s.coins >= 0, 'coins left the number line');
     check(s.happiness >= 0 && s.happiness <= 100, 'happiness left 0..100');
-    check(s.population >= 4 && s.population <= w.observe().populationCapacity, `population left its bounds: ${s.population}/${w.observe().populationCapacity}`);
+    // The criterion is the ALL-INTACT capacity, as docs/15 §五 requires: a damaged house is
+    // uninhabitable, so the live capacity dips below the population for the repair window.
+    // That is design behaviour — repairs pause growth, they do not evict anyone.
+    //
+    // Both capacities are taken from the world and then given back whatever the currently
+    // damaged buildings were contributing, so this cannot drift from the game's own formula.
+    const damaged = s.buildings.filter(building => building.damaged);
+    const housing = w.housingCapacity() + damaged.reduce((total, b) => total + (BUILDINGS[b.kind].housing ?? 0) * b.level, 0);
+    const community = w.communityCapacity() + damaged.reduce((total, b) => total + (BUILDINGS[b.kind].populationCap ?? 0) * b.level, 0);
+    const capacity = Math.min(housing, community);
+    check(s.population >= 4 && s.population <= capacity, `population left its bounds: ${s.population}/${capacity}`);
     const used = RESOURCE_KEYS.reduce((n, k) => n + s.resources[k], 0);
     check(used >= 0 && used <= s.capacity, 'warehouse overflowed');
     check(RESOURCE_KEYS.every(k => Number.isInteger(s.resources[k]) && s.resources[k] >= 0), 'a resource is fractional or negative');

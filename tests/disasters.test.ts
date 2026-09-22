@@ -4,6 +4,7 @@ import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, emptyResources, TECHNOLOGY_KEYS, type BuildingKind } from '../src/sim/data.ts';
 import { ALERT_FRAME_MS, ALERT_FRAMES, DISASTER_INTERVAL, DISASTER_KINDS, DISASTERS, HAZARD_FRAME_MS, REPAIR_FRAMES, REPAIR_SECONDS, canStrike, hazardOverlay, loopFrame, type SeasonKey } from '../src/sim/disasters.ts';
 import { readFileSync } from 'node:fs';
+import { GENERATED_ATLASES } from '../src/sim/atlases.ts';
 
 /** A town with every blueprint unlocked, plenty of materials and no automation. */
 function prepared(){
@@ -202,14 +203,27 @@ test('overlay frames name hazard, repair and warning states without the renderer
   assert.equal(loopFrame(ALERT_FRAMES,ALERT_FRAME_MS,ALERT_FRAME_MS,true),'bell-0','reduced motion holds the bell');
 });
 
-test('every hazard and repair frame exists in the generated atlas',()=>{
-  const catalog=JSON.parse(readFileSync(new URL('../public/assets/disasters-frames.json',import.meta.url),'utf8'));
-  const available=new Set<string>(Object.keys(catalog.frames));
+test('every hazard and repair frame exists in the atlas it names',()=>{
+  const catalogs=new Map<string,Set<string>>();
+  const framesOf=(atlas:string)=>{
+    if(!catalogs.has(atlas)){
+      // The registry knows where an atlas lives: packs are in their own directories, so the
+      // catalog path is derived from the image rather than assumed to sit in public/assets/.
+      const image=GENERATED_ATLASES[atlas as keyof typeof GENERATED_ATLASES].image;
+      const catalog=JSON.parse(readFileSync(new URL(`../public${image.replace(/\.(webp|svg|png)$/,'-frames.json')}`,import.meta.url),'utf8'));
+      catalogs.set(atlas,new Set<string>(Object.keys(catalog.frames)));
+    }
+    return catalogs.get(atlas)!;
+  };
   for(const kind of DISASTER_KINDS){
-    for(const frame of DISASTERS[kind].frames) assert.ok(available.has(frame),`${kind} frame ${frame} missing from the atlas`);
-    assert.ok(available.has(DISASTERS[kind].frames[0]),`${kind} first frame`);
+    // A hazard names its own sheet: the bandit art ships with the defence pack, not the
+    // disasters sheet, so the renderer must not assume one atlas for every hazard.
+    const sheet=DISASTERS[kind].atlas??'disasters';
+    const available=framesOf(sheet);
+    for(const frame of DISASTERS[kind].frames) assert.ok(available.has(frame),`${kind} frame ${frame} missing from ${sheet}`);
   }
-  for(const frame of [...REPAIR_FRAMES,...ALERT_FRAMES]) assert.ok(available.has(frame),`${frame} missing from the atlas`);
+  const disasters=framesOf('disasters');
+  for(const frame of [...REPAIR_FRAMES,...ALERT_FRAMES]) assert.ok(disasters.has(frame),`${frame} missing from the atlas`);
 });
 
 test('hazard targeting rules hold for every kind and season combination',()=>{
@@ -220,6 +234,9 @@ test('hazard targeting rules hold for every kind and season combination',()=>{
     drought:{workshop:false,homes:false,farm:true,river:false,seasons:['summer','autumn']},
     hail:{workshop:false,homes:false,farm:true,river:false,seasons:['spring','summer']},
     insects:{workshop:false,homes:false,farm:true,river:false,seasons:['spring','summer']},
+    // Bandits come all year, reach workshops and homes alike, and ignore both the river and
+    // farmland. What stops them is a guardpost or barracks, which is checked separately.
+    bandits:{workshop:true,homes:true,farm:false,river:false,seasons:['spring','summer','autumn','winter']},
   };
   const inlandWorkshop={kind:'forester' as BuildingKind,x:38,y:40};
   const riversideWorkshop={kind:'forester' as BuildingKind,x:23,y:30};

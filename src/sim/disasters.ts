@@ -1,11 +1,11 @@
-import { BUILDINGS, type BuildingCategory, type BuildingKind } from './data.ts';
+import { BUILDINGS, type BuildingCategory, type BuildingKind, type Resource } from './data.ts';
 import { riverX } from './terrain.ts';
 
 /** Seasonal hazards. Every kind maps to frames in the generated `disasters` atlas. */
-export type DisasterKind = 'fire' | 'flood' | 'drought' | 'hail' | 'insects';
+export type DisasterKind = 'fire' | 'flood' | 'drought' | 'hail' | 'insects' | 'bandits';
 export type SeasonKey = 'spring' | 'summer' | 'autumn' | 'winter';
 
-export const DISASTER_KINDS: readonly DisasterKind[] = ['fire', 'flood', 'drought', 'hail', 'insects'];
+export const DISASTER_KINDS: readonly DisasterKind[] = ['fire', 'flood', 'drought', 'hail', 'insects', 'bandits'];
 
 export interface RepairCost { coins: number; wood: number; stone: number; materials: number }
 
@@ -16,6 +16,12 @@ export interface DisasterDefinition {
   advice: string;
   /** Two frames of the animation drawn over the struck building. */
   frames: readonly [string, string];
+  /**
+   * Which atlas those frames live in. Hazards default to the `disasters` sheet, but the
+   * bandit art was delivered with the defence pack, so the sheet is named per hazard rather
+   * than hard-coded in the renderer.
+   */
+  atlas?: 'duel-actions';
   seasons: readonly SeasonKey[];
   /** `building` hazards follow the category list; `farm` hazards only strike farmland. */
   target: 'building' | 'farm';
@@ -23,8 +29,16 @@ export interface DisasterDefinition {
   /** Reaches only the river plain, which makes placement the player's defence. */
   riverOnly?: boolean;
   /** Protective radius that prevents it, if any. */
-  guard: 'fire' | null;
+  guard: 'fire' | 'bandits' | null;
   repair: RepairCost;
+  /**
+   * Goods carried off, as a share of what the warehouse holds at the moment of the raid.
+   * A share rather than a fixed amount so a full warehouse loses more than a bare one, and
+   * capped by `RAID_LOSS_SHARE` so one raid can never empty the shelves.
+   */
+  steals?: readonly Resource[];
+  /** The share of each stolen resource the raid takes, before the cap is applied. */
+  stealsShare?: number;
 }
 
 export const DISASTERS: Record<DisasterKind, DisasterDefinition> = {
@@ -58,7 +72,47 @@ export const DISASTERS: Record<DisasterKind, DisasterDefinition> = {
     target: 'farm', categories: ['production'], guard: null,
     repair: { coins: 50, wood: 1, stone: 1, materials: 0 },
   },
+  bandits: {
+    name: '强盗', log: '%s被强盗光顾，屋子和货架都遭了殃。', advice: '岗哨与兵营的警戒范围能挡住强盗；被抢走的货物拿不回来，但房子修好就能继续用。',
+    frames: ['bandit-lunge', 'bandit-recoil'], atlas: 'duel-actions', seasons: ['spring', 'summer', 'autumn', 'winter'],
+    target: 'building', categories: ['production', 'homes', 'services'], guard: 'bandits',
+    repair: { coins: 120, wood: 4, stone: 3, materials: 0 },
+    // The goods the town actually trades in, as `docs/03` §5 names them, plus the finished
+    // goods a raid would obviously go for.
+    steals: ['fish', 'plank', 'wheat', 'wool', 'bread', 'tools', 'clothing', 'cheese', 'honey', 'wine'],
+    stealsShare: 0.12,
+  },
 };
+
+/**
+ * The most one raid may carry off, as a share of EVERYTHING in the warehouse. A raid is a
+ * setback the player feels and recovers from, not a reset: this is the ceiling that keeps a
+ * bad roll from undoing an evening's work.
+ */
+export const RAID_LOSS_SHARE = 0.25;
+
+/**
+ * What a raid takes from a warehouse, item by item. Never more than `RAID_LOSS_SHARE` of the
+ * whole stock, and never more than a building's worth of goods: every line is floored, so a
+ * raid cannot take the last of something the town needs to keep running.
+ */
+export function raidLoss(
+  disaster: DisasterKind,
+  resources: Readonly<Record<Resource, number>>,
+): Partial<Record<Resource, number>> {
+  const definition = DISASTERS[disaster];
+  if (!definition.steals || !definition.stealsShare) return {};
+  const total = Object.values(resources).reduce((sum, amount) => sum + amount, 0);
+  let budget = Math.floor(total * RAID_LOSS_SHARE);
+  const taken: Partial<Record<Resource, number>> = {};
+  for (const key of definition.steals) {
+    if (budget <= 0) break;
+    const wanted = Math.floor((resources[key] ?? 0) * definition.stealsShare);
+    const amount = Math.min(wanted, budget);
+    if (amount > 0) { taken[key] = amount; budget -= amount; }
+  }
+  return taken;
+}
 
 /** Scaffolding shown while a repair is under way, and the bell shown as an alert marker. */
 export const REPAIR_FRAMES: readonly [string, string] = ['scaffold-0', 'scaffold-1'];
@@ -115,6 +169,8 @@ const INFRASTRUCTURE: readonly BuildingKind[] = ['well', 'watertower', 'firetowe
 
 export interface HazardOverlay {
   frame: string;
+  /** The sheet the frame lives in, so the renderer does not hard-code one. */
+  atlas: string;
   /** The warning bell hangs only while a repair has not been ordered yet. */
   warning: boolean;
 }
@@ -130,9 +186,11 @@ export function hazardOverlay(
 ): HazardOverlay | null {
   const repairing = building.repairingUntil !== undefined;
   if (!repairing && building.damaged !== true) return null;
-  const frames = repairing ? REPAIR_FRAMES : disasterOf(building.damageKind).frames;
+  const definition = disasterOf(building.damageKind);
+  const frames = repairing ? REPAIR_FRAMES : definition.frames;
   return {
     frame: frames[reduced ? 0 : Math.floor(time / HAZARD_FRAME_MS) % frames.length],
+    atlas: repairing ? 'disasters' : (definition.atlas ?? 'disasters'),
     warning: building.damaged === true && !repairing && !reduced,
   };
 }
@@ -151,6 +209,8 @@ export function canStrike(
   building: { kind: BuildingKind; x: number; y: number; damaged?: boolean; repairingUntil?: number },
   season: SeasonKey,
   guarded: boolean,
+  /** True when a guardpost or barracks overlooks this building. Only bandits care. */
+  watched = false,
 ): boolean {
   const definition = DISASTERS[disaster];
   if (building.damaged || building.repairingUntil !== undefined) return false;
@@ -164,6 +224,7 @@ export function canStrike(
   if (!definition.seasons.includes(season)) return false;
   // The flood plain is the strip either side of the river.
   if (definition.riverOnly && Math.abs(building.x - riverX(building.y)) > 9) return false;
-  if (definition.guard && guarded) return false;
+  if (definition.guard === 'fire' && guarded) return false;
+  if (definition.guard === 'bandits' && watched) return false;
   return true;
 }

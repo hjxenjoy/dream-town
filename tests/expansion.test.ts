@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
-import { BUILDINGS, EXPANSION_SPRITES, RESOURCE_KEYS, TECHNOLOGY_KEYS, emptyResources, type BuildingKind } from '../src/sim/data.ts';
-import { DISASTER_INTERVAL, DISASTER_KINDS, REPAIR_SECONDS } from '../src/sim/disasters.ts';
+import { BUILDINGS, EXPANSION_SPRITES, RESOURCE_KEYS, SEASON_SECONDS, TECHNOLOGY_KEYS, emptyResources, type BuildingKind } from '../src/sim/data.ts';
+import { DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, REPAIR_SECONDS } from '../src/sim/disasters.ts';
 import { executeGameTool } from '../src/sim/tools.ts';
 
 function prepared(){
@@ -97,9 +97,23 @@ test('foresters and building-material workshops stop at targets and resume after
 test('fire stations protect factories beyond old watchtower range and upgrade coverage',()=>{
   const w=prepared();w.state.buildings=[];w.state.roads=[];w.state.settings.disasters=true;
   const station=add(w,'firestation',37,40),factory=add(w,'forester',44,41);
-  // Drive the strike clock directly: hazards rotate per slot and several are seasonal.
-  const FIRE_SLOT=DISASTER_INTERVAL*DISASTER_KINDS.length;
-  const strikeFire=()=>{w.state.gameTime=FIRE_SLOT-1;w.state.lastDisasterAt=0;w.tick(1);};
+  // Hazards rotate per slot and several are seasonal, so the strike time has to be chosen:
+  // a slot whose hazard is fire AND whose season fire actually reaches. The season is read
+  // from the world after the tick has advanced it, which is why this looks one step ahead.
+  //
+  // Searching rather than hard-coding an instant keeps this honest when the hazard list, the
+  // interval, or the season length changes: if no such slot exists the test fails loudly
+  // instead of quietly asserting that nothing happened.
+  const slug=(time:number)=>(['spring','summer','autumn','winter'] as const)[Math.floor(time/SEASON_SECONDS)%4];
+  let fireSlot=-1;
+  for(let slot=1;slot<=240;slot++){
+    const at=slot*DISASTER_INTERVAL;
+    if(DISASTER_KINDS[Math.floor(at/DISASTER_INTERVAL)%DISASTER_KINDS.length]!=='fire')continue;
+    if(!DISASTERS.fire.seasons.includes(slug(at)))continue;
+    fireSlot=at;break;
+  }
+  assert.ok(fireSlot>0,'some hazard slot is a fire in a season fire reaches');
+  const strikeFire=()=>{w.state.gameTime=fireSlot-1;w.state.lastDisasterAt=0;w.tick(1);};
   w.upgrade(station.id);strikeFire();assert.equal(factory.damaged,undefined);
   station.level=1;strikeFire();assert.equal(factory.damaged,true);
   assert.equal(factory.damageKind,'fire');

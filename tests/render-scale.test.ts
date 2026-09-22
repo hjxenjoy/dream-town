@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { atlasFrames } from '../src/sim/atlases.ts';
 import { BUILDINGS } from '../src/sim/data.ts';
+import { DISASTERS, DISASTER_KINDS } from '../src/sim/disasters.ts';
 import { GENERATED_ATLASES } from '../src/sim/atlases.ts';
 
 const RENDER_DIR = new URL('../src/render/', import.meta.url);
@@ -84,9 +85,17 @@ test('hazard effects share one footprint across every kind and frame',()=>{
   // drift apart as the atlas evolves.
   const layer=readFileSync(new URL('DisasterLayer.ts',RENDER_DIR),'utf8');
   assert.match(layer,/const EFFECT_WIDTH = \d+/,'there is one effect width');
-  assert.match(layer,/drawFrameWidth\(sprite, 'disasters', overlay\.frame, EFFECT_WIDTH\)/,'every effect frame uses it');
+  // The sheet comes from the overlay, because a hazard may ship its art in another atlas
+  // (the bandits are drawn from the duel sheet). Pinning one atlas here would let a hazard
+  // render from the wrong sheet without this rule noticing.
+  assert.match(layer,/drawFrameWidth\(sprite, overlay\.atlas, overlay\.frame, EFFECT_WIDTH\)/,'every effect frame uses one width, from its own sheet');
   assert.match(layer,/drawFrameWidth\(alert, 'disasters',[\s\S]{0,80}BELL_WIDTH\)/,'and the bell has its own, smaller width');
-  // Every hazard must have its frames, or a kind would render nothing at all.
+  // Every hazard must have its frames in the sheet it names, or a kind would render nothing.
+  for(const kind of DISASTER_KINDS){
+    const definition=DISASTERS[kind];
+    const frames=atlasFrames(definition.atlas??'disasters');
+    for(const frame of definition.frames) assert.ok(frames[frame],`${kind} frame ${frame} exists in ${definition.atlas??'disasters'}`);
+  }
   for(const frame of ['fire-0','flood-0','drought-0','hail-0','insects-0','scaffold-0','bell-0']){
     assert.ok(atlasFrames('disasters')[frame],`${frame} exists so its width is meaningful`);
   }

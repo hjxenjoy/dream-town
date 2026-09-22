@@ -68,6 +68,8 @@ const CATALOG_BY_KIND: Partial<Record<BuildingKind, GeneratedAtlas>> = {
   vineyard: 'industry2', winery: 'industry2', cellar: 'industry2',
   // The chapel, from its own single-sprite atlas.
   chapel: 'chapel',
+  // Defence: barracks and guardpost are whole buildings; wall tiles are picked per neighbour.
+  barracks: 'defense-expansion', guardpost: 'defense-expansion',
 };
 
 const FRAME_BY_KIND: Partial<Record<BuildingKind, string>> = {
@@ -77,6 +79,7 @@ const FRAME_BY_KIND: Partial<Record<BuildingKind, string>> = {
   flowercart: 'spring-flower-cart', picniccorner: 'spring-picnic', harvestpile: 'autumn-harvest',
   cowbarn: 'cow-barn', dairy: 'dairy', apiary: 'apiary',
   vineyard: 'vineyard', winery: 'winery', cellar: 'wine-cellar',
+  barracks: 'barracks', guardpost: 'guard-post',
 };
 
 /** Which generated atlas draws this building, and which frame inside it. */
