@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, GAME_DAY_SECONDS, RESOURCE_KEYS, TECHNOLOGY_KEYS, type BuildingKind } from '../src/sim/data.ts';
 import { BUY_IN_PRICE, DISASTER_INTERVAL, MAX_DAMAGED_SHARE, MIN_DISASTER_POPULATION, REPAIR_SECONDS, damageCeiling, disasterOf, strikeInterval } from '../src/sim/disasters.ts';
+import { populate } from './population.ts';
 
 /** A town with everything unlocked, materials in hand and no automation. */
 function prepared() {
@@ -90,7 +91,7 @@ test('hazards slow down as damage piles up, and are unchanged on a healthy town'
 test('nothing strikes a town too small to come back from it', () => {
   const w = prepared();
   w.state.settings.disasters = true;
-  w.state.population = MIN_DISASTER_POPULATION - 1;
+  populate(w, MIN_DISASTER_POPULATION - 1);
   w.state.happiness = 90;
   w.state.lastDisasterAt = 0;
   // No food in the larder, so the town cannot grow back over the threshold mid-test.
@@ -131,7 +132,7 @@ test('a small town spends its few workers on food before anything else', () => {
   // A town whose handful of residents all staff a bakery that cannot bake leaves the fishery
   // empty, so it makes no food, so it never grows back. Water is a fair proxy for population.
   const w = prepared();
-  w.state.population = 3;
+  populate(w, 3);
   w.state.resources.fish = 0; w.state.resources.bread = 0;
   w.state.buildings = w.state.buildings.filter(building => ['fishery', 'bakery', 'windmill', 'smithy', 'quarry', 'lumber'].includes(building.kind));
   assert.ok(w.state.buildings.length >= 4, 'there are several workshops to choose between');
@@ -144,7 +145,7 @@ test('a small town spends its few workers on food before anything else', () => {
 
 test('a town that is eating keeps its own order, so a player\'s industry is not raided for hands', () => {
   const w = prepared();
-  w.state.population = 3;
+  populate(w, 3);
   w.state.resources.fish = 200; w.state.resources.bread = 200;
   w.state.buildings = w.state.buildings.filter(building => ['fishery', 'winery', 'cellar'].includes(building.kind));
   const before = w.state.buildings.map(building => building.workers ?? 0).join(',');
@@ -159,17 +160,17 @@ test('labour freed up is not permanently lost to a workshop that once had none',
   const w = prepared();
   const shed = w.state.buildings.find(building => building.kind === 'lumber')!;
   assert.ok(shed);
-  w.state.population = 0;
+  populate(w, 0);
   w.tick(GAME_DAY_SECONDS + 1);
   assert.equal(shed.workers, 0, 'nobody to spare, so the yard is empty');
-  w.state.population = 12;
+  populate(w, 12);
   w.tick(GAME_DAY_SECONDS + 1);
   assert.ok((shed.workers ?? 0) > 0, 'when people arrive the yard is staffed again');
 });
 
 test('a workshop the player pins keeps the number they chose', () => {
   const w = prepared();
-  w.state.population = 20;
+  populate(w, 20);
   const smithy = w.state.buildings.find(building => building.kind === 'smithy');
   if (smithy) {
     assert.equal(w.adjustWorkforce(smithy.id, 0).ok, true);

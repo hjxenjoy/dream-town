@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, emptyResources, type BuildingKind } from '../src/sim/data.ts';
 import { generatedSprite, atlasFrames } from '../src/sim/atlases.ts';
-import { residentRoster } from '../src/sim/residents.ts';
+import { residentRecords } from '../src/sim/residents.ts';
+import { populate } from './population.ts';
 
 const kinds:BuildingKind[]=['flowernursery','orchardhouse','chickencoop','jamkitchen','teahouse','homestead'];
 function town(){
   const w=new SimWorld();w.state.coins=100000;w.state.capacity=10000;
-  w.state.population=60;w.state.settings.disasters=false;
+  populate(w, 60);w.state.settings.disasters=false;
   w.state.resources={...emptyResources(),wood:300,stone:300,feed:100,bread:500,fish:500};
   kinds.forEach((kind,i)=>assert.equal(w.build(kind,40,i+22).ok,true,kind));
   return w;
@@ -48,5 +49,5 @@ test('farmstead is housing for residents and tea house adds community capacity',
   const w=town(),home=w.state.buildings.find(b=>b.kind==='homestead')!;
   assert.ok(BUILDINGS.teahouse.populationCap!>0);
   assert.ok(w.housingCapacity()>=BUILDINGS.homestead.housing!);
-  assert.ok(residentRoster([home],2).every(r=>r.homeId===home.id));
+  assert.ok(residentRecords([{ id: 'c1', homeId: home.id, workId: null, since: 0 }, { id: 'c2', homeId: null, workId: null, since: 0 }], [home]).every(r=>r.homeId===home.id));
 });

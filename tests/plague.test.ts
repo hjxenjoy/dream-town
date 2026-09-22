@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { SimWorld, validateSave, migrateSave } from '../src/sim/world.ts';
 import { PLAGUE_DAYS, PLAGUE_HAPPINESS, PLAGUE_MIN_SHARE, plagueDue, plagueDuration, plagueHappinessCost, plagueSpoilage } from '../src/sim/plague.ts';
 import { GAME_DAY_SECONDS, TECHNOLOGY_KEYS, emptyResources } from '../src/sim/data.ts';
+import { populate } from './population.ts';
 
 /** A town with the plague clock wound to the moment before an outbreak, and no automation. */
 function aboutToBeIll() {
@@ -76,7 +77,7 @@ test('a plague never strikes a town too small to absorb it, and never overlaps i
   // And the world honours it: a town under the threshold, overdue for an outbreak, stays well.
   const world = new SimWorld();
   world.state.settings.disasters = true;
-  world.state.population = 4;
+  populate(world, 4);
   world.state.lastPlagueAt = 0;
   world.state.gameTime = 1e6;
   world.tick(1);

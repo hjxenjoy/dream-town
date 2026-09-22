@@ -4,6 +4,7 @@ import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, EXPANSION_SPRITES, RESOURCE_KEYS, SEASON_SECONDS, TECHNOLOGY_KEYS, emptyResources, type BuildingKind } from '../src/sim/data.ts';
 import { DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, REPAIR_SECONDS } from '../src/sim/disasters.ts';
 import { executeGameTool } from '../src/sim/tools.ts';
+import { populate } from './population.ts';
 
 function prepared(){
   const w=new SimWorld();w.state.coins=100000;w.state.capacity=10000;
@@ -31,13 +32,13 @@ test('all twelve additions build, upgrade twice, relocate and round-trip without
 });
 
 test('new housing and civic capacity are independent, stack by level and protect occupied communities',()=>{
-  const w=prepared();w.state.population=18;
+  const w=prepared();populate(w, 18);
   const home=add(w,'apartment');assert.equal(w.housingCapacity(),36);
   assert.equal(w.observe().populationCapacity,18);
   const school=add(w,'school',39,40);assert.equal(w.communityCapacity(),30);
   assert.equal(w.observe().populationCapacity,30);
   assert.equal(w.upgrade(school.id).ok,true);assert.equal(w.observe().populationCapacity,36);
-  w.state.population=31;
+  populate(w, 31);
   let before=JSON.stringify(w.state);assert.equal(w.demolish(school.id).code,'COMMUNITY_REQUIRED');assert.equal(JSON.stringify(w.state),before);
   before=JSON.stringify(w.state);assert.equal(w.demolish(home.id).code,'HOUSING_REQUIRED');assert.equal(JSON.stringify(w.state),before);
   add(w,'clinic',40,40);add(w,'theatre',41,40);
@@ -47,7 +48,7 @@ test('new housing and civic capacity are independent, stack by level and protect
 });
 
 test('a healthy well-supplied town can grow beyond thirty residents',()=>{
-  const w=prepared();w.state.population=30;w.state.happiness=100;w.state.taxRate=0;
+  const w=prepared();populate(w, 30);w.state.happiness=100;w.state.taxRate=0;
   add(w,'apartment');add(w,'school',39,40);add(w,'watertower',40,40);
   w.state.buildings.find(b=>b.kind==='townhall')!.level=3;
   w.tick(90);assert.equal(w.state.population,31);assert.ok(w.observe().populationCapacity>30);

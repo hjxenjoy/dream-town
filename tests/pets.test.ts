@@ -6,12 +6,13 @@ import { emptyResources, type Resource } from '../src/sim/data.ts';
 import { PETS, PET_KINDS, petCapacity, type PetState } from '../src/sim/pets.ts';
 import { TownCrowd } from '../src/sim/crowd.ts';
 import { terrainAt } from '../src/sim/terrain.ts';
+import { populate } from './population.ts';
 
 function prepared(population = 12){
   const w=new SimWorld();w.state.coins=100000;w.state.capacity=10000;
   w.state.resources={...emptyResources(),materials:50};
   w.state.settings.disasters=false;w.state.settings.autoMayor=false;
-  w.state.population=population;
+  populate(w,population);w.tick(0.1);
   return w;
 }
 
@@ -43,7 +44,7 @@ test('the pet limit scales with population and is enforced with a reason',()=>{
   assert.equal(refused.ok,false);
   assert.ok(refused.message.length>0,'the refusal explains itself');
   // A bigger town can take in more.
-  w.state.population=18;
+  populate(w, 18);
   assert.equal(w.petLimit(),3);
   assert.equal(w.adoptPet('dog').ok,true,'a larger town has room');
 });

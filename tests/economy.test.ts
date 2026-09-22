@@ -5,6 +5,7 @@ import { BUILDINGS, BULK_ORDER_MIN, BULK_ORDER_RATIO, FOCUS_RECIPES, BULK_ORDER_
 import { DESTINATIONS } from '../src/sim/destinations.ts';
 import { executeGameTool } from '../src/sim/tools.ts';
 import { cycleOf } from './support.ts';
+import { populate } from './population.ts';
 
 function isolated(kind: BuildingKind) {
   const world = new SimWorld();
@@ -76,7 +77,7 @@ test('kilns protect construction timber online and offline, kitchens can still b
   world.tick(cycleOf(world,kiln) + 30); assert.equal(kiln.progress,.5);
   world.offline(100); assert.equal(world.state.resources.wood,world.woodReserve());
   const bakery=world.state.buildings.find(b=>b.kind==='bakery')!;
-  bakery.workers=2; world.tick(cycleOf(world,bakery));
+  bakery.staffing=2; bakery.workers=2; world.tick(cycleOf(world,bakery));
   assert.equal(bakery.ready,true); assert.equal(world.state.resources.sugar,5,'the bakery spends sugar, not timber');
 });
 
@@ -140,7 +141,7 @@ test('extended manual harvest play retains food and timber with ten warehouses',
 function caredTown() {
   const w = new SimWorld();
   w.state.settings.disasters = false; w.state.settings.autoMayor = false;
-  w.state.population = 12;
+  populate(w, 12);
   // A middle tax rate, so the town sits well below the ceiling and the whole care bonus
   // is visible instead of being cut off by the clamp at 100%.
   w.state.taxRate = 2;
@@ -403,7 +404,7 @@ function raise(w: SimWorld, kind: BuildingKind) {
 function commissioned() {
   const w = new SimWorld();
   w.state.settings.disasters = false; w.state.settings.autoMayor = false;
-  w.state.coins = 100000; w.state.capacity = 20000; w.state.level = 8; w.state.population = 24;
+  w.state.coins = 100000; w.state.capacity = 20000; w.state.level = 8; populate(w, 24);
   w.state.resources = { ...emptyResources(), wood: 400, stone: 300, plank: 200, bread: 60, fish: 60, wheat: 300, flour: 200, materials: 60 };
   for (const technology of ['tailoring', 'husbandry'] as const) if (!w.state.researched.includes(technology)) w.state.researched.push(technology);
   // Bread and fish come from the opening village; a third finished good that residents do not
@@ -525,7 +526,7 @@ test('a town that holds no surplus of three finished goods gets no commission', 
   const bare = () => {
     const w = new SimWorld();
     w.state.settings.disasters = false; w.state.settings.autoMayor = false;
-    w.state.coins = 100000; w.state.capacity = 20000; w.state.level = 8; w.state.population = 24;
+    w.state.coins = 100000; w.state.capacity = 20000; w.state.level = 8; populate(w, 24);
     w.state.resources = { ...emptyResources(), wood: 400, stone: 300, bread: 200, fish: 200, wheat: 300, flour: 200 };
     return w;
   };
@@ -574,7 +575,7 @@ test('a commission never asks for more of a good than the barn can hold', () => 
   const small = () => {
     const w = new SimWorld();
     w.state.settings.disasters = false; w.state.settings.autoMayor = false;
-    w.state.capacity = 400; w.state.level = 8; w.state.population = 30; w.state.coins = 1_000_000;
+    w.state.capacity = 400; w.state.level = 8; populate(w, 30); w.state.coins = 1_000_000;
     w.state.researched = ['husbandry', 'tailoring', 'metallurgy', 'mining', 'viniculture'];
     w.state.resources = { ...emptyResources(), wood: 600, stone: 400, materials: 60 };
     for (const kind of ['feedmill', 'cowbarn', 'dairy', 'apiary', 'pasture', 'weaver', 'tailor'] as BuildingKind[]) raise(w, kind);

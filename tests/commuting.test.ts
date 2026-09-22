@@ -4,11 +4,12 @@ import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { TownCrowd, type Walker } from '../src/sim/crowd.ts';
 import { BUILDINGS } from '../src/sim/data.ts';
 import { DAY_LENGTH, DAY_START_HOUR, PARTS, WORK_END, WORK_START, clockLabel, dayOf, gameTimeAtHour, hourOf, isWorkHour, partOfDay, secondsUntilNextPart } from '../src/sim/clock.ts';
+import { populate } from './population.ts';
 
 /** A town with homes and workshops, so commuting has somewhere to happen. */
 function town(population=24){
   const w=new SimWorld();
-  w.state.population=population;
+  populate(w,population);w.tick(0.1);
   w.state.capacity=20000;
   w.state.resources.wood=800;w.state.resources.stone=800;
   w.state.settings.disasters=false;w.state.settings.autoMayor=false;

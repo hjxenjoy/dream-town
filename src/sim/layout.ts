@@ -275,3 +275,52 @@ function haulFrom(navigation: TownNavigation, sources: readonly Placed[], target
   }
   return Infinity;
 }
+
+/**
+ * Walking distance from EVERY home to every workplace, one sweep per home.
+ *
+ * The nearest-home reading above is enough for "is this workshop near the homes", but a resident
+ * walks from their OWN house, and once the walk costs time (see `commuteShare`) that difference is
+ * the whole point: a workshop whose actual workers live across town should pay for it, even if a
+ * cottage happens to stand next door.
+ *
+ * One sweep per home, each capped at `reach`, so the cost is per house rather than per pair. A
+ * dense town has tens of homes, and this is cached against the layout like every other sweep here.
+ */
+export function commuteByHome(buildings: readonly Placed[], roads: readonly Road[] = [], reach = COMMUTE_REACH): Map<string, Map<string, number>> {
+  const navigation = new TownNavigation([...buildings], [...roads]);
+  const homes = buildings.filter(building => BUILDINGS[building.kind].housing);
+  const workplaces = buildings
+    .filter(building => BUILDINGS[building.kind].workers)
+    .map(building => ({ id: building.id, tiles: [tileKey(building), ...navigation.entrances(building).map(tileKey)] }));
+  const byHome = new Map<string, Map<string, number>>();
+  if (!homes.length) return byHome;
+
+  for (const home of homes) {
+    const reached = new Map<string, number>();
+    const seen = new Set<string>();
+    let frontier: Tile[] = [];
+    for (const door of navigation.entrances(home)) {
+      const key = tileKey(door);
+      if (seen.has(key)) continue;
+      seen.add(key); frontier.push(door);
+    }
+    let steps = 0;
+    while (frontier.length && steps <= reach) {
+      steps++;
+      for (const workplace of workplaces) {
+        if (reached.has(workplace.id)) continue;
+        if (workplace.tiles.some(key => seen.has(key))) reached.set(workplace.id, steps);
+      }
+      const next: Tile[] = [];
+      for (const tile of frontier) for (const neighbour of navigation.entrances(tile)) {
+        const key = tileKey(neighbour);
+        if (seen.has(key)) continue;
+        seen.add(key); next.push(neighbour);
+      }
+      frontier = next;
+    }
+    byHome.set(home.id, reached);
+  }
+  return byHome;
+}

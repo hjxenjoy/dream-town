@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { SimWorld, validateSave, createInitialState, type Building } from '../src/sim/world.ts';
 import { BUILDINGS, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, emptyResources, type BuildingKind } from '../src/sim/data.ts';
 import { disasterOf } from '../src/sim/disasters.ts';
+import { populate } from './population.ts';
 
 /** Places a building on the first tile the rules accept. */
 function raise(w: SimWorld, kind: BuildingKind): Building {
@@ -20,7 +21,7 @@ function raise(w: SimWorld, kind: BuildingKind): Building {
 function town() {
   const w = new SimWorld();
   w.state.settings.disasters = false; w.state.settings.autoMayor = false;
-  w.state.coins = 500000; w.state.capacity = 20000; w.state.population = 24;
+  w.state.coins = 500000; w.state.capacity = 20000; populate(w, 24);
   w.state.resources = { ...emptyResources(), wood: 600, stone: 600, materials: 120, fish: 300, bread: 300, wheat: 200 };
   return w;
 }
@@ -62,7 +63,7 @@ test('faith and health are measured in residents served, and a damaged building 
   assert.equal(w.observe().needs.health, 0, 'nor does a damaged clinic');
 
   chapel.damaged = false; clinic.damaged = false;
-  w.state.population = 6;
+  populate(w, 6);
   assert.equal(w.observe().needs.faith, 100, 'a small enough congregation is fully served');
   assert.equal(w.observe().needs.health, 100);
 });
@@ -166,7 +167,7 @@ test('the chapel upgrades and demolishes through the real actions, and its rooms
   // Empty the workshops, so a small population is a legitimate town rather than a save whose
   // workforce outnumbers its residents (which the validator rightly refuses).
   for (const building of w.state.buildings) { building.workers = 0; building.staffing = 0; }
-  w.state.population = 4;
+  populate(w, 4);
   const refund = { coins: w.state.coins, wood: w.state.resources.wood };
   assert.equal(w.demolish(chapel.id).ok, true);
   assert.equal(w.state.buildings.some(b => b.id === chapel.id), false, 'the chapel is gone');
@@ -192,7 +193,7 @@ test('the offline report honours the same mood as the online town', () => {
   const town = (care: boolean) => {
     const w = new SimWorld();
     w.state.settings.disasters = false; w.state.settings.autoMayor = false;
-    w.state.coins = 500000; w.state.capacity = 5000; w.state.population = 24; w.state.taxRate = 4;
+    w.state.coins = 500000; w.state.capacity = 5000; populate(w, 24); w.state.taxRate = 4;
     w.state.resources = { ...emptyResources(), fish: 400, bread: 400, wood: 200, stone: 200, materials: 60 };
     if (care) for (const kind of ['chapel', 'clinic', 'clinic', 'clinic'] as BuildingKind[]) raise(w, kind);
     return w;

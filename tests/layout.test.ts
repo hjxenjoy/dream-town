@@ -4,6 +4,7 @@ import { SimWorld, validateSave, type Building } from '../src/sim/world.ts';
 import { BUILDINGS, emptyResources, type BuildingKind } from '../src/sim/data.ts';
 import { LOCAL_SUPPLY_FACTOR, LOCAL_SUPPLY_RANGE, supplyFactor, supplyHauls, supplyStrength } from '../src/sim/layout.ts';
 import { projectMetrics } from '../src/sim/projects.ts';
+import { populate } from './population.ts';
 
 const KINDS: BuildingKind[] = ['windmill', 'feedmill', 'pasture', 'weaver', 'tailor', 'smelter', 'smithy', 'kiln', 'mine', 'bakery', 'farm'];
 
@@ -11,7 +12,7 @@ const KINDS: BuildingKind[] = ['windmill', 'feedmill', 'pasture', 'weaver', 'tai
 function roomy() {
   const w = new SimWorld();
   w.state.settings.disasters = false; w.state.settings.autoMayor = false;
-  w.state.population = 40; w.state.capacity = 100000; w.state.coins = 1_000_000;
+  populate(w, 40); w.state.capacity = 100000; w.state.coins = 1_000_000;
   w.state.buildings = []; w.state.roads = [];
   w.state.resources = { ...emptyResources(), wood: 5000, stone: 5000, ore: 5000, charcoal: 5000, wheat: 5000, wool: 5000, cloth: 5000, feed: 5000, milk: 5000, materials: 5000 };
   for (const kind of KINDS) {

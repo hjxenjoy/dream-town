@@ -7,7 +7,7 @@ import { REGIONS, REGION_IDS, regionAt, validRegions, type RegionId } from './re
 import { CROPS, CROP_IDS, freshFarming, validFarming, gardenLevel, soilLevel, harvestQuote, type CropId, type CropHarvest, type FarmingState } from './farming.ts';
 import { PROJECT_IDS, PROJECTS, freshProjects, validProjects, projectMetrics, hasProjectTitle, type ProjectId, type ProjectState } from './projects.ts';
 import { stockTargets, woodReserve } from './economy.ts';
-import { FREIGHT_REACH, LOCAL_SUPPLY_RANGE, commuteDistances, commuteFactor, commuteShare, freightFactor, freightShare, supplyFactor, supplyHauls } from './layout.ts';
+import { COMMUTE_REACH, FREIGHT_REACH, LOCAL_SUPPLY_RANGE, commuteByHome, commuteDistances, commuteFactor, commuteShare, freightFactor, freightShare, supplyFactor, supplyHauls } from './layout.ts';
 import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type RoadKind, type Tile } from './roads.ts';
 import { TownNavigation } from './navigation.ts';
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
@@ -19,11 +19,12 @@ import { plagueDue, plagueDuration, plagueHappinessCost, plagueSpoilage, type Pl
 import { PETS, PET_KINDS, adoptionIssue, petCapacity, type PetKind, type PetState } from './pets.ts';
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS, achievementById, achievementProgress, unlockedBy, type AchievementId, type AchievementMetric, type AchievementMetrics } from './achievements.ts';
 import { noise } from './noise.ts';
+import { commuteOfWorkplace, homeCounts, newbornCitizen, rosterFromPopulation, settleCitizens, validCitizens, workCounts, type Citizen } from './citizens.ts';
 import { DESTINATION_IDS, GUARD_SHARES, MAX_GUARD_COVER, availableDestinations, caravanDuration, caravanSlots, destinationOf, missingCargo, raidChance, tripRaided, type DestinationId } from './destinations.ts';
 import { COLLECTIONS, COLLECTION_IDS, collectionEnvironment, collectionProgress, newlyReached, ornamentRequirement, type CollectionId } from './collections.ts';
 import { HONOURS, HONOUR_TRACK_IDS, honourCapacity, honourCommunity, honourCycleFactor, honourLevel, honourLevelsTaken, honourSummary, nextHonourLevel, type HonourTrackId } from './honours.ts';
 import { STORY_PORTRAITS, STORY_STAGES, nextStoryStage, storyChoiceIds, storyEffect, storyEnvironment, storyHistory, type StoryProgress } from './stories.ts';
-import { residentRoster } from './residents.ts';
+import { residentRecords } from './residents.ts';
 import { DAY_START_HOUR, clockLabel, dayOf, gameTimeAtHour, partOfDay, PARTS, secondsUntilNextPart } from './clock.ts';
 export type { BuildingKind, Resource, ResourceMap } from './data.ts';
 
@@ -47,6 +48,8 @@ export interface Building {
    * labour on its own; this pins a workshop so the allocation cannot take its people back.
    */
   staffing?: number;
+  /** How many citizens actually live here, written from the roster. */
+  residents?: number;
   crop?: CropId;
   nextCrop?: CropId;
   animalAge?: number;
@@ -139,6 +142,13 @@ export interface SimState {
   /** Every cart the market can run, whether idle, travelling or waiting to be unloaded. */
   caravans: Caravan[];
   quests: Quest[];
+  /**
+   * The residents, one at a time (docs/07 §2). Authoritative: `population` is kept equal to the
+   * roster's length, a workshop's hands are the citizens assigned to it, and the walk to work is
+   * the walk THEIR house makes. Absent on saves written before the town kept a roster, and filled
+   * in on load from the population that save reports.
+   */
+  citizens?: Citizen[];
   season: keyof typeof import('./data.ts').SEASON_NAMES;
   needs: { food: number; water: number; services: number; environment: number; comfort: number; leisure: number; faith: number; health: number };
   settings: { sound: boolean; disasters: boolean; autoMayor: boolean; reducedMotion?: boolean };
@@ -334,6 +344,13 @@ export function validateSave(value: unknown): value is SimState {
   if (value.regions !== undefined && !validRegions(value.regions)) return false;
   if (value.farming !== undefined && !validFarming(value.farming)) return false;
   if (value.projects !== undefined && !validProjects(value.projects)) return false;
+  // The roster is the authority on how many residents there are, so the two must agree. A save
+  // that disagrees is corrupted rather than merely old — an old one is given a roster on load.
+  const citizens = value.citizens as Citizen[] | undefined;
+  if (citizens !== undefined) {
+    if (!validCitizens(citizens, value.buildings as Building[])) return false;
+    if (citizens.length !== value.population) return false;
+  }
   if (value.weekly !== undefined && !validWeekly(value.weekly)) return false;
   if (!Array.isArray(value.researched) || value.researched.some(id => !TECHNOLOGY_KEYS.includes(id)) || new Set(value.researched).size !== value.researched.length) return false;
   const researched = value.researched as TechnologyId[];
@@ -382,6 +399,9 @@ export function validateSave(value: unknown): value is SimState {
     if (technology && !researched.includes(technology)) return false;
     const maximumWorkers = BUILDINGS[building.kind as BuildingKind].workers ?? 0;
     if (building.staffing !== undefined && (!whole(building.staffing) || building.staffing < 0 || building.staffing > maximumWorkers)) return false;
+    // How many residents a house shelters, as the roster recorded it. Bounded by the house's own
+    // beds, so a corrupted save cannot claim more people than the building holds.
+    if (building.residents !== undefined && (!whole(building.residents) || building.residents < 0 || building.residents > (BUILDINGS[building.kind as BuildingKind].housing ?? 0) * building.level)) return false;
     if (building.workers !== undefined && (!whole(building.workers) || building.workers > maximumWorkers)) return false;
     assignedWorkers += Number(building.workers ?? maximumWorkers);
     const position = `${building.x},${building.y}`;
@@ -493,6 +513,11 @@ export class SimWorld {
     const restored = state === undefined ? createInitialState() : migrateSave(state);
     if (!restored) throw new Error('存档格式无效，原存档未被修改。');
     this.state = restored;
+    // Every constructed world has a roster, whether it was just founded or loaded from a save
+    // written before the town kept one. Doing it here rather than in the migration is deliberate:
+    // a save missing an optional field validates as it stands, so `migrateSave` never reaches a
+    // topping-up branch — the guarantee has to live where every path passes through.
+    this.state.citizens ??= rosterFromPopulation(this.state.population);
     this.state.regions ??= [];
     for(const tile of [...this.state.buildings,...(this.state.roads??[])]){
       const region=regionAt(tile.x,tile.y);
@@ -645,6 +670,7 @@ export class SimWorld {
   private syncProgress(): void {
     this.syncQuests();
     this.syncAchievements();
+    this.syncCitizens();
     this.syncWeekly();
     this.syncCollections();
   }
@@ -688,7 +714,7 @@ export class SimWorld {
    * real buildings, so a story only opens once the place it is about actually stands.
    */
   private storyContext(portrait: string) {
-    const record = residentRoster(this.state.buildings, this.state.population)
+    const record = residentRecords(this.state.citizens ?? [], this.state.buildings)
       .find(entry => entry.portrait === portrait);
     return {
       record,
@@ -704,7 +730,7 @@ export class SimWorld {
   /** Every neighbour's story state, for the panel and the tools. */
   neighbourStories() {
     const progress = this.state.stories ?? {};
-    return residentRoster(this.state.buildings, this.state.population).map(record => {
+    return residentRecords(this.state.citizens ?? [], this.state.buildings).map(record => {
       const { context } = this.storyContext(record.portrait);
       const pending = nextStoryStage(record.portrait, progress, context);
       return {
@@ -721,7 +747,7 @@ export class SimWorld {
    * anything is recorded, so a refusal leaves the save exactly as it was.
    */
   chooseStoryOption(portrait: string, choiceId: string): ActionResult {
-    const record = residentRoster(this.state.buildings, this.state.population)
+    const record = residentRecords(this.state.citizens ?? [], this.state.buildings)
       .find(entry => entry.portrait === portrait);
     if (!record) return this.fail('还没有这位邻居的消息。', 'UNKNOWN_NEIGHBOUR');
     const progress = this.state.stories ?? (this.state.stories = {});
@@ -1466,6 +1492,44 @@ export class SimWorld {
   }
   private assignedWorkers(): number { return this.state.buildings.reduce((total, building) => total + (building.workers ?? BUILDINGS[building.kind].workers ?? 0), 0); }
   /**
+   * Keeps the roster, the population, the houses and the hands in agreement.
+   *
+   * This is the one place citizens are settled, so nothing else has to know how a resident is
+   * placed. `reconcileWorkforce` decides HOW MANY hands each workshop gets, in the town's own
+   * order of what it cannot do without; this decides WHICH citizen fills each of those slots, and
+   * then writes `building.workers` back from that assignment — so the roster is what the workshop
+   * is actually staffed by, rather than a number beside it.
+   */
+  /** The named neighbours as the roster holds them, for the panel and the stories. */
+  private residentRecords() { return residentRecords(this.state.citizens ?? [], this.state.buildings); }
+
+  private syncCitizens(): void {
+    const s = this.state;
+    if (!s.citizens) s.citizens = rosterFromPopulation(s.population);
+    // The count follows the roster, not the other way round.
+    if (s.citizens.length !== s.population) s.population = s.citizens.length;
+    this.reconcileWorkforce();
+    const counts = new Map<string, number>();
+    for (const building of s.buildings) {
+      const maximum = BUILDINGS[building.kind].workers ?? 0;
+      if (maximum) counts.set(building.id, Math.min(building.workers ?? 0, maximum));
+    }
+    const settled = settleCitizens(s.citizens, s.buildings, counts);
+    s.citizens = settled.citizens;
+    const worked = workCounts(s.citizens);
+    for (const building of s.buildings) {
+      if (BUILDINGS[building.kind].workers) building.workers = worked.get(building.id) ?? 0;
+    }
+    // A resident only ever stands in a house the town still has, so the roster cannot outgrow the
+    // beds; if it did, the surplus would be homeless rather than housed in a ruin.
+    const homed = homeCounts(s.citizens);
+    for (const building of s.buildings) {
+      if (BUILDINGS[building.kind].housing) building.residents = homed.get(building.id) ?? 0;
+    }
+  }
+  /** How many residents each house shelters, for the panel. */
+  residentCounts(): Map<string, number> { return homeCounts(this.state.citizens ?? []); }
+  /**
    * Hands out the town's workers when there are fewer of them than there are jobs. Jobs are
    * filled in order of what the town cannot do without: first the workshops that put food on
    * the table, then the ones that supply building materials, and only then everything else.
@@ -1483,6 +1547,9 @@ export class SimWorld {
       // keeping the old number makes starvation permanent, because a workshop trimmed to zero
       // while the town was short would stay at zero for good, even with people to spare. A
       // workshop the player has pinned keeps the number they chose.
+      // `staffing` is the player's own pin, set by `adjustWorkforce`; a building the player has
+      // not pinned takes its whole complement. `workers` is therefore DERIVED — the roster writes
+      // the final number back — so anything wanting to hold hands in a building must pin it.
       building.workers = Math.min(building.staffing ?? maximum, Math.max(0, available));
       available -= building.workers;
     }
@@ -1761,7 +1828,7 @@ export class SimWorld {
    * is far too much work, so the result is cached against the town's layout: buildings and roads
    * are the only things that can change a haul, and moving one rebuilds the cache on next use.
    */
-  private supplyHaulCache?: { signature: string; hauls: Map<string, number>; commute: Map<string, number> };
+  private supplyHaulCache?: { signature: string; hauls: Map<string, number>; commute: Map<string, number>; byHome: Map<string, Map<string, number>> };
   private supplyHauls(): Map<string, number> {
     const roads = this.state.roads ?? [];
     // The crop is part of the identity: a field switched from wheat to apples stops supplying
@@ -1769,7 +1836,7 @@ export class SimWorld {
     const signature = this.state.buildings.map(building => `${building.id}:${building.kind}:${building.x},${building.y}:${building.damaged ? 'broken' : 'well'}:${building.crop ?? ''}`).join('|')
       + ';' + roads.map(tileKey).join('|');
     if (this.supplyHaulCache?.signature !== signature) {
-      this.supplyHaulCache = { signature, hauls: supplyHauls(this.state.buildings, roads, FREIGHT_REACH), commute: commuteDistances(this.state.buildings, roads) };
+      this.supplyHaulCache = { signature, hauls: supplyHauls(this.state.buildings, roads, FREIGHT_REACH), commute: commuteDistances(this.state.buildings, roads), byHome: commuteByHome(this.state.buildings, roads) };
     }
     return this.supplyHaulCache.hauls;
   }
@@ -1777,10 +1844,20 @@ export class SimWorld {
   private haulOf(building: Building, hauls: Map<string, number>): number {
     return hauls.get(building.id) ?? Infinity;
   }
-  /** How far this workshop's workers walk to reach it, or Infinity when no home reaches it. */
+  /**
+   * How far this workshop's workers walk to reach it: the average of their own homes' walks.
+   *
+   * Falls back to the nearest-home reading when nobody is assigned yet — the town's first ticks,
+   * and any workshop the roster has not reached — so a workshop is never charged for a journey
+   * nobody makes, and never looks free while it is being walked to.
+   */
   private commuteOf(building: Building): number {
     this.supplyHauls();
-    return this.supplyHaulCache?.commute.get(building.id) ?? Infinity;
+    const citizens = this.state.citizens;
+    if (!citizens?.length) return this.supplyHaulCache?.commute.get(building.id) ?? Infinity;
+    const assigned = citizens.some(citizen => citizen.workId === building.id);
+    if (!assigned) return this.supplyHaulCache?.commute.get(building.id) ?? Infinity;
+    return commuteOfWorkplace(citizens, building.id, this.supplyHaulCache!.byHome, COMMUTE_REACH);
   }
   /** The journeys a building's batch pays for, for the interface to state. */
   freightAt(building: Building): { haul: number; commute: number; carry: number; walk: number } {
@@ -2026,10 +2103,16 @@ export class SimWorld {
     if (demand > 0) { this.state.happiness = Math.max(10, this.state.happiness - 8); this.log('食物不足，居民有些担忧。收取鲜鱼或烤一些面包吧。', 'warning'); }
     const reserve = this.state.resources.fish + this.state.resources.bread;
     if (this.state.happiness >= 70 && reserve >= Math.ceil(this.state.population / 4) * 3 && this.state.population < this.populationCapacity()) {
-      this.state.population++; this.log('一位新邻居搬来了！欢迎加入小镇。', 'success');
+      this.state.citizens!.push(newbornCitizen(this.state.citizens!, this.state.gameTime));
+      this.state.population++;
+      this.log('一位新邻居搬来了！欢迎加入小镇。', 'success');
     } else if (this.state.happiness < 25 && this.state.population > 4) {
-      this.state.population--; this.log('一位居民暂时离开了，请改善食物和饮水。', 'warning');
-      this.reconcileWorkforce();
+      // The one who leaves is whoever arrived last, so the named neighbours and the people the
+      // town has known longest are the last to go.
+      this.state.citizens!.pop();
+      this.state.population--;
+      this.log('一位居民暂时离开了，请改善食物和饮水。', 'warning');
+      this.syncCitizens();
     }
   }
 
@@ -2347,6 +2430,14 @@ export class SimWorld {
       activity: this.activityActive() ? { ...this.state.activity } : null,
       achievements: achievementProgress(this.achievementMetrics(), this.state.achievements ?? []),
       weekly: this.weeklyBoard(),
+      citizens: (this.state.citizens ?? []).map(citizen => ({
+        id: citizen.id,
+        name: citizen.name ?? null,
+        portrait: citizen.portrait ?? null,
+        homeKind: citizen.homeId ? BUILDINGS[this.state.buildings.find(b => b.id === citizen.homeId)!.kind].name : null,
+        workKind: citizen.workId ? BUILDINGS[this.state.buildings.find(b => b.id === citizen.workId)!.kind].name : null,
+        since: citizen.since,
+      })),
       collections: collectionProgress(this.state.buildings, this.state.collections ?? {}),
       honours: honourSummary(this.state.honours ?? {}).map(entry => ({
         ...entry,

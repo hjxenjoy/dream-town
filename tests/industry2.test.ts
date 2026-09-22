@@ -19,7 +19,7 @@ function prepared(){
 function add(w:SimWorld,kind:BuildingKind,x:number){
   const r=w.build(kind,x,42);assert.equal(r.ok,true,`${kind}: ${r.message}`);
   const built=w.state.buildings.find(b=>b.id===r.buildingId)!;
-  built.paused=false;built.workers=BUILDINGS[kind].workers??0;
+  built.paused=false;built.staffing=BUILDINGS[kind].workers??0;built.workers=BUILDINGS[kind].workers??0;
   return built;
 }
 

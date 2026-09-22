@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
-import { BUILDINGS, RESOURCE_KEYS } from '../src/sim/data.ts';
-import { NEIGHBOURS, residentRoster } from '../src/sim/residents.ts';
+import { BUILDINGS, RESOURCE_KEYS, TECHNOLOGY_KEYS } from '../src/sim/data.ts';
+import { NEIGHBOURS, residentRecords } from '../src/sim/residents.ts';
 import { STORIES, STORY_PORTRAITS, STORY_STAGES, neighbourNews, nextStoryStage, storyChoiceIds, storyEffect, storyEnvironment, storyHistory, storyOf } from '../src/sim/stories.ts';
+import { populate } from './population.ts';
 
 /** A town that satisfies every story requirement, so arcs can be played through. */
 function grown(){
@@ -16,7 +17,20 @@ function grown(){
   for(const key of RESOURCE_KEYS) w.state.resources[key]=4000;
   w.state.capacity=RESOURCE_KEYS.length*4000+50000;
   w.state.settings.disasters=false;w.state.settings.autoMayor=false;
-  w.state.level=8;w.state.population=40;
+  w.state.level=8;populate(w, 40);
+  // A grown town has the workshops its neighbours work at. Without them a neighbour would be
+  // idle, and since a story arc is gated on having a workplace, their arc could never be told —
+  // which is the right rule and makes this fixture the town the story tests actually mean.
+  w.state.resources={...w.state.resources,wood:900,stone:900,materials:400};
+  // The whole tree, not just the technologies the neighbours' workshops name: a save is refused
+  // when a researched technology is missing its own prerequisite, so granting them piecemeal
+  // would produce a town that cannot be validated.
+  w.state.researched=[...TECHNOLOGY_KEYS];
+  for(const neighbour of NEIGHBOURS){
+    if(w.state.buildings.some(b=>b.kind===neighbour.workplace)) continue;
+    let placed=false;
+    for(let x=6;x<56&&!placed;x++) for(let y=6;y<56&&!placed;y++) placed=w.build(neighbour.workplace,x,y).ok;
+  }
   w.tick(0.1);
   return w;
 }
@@ -273,11 +287,16 @@ test('the environment bonus from stories stays bounded and accumulates',()=>{
 
 test('the roster the panel shows is the one the town actually supports',()=>{
   const small=new SimWorld();
+  populate(small, 3); small.tick(0.1);
   const large=grown();
+  // Names appear from the first residents, up to the twelve portraits; past that the residents are
+  // simply residents, because the game's direction is few names rather than a cast of thousands.
   assert.ok(large.observe().stories.length>small.observe().stories.length,'a bigger town has more named neighbours');
-  const roster=residentRoster(large.state.buildings,large.state.population);
+  assert.equal(large.observe().stories.length,NEIGHBOURS.length,'but never more than the portraits');
+  const roster=residentRecords(large.state.citizens ?? [], large.state.buildings);
   assert.deepEqual(large.observe().stories.map(entry=>entry.portrait),roster.map(entry=>entry.portrait));
   assert.equal(large.observe().stories.length,roster.length);
+  assert.ok(large.state.citizens!.length>roster.length,'the town has unnamed residents besides the named ones');
 });
 
 test('every neighbour on a grown roster has a home and a job, so no arc is stranded',()=>{

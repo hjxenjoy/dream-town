@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createInitialState, SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, emptyResources, MAX_OFFLINE_SECONDS, RESOURCE_KEYS } from '../src/sim/data.ts';
 import { executeGameTool } from '../src/sim/tools.ts';
+import { populate } from './population.ts';
 
 function assertHealthy(world: SimWorld): void {
   assert.equal(validateSave(world.state), true, 'all simulation state must remain serializable and valid');
@@ -343,7 +344,7 @@ test('save validation rejects fractional residents, excessive staff and invalid 
   const world = new SimWorld();
   const house = world.state.buildings.find(b => b.kind === 'cottage')!;
   house.damaged = true;
-  world.state.population = 12;
+  populate(world, 12);
   assert.equal(world.demolish(house.id).ok, true);
   assert.equal(world.observe().housingCapacity, 12);
   assertHealthy(world);

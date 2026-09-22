@@ -4,12 +4,13 @@ import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, GAME_DAY_SECONDS, RESOURCE_KEYS, emptyResources, type BuildingKind } from '../src/sim/data.ts';
 import { COMMUTE_MAX_SHARE, FREIGHT_MAX_SHARE, FREIGHT_REACH, commuteDistances, commuteFactor, commuteShare, freightFactor, freightShare, supplyFactor } from '../src/sim/layout.ts';
 import { cycleOf } from './support.ts';
+import { populate } from './population.ts';
 
 /** A flat town with room to place things deliberately, and no automation in the way. */
 function roomy() {
   const world = new SimWorld();
   world.state.settings.disasters = false; world.state.settings.autoMayor = false;
-  world.state.population = 60; world.state.capacity = 100000; world.state.coins = 1_000_000;
+  populate(world, 60); world.state.capacity = 100000; world.state.coins = 1_000_000;
   world.state.buildings = []; world.state.roads = [];
   world.state.resources = { ...emptyResources(), wood: 5000, stone: 5000, ore: 5000, charcoal: 5000, wheat: 5000, milk: 5000 };
   // Every blueprint the fixtures place, so a research gate never decides what a test measures.

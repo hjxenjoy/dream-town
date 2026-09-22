@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, RESOURCE_KEYS, TECHNOLOGY_KEYS, emptyResources, type BuildingKind } from '../src/sim/data.ts';
 import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORY_NAMES, ACHIEVEMENT_IDS, achievementProgress, unlockedBy, type AchievementMetrics } from '../src/sim/achievements.ts';
+import { populate } from './population.ts';
 
 function prepared(){
   const w=new SimWorld();w.state.coins=999999;w.state.capacity=40000;
   w.state.resources={...emptyResources(),wood:900,stone:900,materials:400,wheat:900,flour:900,bread:400,fish:400,feed:900,plank:400,cloth:400,ingot:200,tools:200,clothing:200,wool:200,ore:400,charcoal:400,grape:400,wine:400,milk:400,honey:400};
   w.state.settings.disasters=false;w.state.settings.autoMayor=false;
-  w.state.population=60;
+  populate(w, 60);
   return w;
 }
 /** Every metric at zero, so a test can raise exactly the one it is about. */
@@ -154,7 +155,7 @@ test('achievements survive a save round trip and bad records are refused',()=>{
 test('achievement rewards never break resource conservation or the save boundary',()=>{
   const w=prepared();
   const before=RESOURCE_KEYS.map(key=>w.state.resources[key]);
-  w.state.stats.collected=1000;w.state.stats.ordersCompleted=30;w.state.population=60;w.state.level=10;
+  w.state.stats.collected=1000;w.state.stats.ordersCompleted=30;populate(w, 60);w.state.level=10;
   w.tick(0.1);
   for(const [index,key] of RESOURCE_KEYS.entries()){
     assert.equal(w.state.resources[key],before[index],`${key} is untouched by a reward`);

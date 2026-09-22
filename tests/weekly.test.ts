@@ -4,12 +4,13 @@ import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDING_KEYS, BUILDINGS, GAME_DAY_SECONDS, MAP_SIZE, RESOURCE_KEYS, TECHNOLOGY_KEYS, emptyResources } from '../src/sim/data.ts';
 import { ACHIEVEMENT_IDS } from '../src/sim/achievements.ts';
 import { WEEKLY_METRICS, WEEKLY_TASK_COUNT, WEEKLY_TASKS, WEEK_SECONDS, allowedTasks, validWeekly, weekBaseline, weekOf, weekRemaining, weeklyBoard, weeklyProgress, weeklyTaskByName } from '../src/sim/weekly.ts';
+import { populate } from './population.ts';
 
 /** A town a player would plausibly have mid-game: a working chain, and a player at the controls. */
 function young() {
   const world = new SimWorld();
   for (const building of world.state.buildings) building.paused = true;
-  world.state.coins = 60000; world.state.capacity = 30000; world.state.level = 10; world.state.population = 40;
+  world.state.coins = 60000; world.state.capacity = 30000; world.state.level = 10; populate(world, 40);
   world.state.researched = [...TECHNOLOGY_KEYS].slice(0, 16);
   world.state.resources = { ...emptyResources() };
   for (const key of RESOURCE_KEYS) world.state.resources[key] = 300;
@@ -58,7 +59,7 @@ function snapshot(world: SimWorld) {
 function grown() {
   const world = new SimWorld();
   for (const building of world.state.buildings) building.paused = true;
-  world.state.coins = 900000; world.state.capacity = 400000; world.state.level = 20; world.state.population = 200;
+  world.state.coins = 900000; world.state.capacity = 400000; world.state.level = 20; populate(world, 200);
   world.state.researched = [...TECHNOLOGY_KEYS];
   for (const key of RESOURCE_KEYS) world.state.resources[key] = 2000;
   world.state.settings.disasters = false; world.state.settings.autoMayor = false;

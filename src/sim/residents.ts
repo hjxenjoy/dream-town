@@ -1,5 +1,6 @@
 import { BUILDINGS, type BuildingKind } from './data.ts';
 import type { Building } from './world.ts';
+import type { Citizen } from './citizens.ts';
 
 /**
  * The named neighbours. Each has a portrait in the `story-portraits` atlas and the
@@ -43,32 +44,33 @@ export interface ResidentRecord {
   unsettled: boolean;
 }
 
-/** How many neighbours are introduced. One per two residents, capped by the portraits. */
-export function namedResidentCount(population: number): number {
-  return Math.min(NEIGHBOURS.length, Math.floor(Math.max(0, population) / 2));
-}
-
 /**
- * Builds the roster from the town's own buildings. Assignments are by stable index
- * over position-sorted buildings, so the same town always yields the same neighbours.
+ * The named neighbours' ties to the town, read from the citizen roster.
+ *
+ * These used to be derived from the population count and the standing buildings, which meant a
+ * neighbour's home and job were recomputed — and could change — whenever the town grew or gained
+ * a house. Now the roster holds them, and this only reports what it finds: a name in the story
+ * panel points at a house and a workshop that resident really has.
  */
-export function residentRoster(buildings: Building[], population: number): ResidentRecord[] {
-  const homes = buildings.filter(b => !!BUILDINGS[b.kind].housing)
-    .sort((a, b) => a.y - b.y || a.x - b.x);
-  return NEIGHBOURS.slice(0, namedResidentCount(population)).map((definition, index) => {
-    const home = homes[index % Math.max(1, homes.length)];
-    // Fall back to any workshop the town actually has, so a name never points at nothing.
-    const workplace = buildings.find(b => b.kind === definition.workplace)
-      ?? buildings.find(b => BUILDINGS[b.kind].cycle !== undefined);
-    return {
-      id: `neighbour-${definition.portrait}`,
-      name: definition.name,
-      portrait: definition.portrait,
-      homeId: home?.id ?? null,
-      workplaceId: workplace?.id ?? null,
-      unsettled: home?.damaged === true,
-    };
-  });
+export function residentRecords(
+  citizens: readonly Citizen[],
+  buildings: readonly Building[],
+): ResidentRecord[] {
+  const byId = new Map(buildings.map(building => [building.id, building]));
+  return citizens
+    .filter((citizen): citizen is Citizen & { name: string; portrait: string } => Boolean(citizen.name && citizen.portrait))
+    .map(citizen => {
+      const home = citizen.homeId ? byId.get(citizen.homeId) : undefined;
+      return {
+        id: citizen.id,
+        name: citizen.name,
+        portrait: citizen.portrait,
+        homeId: citizen.homeId,
+        workplaceId: citizen.workId,
+        // Waiting for a repair, rather than having no house at all.
+        unsettled: home?.damaged === true,
+      };
+    });
 }
 
 /** The greeting a neighbour gives, mentioning the town only when it reads naturally. */

@@ -5,9 +5,10 @@ import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { PROJECT_IDS, PROJECTS, freshProjects, projectMetrics } from '../src/sim/projects.ts';
 import { ACHIEVEMENT_IDS } from '../src/sim/achievements.ts';
 import { BUILDINGS, TECHNOLOGY_KEYS, emptyResources, type BuildingKind } from '../src/sim/data.ts';
+import { populate } from './population.ts';
 
 function established(){
-  const w=new SimWorld();w.state.buildings=[];w.state.roads=[];w.state.population=60;
+  const w=new SimWorld();w.state.buildings=[];w.state.roads=[];populate(w, 60);
   w.state.coins=100000;w.state.capacity=20000;w.state.researched=[...TECHNOLOGY_KEYS];
   w.state.settings.autoMayor=false;w.state.settings.disasters=false;
   w.state.resources={...emptyResources(),wood:3000,stone:3000,materials:500,plank:500,bread:500,fish:500,feed:100,tools:100,ingot:100,cloth:100,clothing:100};
