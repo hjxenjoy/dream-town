@@ -60,7 +60,7 @@ test('a load that has further to come holds the batch up', () => {
   const close = roomy(), far = roomy();
   const near = { w: close, mill: at(close, 'feedmill', 10, 10) };
   const distant = { w: far, mill: at(far, 'feedmill', 10, 10) };
-  at(close, 'farm', 11, 10);          // right next door
+  at(close, 'farm', 12, 10);          // right next door to the mill's yard
   at(far, 'farm', 10, 22);            // twelve tiles away
   staff(close); staff(far);
   close.state.resources.wheat = 200; far.state.resources.wheat = 200;
@@ -82,7 +82,7 @@ test('homes near the work shorten the day, and the effect is bounded', () => {
   const near = roomy(), far = roomy();
   const millA = at(near, 'windmill', 10, 10), millB = at(far, 'windmill', 10, 10);
   at(near, 'farm', 10, 12); at(far, 'farm', 10, 12);
-  at(near, 'cottage', 11, 10);     // beside the mill
+  at(near, 'cottage', 12, 10);     // beside the mill's yard
   at(far, 'cottage', 10, 26);      // sixteen tiles away
   staff(near); staff(far);
   near.state.resources.wheat = 200; far.state.resources.wheat = 200;
@@ -101,7 +101,7 @@ test('a fire never shortens the walk, even when it burns the only home', () => {
   const world = roomy();
   at(world, 'farm', 10, 12);
   const mill = at(world, 'windmill', 10, 10);
-  const home = at(world, 'cottage', 11, 10);
+  const home = at(world, 'cottage', 12, 10);
   at(world, 'lumber', 30, 30);
   staff(world);
   world.state.resources.wheat = 400;
@@ -134,7 +134,7 @@ test('the two journeys compose with the town\'s other bonuses instead of eroding
   at(world, 'farm', 10, 12);
   const mill = at(world, 'windmill', 10, 10);
   at(world, 'cottage', 12, 10);
-  at(world, 'mine', 20, 20);
+  at(world, 'mine', 18, 20);
   staff(world);
   world.state.resources.wheat = 400;
   // Only the mill runs, so the town's worker pool and morale are held still while efficiency
@@ -156,9 +156,9 @@ test('a compact town pays almost nothing, and a sprawling one pays in proportion
   // merely stands. Both towns are identical except for where the homes and fields were put.
   const compact = roomy(), sprawl = roomy();
   for (const world of [compact, sprawl]) {
-    at(world, 'farm', 10, 12); at(world, 'windmill', 10, 10); at(world, 'lumber', 20, 20);
+    at(world, 'farm', 10, 12); at(world, 'windmill', 10, 10); at(world, 'lumber', 18, 20);
   }
-  at(compact, 'cottage', 11, 11); at(compact, 'cottage', 9, 11);
+  at(compact, 'cottage', 12, 10); at(compact, 'cottage', 8, 11);
   at(sprawl, 'cottage', 34, 34); at(sprawl, 'cottage', 36, 36);
   staff(compact); staff(sprawl);
   compact.state.resources.wheat = 300; sprawl.state.resources.wheat = 300;
@@ -212,7 +212,7 @@ test('the journeys cost time, never goods', () => {
   // worker and a freed plot, not a bigger yield. A town that pays for its journeys must end up
   // with exactly the same goods as one that does not.
   const world = roomy();
-  at(world, 'farm', 10, 12); at(world, 'windmill', 10, 10); at(world, 'cottage', 11, 11);
+  at(world, 'farm', 10, 12); at(world, 'windmill', 10, 10); at(world, 'cottage', 12, 10);
   staff(world);
   world.state.resources.wheat = 60;
   for (const building of world.state.buildings) building.paused = true;

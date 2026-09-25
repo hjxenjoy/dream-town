@@ -106,6 +106,8 @@ export class GameUI {
   }
   private buildingEffects(kind:BuildingKind,level=1):string {
     const d=BUILDINGS[kind],parts:string[]=[];
+    // The ground a building claims is part of what it costs you: say it before the effects.
+    if(d.footprint>1)parts.push(`占地 ${d.footprint}×${d.footprint}`);
     if(d.housing)parts.push(`${d.housing*level} 个床位`);
     if(d.populationCap)parts.push(`社区人口 +${d.populationCap*level}`);
     if(d.health)parts.push(`康健 ${d.health*level} 位居民`);

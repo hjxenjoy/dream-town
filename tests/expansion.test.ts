@@ -21,7 +21,10 @@ function add(w:SimWorld,kind:BuildingKind,x=38,y=40){
 test('all twelve additions build, upgrade twice, relocate and round-trip without changing previous buildings',()=>{
   const w=prepared(),previous=structuredClone(w.state.buildings);
   for(const [i,kind] of EXPANSION_SPRITES.entries()){
-    const b=add(w,kind,37+i%4,40+Math.floor(i/4));
+    // Columns at40, 43 and45 keep every2×2 yard clear (the theatre at40 takes three tiles
+    // and still stops short of43); rows five apart, so a building moved down three lands in
+    // empty ground rather than on the next plot.
+    const b=add(w,kind,[40,43,45][i%3],18+5*Math.floor(i/3));
     assert.equal(w.upgrade(b.id).ok,true);assert.equal(w.upgrade(b.id).ok,true);
     assert.equal(w.upgrade(b.id).ok,false);assert.equal(b.level,3);
     assert.equal(executeGameTool(w,'move_building',{buildingId:b.id,x:b.x,y:b.y+3}).ok,true);
@@ -35,13 +38,13 @@ test('new housing and civic capacity are independent, stack by level and protect
   const w=prepared();populate(w, 18);
   const home=add(w,'apartment');assert.equal(w.housingCapacity(),36);
   assert.equal(w.observe().populationCapacity,18);
-  const school=add(w,'school',39,40);assert.equal(w.communityCapacity(),30);
+  const school=add(w,'school',41,40);assert.equal(w.communityCapacity(),30);
   assert.equal(w.observe().populationCapacity,30);
   assert.equal(w.upgrade(school.id).ok,true);assert.equal(w.observe().populationCapacity,36);
   populate(w, 31);
   let before=JSON.stringify(w.state);assert.equal(w.demolish(school.id).code,'COMMUNITY_REQUIRED');assert.equal(JSON.stringify(w.state),before);
   before=JSON.stringify(w.state);assert.equal(w.demolish(home.id).code,'HOUSING_REQUIRED');assert.equal(JSON.stringify(w.state),before);
-  add(w,'clinic',40,40);add(w,'theatre',41,40);
+  add(w,'clinic',44,40);add(w,'theatre',40,43);
   assert.equal(w.demolish(school.id).ok,true);
   home.damaged=true;assert.equal(w.housingCapacity(),18);
   home.damaged=false;assert.equal(w.housingCapacity(),36);
@@ -49,7 +52,7 @@ test('new housing and civic capacity are independent, stack by level and protect
 
 test('a healthy well-supplied town can grow beyond thirty residents',()=>{
   const w=prepared();populate(w, 30);w.state.happiness=100;w.state.taxRate=0;
-  add(w,'apartment');add(w,'school',39,40);add(w,'watertower',40,40);
+  add(w,'apartment');add(w,'school',41,40);add(w,'watertower',43,40);
   w.state.buildings.find(b=>b.kind==='townhall')!.level=3;
   w.tick(90);assert.equal(w.state.population,31);assert.ok(w.observe().populationCapacity>30);
 });

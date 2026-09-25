@@ -6,6 +6,21 @@ export const MAP_SIZE = PLAYABLE_SIZE + 2;
 export const TILE_W = 116;
 export const TILE_H = 58;
 export const iso = (x:number,y:number) => ({x:(x-y)*TILE_W/2,y:(x+y)*TILE_H/2});
+/**
+ * The tiles a footprint of `footprint` × `footprint` covers, anchored at its north-west
+ * corner. Everything that asks "is this tile free" — placement, paving, pathfinding — asks
+ * about every one of these, so a building's ground is the ground it actually stands on.
+ */
+export function footprintTiles(x:number,y:number,footprint=1):{x:number;y:number}[]{
+  const side=Math.max(1,Math.floor(footprint));
+  const tiles:{x:number;y:number}[]=[];
+  for(let dx=0;dx<side;dx++)for(let dy=0;dy<side;dy++)tiles.push({x:x+dx,y:y+dy});
+  return tiles;
+}
+/** Where a footprint sits in tile coordinates: the point its art is drawn on. */
+export const footprintCenter = (x:number,y:number,footprint=1)=>({x:x+(footprint-1)/2,y:y+(footprint-1)/2});
+/** Where a building's art is drawn: the middle of the ground it stands on. */
+export const buildingIso = (b:{x:number;y:number;footprint?:number})=>{const c=footprintCenter(b.x,b.y,b.footprint??1);return iso(c.x,c.y);};
 export const BRIDGES = [15, 33] as const;
 export type District = 'residential' | 'agriculture' | 'industry' | 'mining';
 export const DISTRICTS: Record<District,{name:string;subtitle:string;icon:string;color:string;x:number;y:number}> = {

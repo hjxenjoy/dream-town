@@ -33,7 +33,7 @@ test('every decoration rejects construction and movement onto roads without char
     const result=w.build(kind,37+i%4,40+Math.floor(i/4));assert.equal(result.ok,true);
     before=JSON.stringify(w.state);
     assert.equal(w.moveBuilding(result.buildingId!,road.x,road.y).code,'ROAD_OCCUPIED');assert.equal(JSON.stringify(w.state),before);
-    assert.equal(w.placementIssue(road.x,road.y,result.buildingId)?.code,'ROAD_OCCUPIED');
+    assert.equal(w.placementIssue(road.x,road.y,BUILDINGS[kind].footprint,result.buildingId)?.code,'ROAD_OCCUPIED');
   }
   assert.equal(validateSave(w.state),true);
 });

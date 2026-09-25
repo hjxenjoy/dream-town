@@ -13,10 +13,17 @@ function established(){
   w.state.settings.autoMayor=false;w.state.settings.disasters=false;
   w.state.resources={...emptyResources(),wood:3000,stone:3000,materials:500,plank:500,bread:500,fish:500,feed:100,tools:100,ingot:100,cloth:100,clothing:100};
   const add=(kind:BuildingKind,x:number,y:number)=>{const r=w.build(kind,x,y);assert.equal(r.ok,true,r.message);return w.state.buildings.find(b=>b.id===r.buildingId)!;};
-  for(let i=0;i<8;i++){const b=add('cottage',37+i,38);b.level=3;}
-  add('oak',38,39);add('cherry',42,39);add('watertower',40,39);add('school',37,39);add('clinic',44,39);
+  // Two rows of four cottages with the trees in the alley between them: every home anchor sits
+  // within three tiles of greenery, and the oak alone covers the left half — which is what
+  // relocating it has to take away.
+  for(const [x,y] of [[34,38],[36,38],[38,38],[40,38],[34,41],[36,41],[38,41],[40,41]] as [number,number][])add('cottage',x,y).level=3;
+  add('oak',36,40);add('cherry',40,40);add('watertower',37,43);add('school',34,43);add('clinic',40,43);
   const kinds:BuildingKind[]=['lumber','sawmill','kiln','smelter','smithy','farm','farm','farm','windmill','bakery','feedmill','pasture','weaver','tailor','fishpond','firestation'];
-  kinds.forEach((kind,i)=>add(kind,37+i%5,40+Math.floor(i/5)));
+  // The workshops stand three tiles apart — one yard, one lane, one yard — so the walk between
+  // neighbours stays short while every plot keeps its own ground. The fire station sits just
+  // below the block, close enough for its watch to cover six of the workshops.
+  kinds.forEach((kind,i)=>{if(kind!=='firestation')add(kind,[40,43,45][i%3],18+3*Math.floor(i/3));});
+  add('firestation',42,32);
   w.state.stats.caravansCompleted=20;w.state.happiness=100;
   // This fixture measures project-stage rewards exactly. Mark every achievement as already
   // earned so a milestone cannot pay prestige into the middle of an assertion.

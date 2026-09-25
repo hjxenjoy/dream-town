@@ -101,7 +101,9 @@ test('the castle only guards against bandits, not against fire or weather', () =
 test('the castle keeps the town valid through a save round trip', () => {
   const world = prepared();
   at(world, 'castle', 12, 26);
-  at(world, 'barracks', 14, 26);
+  // The castle claims three tiles from its corner, so the barracks stands clear of its yard —
+  // and clear of the north–south street at x=16.
+  at(world, 'barracks', 17, 26);
   world.state.settings.disasters = false;
   world.tick(91);
   assert.equal(validateSave(world.state), true);

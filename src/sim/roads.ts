@@ -1,4 +1,4 @@
-import { ROADS, terrainAt, PLAYABLE_SIZE } from './terrain.ts';
+import { ROADS, terrainAt, footprintTiles, PLAYABLE_SIZE } from './terrain.ts';
 export type RoadKind = 'dirt' | 'gravel' | 'stone';
 export interface Tile { x:number; y:number }
 export interface Road extends Tile { kind:RoadKind }
@@ -15,8 +15,9 @@ export function roadLine(a:Tile,b:Tile):Tile[]{
   while(y!==b.y){y+=Math.sign(b.y-y);tiles.push({x,y});}
   return tiles;
 }
-export function initialRoads(buildings:Tile[]):Road[]{
-  const occupied=new Set(buildings.map(tileKey)),tiles=new Map<string,Road>();
+export function initialRoads(buildings:readonly (Tile&{footprint?:number})[]):Road[]{
+  // Every tile a building stands on counts, so a road never runs under a house's yard.
+  const occupied=new Set(buildings.flatMap(b=>footprintTiles(b.x,b.y,b.footprint??1)).map(tileKey)),tiles=new Map<string,Road>();
   for(const [x,y,bx,by] of ROADS)for(const t of roadLine({x,y},{x:bx,y:by})){
     if(terrainAt(t.x,t.y)==='land'&&!occupied.has(tileKey(t)))tiles.set(tileKey(t),{...t,kind:'dirt'});
   }

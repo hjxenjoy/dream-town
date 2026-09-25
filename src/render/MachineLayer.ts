@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { iso } from '../sim/terrain';
+import { buildingIso } from '../sim/terrain';
 import { atlasFrames } from '../sim/atlases';
 import { frameScale } from './atlasSprite';
 import { MACHINE_PARTS, PART_WIDTH, machinePivot, partAngle, partLayout } from '../sim/machines';
@@ -36,7 +36,7 @@ export class MachineLayer {
       const part = this.parts.get(building.id) ?? this.create(building.id, attachment.frame, attachment.spin, attachment.swing);
       const frame = atlasFrames('machine-layers')[part.frame]!;
       const layout = partLayout(frame, attachment.attach);
-      const point = iso(building.x, building.y);
+      const point = buildingIso(building);
       // Both the scale and the offset come from the same layout, so the part's drawn
       // size and the size its position assumes can never disagree.
       part.image.setScale(frameScale(frame.w, PART_WIDTH));

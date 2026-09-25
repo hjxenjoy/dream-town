@@ -11,7 +11,7 @@ import { stockTargets, woodReserve } from './economy.ts';
 import { COMMUTE_REACH, FREIGHT_REACH, LOCAL_SUPPLY_RANGE, commuteByHome, commuteDistances, commuteFactor, commuteShare, freightFactor, freightShare, supplyFactor, supplyHauls } from './layout.ts';
 import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type RoadKind, type Tile } from './roads.ts';
 import { TownNavigation } from './navigation.ts';
-import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
+import { terrainAt, terrainReason, districtAt, footprintCenter, footprintTiles, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
 import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, FOCUS_RECIPES, GAME_DAY_SECONDS, HERB_BOOST, MINE_GRADES, MINE_GRADE_NAMES, MINING_TOOLS, MINING_TOOL_NAMES, MINING_TOOL_CHEST, MINING_TOOL_ANTIQUE_CHANCE, ORE_GRADES, type MiningTool, type ProductionFocus, SOUVENIR_SHOP_MULTIPLIER, ZOO_DEFAULT_SPECIES, ZOO_SPECIES, ZOO_SPECIES_NAMES, LEISURE_GOODS, MAP_SIZE, TAVERN_GOODS, effectiveRecipe, herbCoverage, herbsPerDay, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type MineGrade, type TechnologyId, type ZooSpecies } from './data.ts';
 import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, REPELLED_SHOW_SECONDS, canStrike, damageCeiling, disasterOf, raidLoss, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
@@ -34,6 +34,12 @@ export interface Building {
   kind: BuildingKind;
   x: number;
   y: number;
+  /**
+   * The ground this building stands on: a square of this many tiles anchored at (x, y).
+   * Absent on saves written before footprints — those towns were built one tile per building
+   * and are still judged that way, which is what keeps an old save loading exactly as it was.
+   */
+  footprint?: number;
   level: number;
   progress: number;
   ready: boolean;
@@ -259,6 +265,10 @@ export function createInitialState(now = Date.now(), mapId: MapPresetId = 'front
     const grown = placement.grown ? livestockSpec(placement.kind) : undefined;
     return {
       id: `building-${index + 1}`, kind: placement.kind, x: placement.x, y: placement.y,
+      // A compact map keeps the one-tile spacing its paper was drawn on — 从零起步 is the
+      // baseline every simulation test stands on, and a player's blank sheet. A planned map
+      // gives every building the ground its kind claims.
+      footprint: map.compact ? 1 : definition.footprint,
       level: placement.level ?? 1,
       progress: ready ? 1 : placement.progress ?? ((index * 17) % 70) / 100,
       ready, paused: false,
@@ -393,7 +403,9 @@ export function validateSave(value: unknown): value is SimState {
   const validItems = (items: unknown): boolean => isRecord(items) && Object.entries(items).every(([key, count]) => RESOURCE_KEYS.includes(key as Resource) && whole(count));
   for (const building of value.buildings) {
     if (!isRecord(building) || typeof building.id !== 'string' || ids.has(building.id) || !BUILDING_KEYS.includes(building.kind as BuildingKind) || !whole(building.x) || !whole(building.y) || building.x >= MAP_SIZE || building.y >= MAP_SIZE || !whole(building.level) || building.level < 1 || building.level > 3 || !nonnegative(building.progress) || building.progress > 1 || typeof building.ready !== 'boolean' || typeof building.paused !== 'boolean' || !validItems(building.stock)) return false;
-    if (terrainAt(building.x,building.y) !== 'land') return false;
+    if (building.footprint !== undefined && !whole(building.footprint)) return false;
+    const footprint = building.footprint === undefined ? 1 : building.footprint;
+    if (footprint < 1 || footprint > 3) return false;
     if (['crop','nextCrop','tended','fallow','cropHarvest'].some(key=>building[key]!==undefined)&&building.kind!=='farm') return false;
     for (const field of ['crop','nextCrop']) if(building[field]!==undefined&&(!CROP_IDS.includes(building[field] as CropId)||CROPS[building[field] as CropId].level>gardenLevel((value.farming as FarmingState|undefined)?.xp??0).level))return false;
     if(building.tended!==undefined&&!whole(building.tended))return false;
@@ -431,9 +443,13 @@ export function validateSave(value: unknown): value is SimState {
     if (building.residents !== undefined && (!whole(building.residents) || building.residents < 0 || building.residents > (BUILDINGS[building.kind as BuildingKind].housing ?? 0) * building.level)) return false;
     if (building.workers !== undefined && (!whole(building.workers) || building.workers > maximumWorkers)) return false;
     assignedWorkers += Number(building.workers ?? maximumWorkers);
-    const position = `${building.x},${building.y}`;
-    if (positions.has(position)) return false;
-    positions.add(position); ids.add(building.id);
+    for (const tile of footprintTiles(building.x, building.y, footprint)) {
+      if (terrainAt(tile.x, tile.y) !== 'land') return false;
+      const position = `${tile.x},${tile.y}`;
+      if (positions.has(position)) return false;
+      positions.add(position);
+    }
+    ids.add(building.id);
   }
   if(value.roads!==undefined){
     if(!Array.isArray(value.roads)||value.roads.length>2116)return false;
@@ -865,13 +881,20 @@ export class SimWorld {
     return this.success(`${REGIONS[id].name}已经开放，慢慢布置喜欢的生活吧。`);
   }
 
-  placementIssue(x:number,y:number,movingId?:string): {code:string;message:string}|null {
-    if(!whole(x)||!whole(y)||x<1||y<1||x>=MAP_SIZE-1||y>=MAP_SIZE-1)return {code:'INVALID_TILE',message:'请选择小镇范围内的空地。'};
-    const region=this.regionIssue(x,y);if(region)return {code:'REGION_LOCKED',message:region};
-    const terrain=terrainReason(x,y);
-    if(terrain)return {code:'INVALID_TERRAIN',message:terrain};
-    if(this.roadAt(x,y))return {code:'ROAD_OCCUPIED',message:'这里是道路，建筑和树木不能占用路面。请选择旁边空地，或先移除这段道路。'};
-    if(this.state.buildings.some(b=>b.id!==movingId&&b.x===x&&b.y===y))return {code:'TILE_OCCUPIED',message:'这里已有建筑或树木，请选择空地。'};
+  /** Whether this building stands on (x, y) — its footprint, not just its anchor tile. */
+  covers(building:Building,x:number,y:number):boolean {
+    const side=Math.max(1,Math.floor(building.footprint??1));
+    return x>=building.x&&x<building.x+side&&y>=building.y&&y<building.y+side;
+  }
+  placementIssue(x:number,y:number,footprint=1,movingId?:string): {code:string;message:string}|null {
+    for(const tile of footprintTiles(x,y,footprint)){
+      if(!whole(tile.x)||!whole(tile.y)||tile.x<1||tile.y<1||tile.x>=MAP_SIZE-1||tile.y>=MAP_SIZE-1)return {code:'INVALID_TILE',message:'请选择小镇范围内的空地。'};
+      const region=this.regionIssue(tile.x,tile.y);if(region)return {code:'REGION_LOCKED',message:region};
+      const terrain=terrainReason(tile.x,tile.y);
+      if(terrain)return {code:'INVALID_TERRAIN',message:terrain};
+      if(this.roadAt(tile.x,tile.y))return {code:'ROAD_OCCUPIED',message:'这里是道路，建筑和树木不能占用路面。请选择旁边空地，或先移除这段道路。'};
+      if(this.state.buildings.some(b=>b.id!==movingId&&this.covers(b,tile.x,tile.y)))return {code:'TILE_OCCUPIED',message:'这里已有建筑或树木，请选择空地。'};
+    }
     return null;
   }
 
@@ -881,7 +904,7 @@ export class SimWorld {
     const ornamentReason = this.ornamentLock(kind);
     if (ornamentReason) return this.fail(ornamentReason, 'ORNAMENT_LOCKED');
     if (!whole(x) || !whole(y) || x < 1 || y < 1 || x >= MAP_SIZE - 1 || y >= MAP_SIZE - 1) return this.fail('请选择小镇范围内的空地。', 'INVALID_TILE');
-    const issue=this.placementIssue(x,y);if(issue)return this.fail(issue.message,issue.code);
+    const issue=this.placementIssue(x,y,BUILDINGS[kind].footprint);if(issue)return this.fail(issue.message,issue.code);
     if (kind === 'townhall' && this.state.buildings.some(building => building.kind === kind)) return this.fail('小镇已有议事厅，可以升级现有建筑。', 'UNIQUE_BUILDING');
     if (kind === 'zoogate' && this.state.buildings.some(building => building.kind === kind)) return this.fail('小镇已有动物园大门，可以升级现有建筑。', 'UNIQUE_BUILDING');
     // Some buildings wait for the town to grow into them, the same way the honours tracks do.
@@ -897,7 +920,7 @@ export class SimWorld {
     if (!this.has(materials)) return this.fail(`建造需要${resourceLabel(materials)}。`, 'INSUFFICIENT_RESOURCES');
     this.state.coins -= definition.cost; this.deduct(materials);
     const availableWorkers = Math.max(0, this.state.population - this.assignedWorkers());
-    const building: Building = { ...(livestockSpec(kind)?{animalAge:0}:{}), ...(kind==='zooenclosure'?{productionFocus:ZOO_DEFAULT_SPECIES}:{}), ...(kind==='mine'?{productionFocus:'copper'}:{}), id: this.id('building'), kind, x, y, level: 1, progress: 0, ready: false, paused: false, stock: {}, workers: Math.min(definition.workers ?? 0, availableWorkers) };
+    const building: Building = { ...(livestockSpec(kind)?{animalAge:0}:{}), ...(kind==='zooenclosure'?{productionFocus:ZOO_DEFAULT_SPECIES}:{}), ...(kind==='mine'?{productionFocus:'copper'}:{}), id: this.id('building'), kind, x, y, footprint: definition.footprint, level: 1, progress: 0, ready: false, paused: false, stock: {}, workers: Math.min(definition.workers ?? 0, availableWorkers) };
     this.state.buildings.push(building); this.state.stats.buildingsBuilt++;
     if (kind === 'warehouse') this.state.capacity += this.warehouseIncrement();
     this.earn(0, 15); this.updateNeeds();
@@ -909,7 +932,7 @@ export class SimWorld {
     const building=this.state.buildings.find(b=>b.id===id);
     if(!building)return this.fail('没有找到这座建筑。','BUILDING_NOT_FOUND');
     if(building.x===x&&building.y===y)return this.fail('建筑已经在这里了。','NO_CHANGE');
-    const issue=this.placementIssue(x,y,id);if(issue)return this.fail(issue.message,issue.code);
+    const issue=this.placementIssue(x,y,building.footprint??1,id);if(issue)return this.fail(issue.message,issue.code);
     building.x=x;building.y=y;this.updateNeeds();
     return this.success(`${BUILDINGS[building.kind].name}已搬到${DISTRICTS[districtAt(x,y)].name}，生产进度与物资已保留。`,{buildingId:id});
   }
@@ -918,11 +941,12 @@ export class SimWorld {
     if(!ids.length||new Set(ids).size!==ids.length||!Number.isSafeInteger(dx)||!Number.isSafeInteger(dy)||(!dx&&!dy))return this.fail('请选择建筑和移动方向。','INVALID_GROUP');
     const selected=new Set(ids),group=this.state.buildings.filter(b=>selected.has(b.id));
     if(group.length!==ids.length)return this.fail('选中的建筑已发生变化，请重新选择。','BUILDING_NOT_FOUND');
-    const occupied=new Set(this.state.buildings.filter(b=>!selected.has(b.id)).map(b=>`${b.x},${b.y}`));
+    const occupied=new Set(this.state.buildings.filter(b=>!selected.has(b.id)).flatMap(b=>footprintTiles(b.x,b.y,b.footprint??1)).map(t=>`${t.x},${t.y}`));
     for(const b of group){
-      const x=b.x+dx,y=b.y+dy,reason=terrainReason(x,y)||this.regionIssue(x,y);
+      const x=b.x+dx,y=b.y+dy,tiles=footprintTiles(x,y,b.footprint??1);
+      const reason=tiles.map(t=>terrainReason(t.x,t.y)||this.regionIssue(t.x,t.y)).find(Boolean);
       if(reason)return this.fail(reason,'INVALID_DESTINATION');
-      if(this.roadAt(x,y)||occupied.has(`${x},${y}`))return this.fail('整组目标位置有道路或其他建筑，请换个方向。','TILE_OCCUPIED');
+      if(tiles.some(t=>this.roadAt(t.x,t.y)||occupied.has(`${t.x},${t.y}`)))return this.fail('整组目标位置有道路或其他建筑，请换个方向。','TILE_OCCUPIED');
     }
     this.state.layoutUndo=this.state.buildings.map(({id,x,y})=>({id,x,y}));
     for(const b of group){b.x+=dx;b.y+=dy;}
@@ -932,19 +956,22 @@ export class SimWorld {
 
   arrangeDistricts():ActionResult {
     // Keep homes and services together, then distribute workshops into their suggested districts.
-    const occupied=new Set(this.state.buildings.filter(b=>preferredDistrict(b.kind)==='residential').map(b=>`${b.x},${b.y}`));
+    const occupied=new Set(this.state.buildings.filter(b=>preferredDistrict(b.kind)==='residential').flatMap(b=>footprintTiles(b.x,b.y,b.footprint??1)).map(t=>`${t.x},${t.y}`));
     const changes: {building:Building;x:number;y:number}[]=[];
     for(const building of this.state.buildings){
       const district=preferredDistrict(building.kind);if(district==='residential')continue;
       const center=DISTRICTS[district];
       const choices:{x:number;y:number;distance:number}[]=[];
       for(let x=2;x<MAP_SIZE-2;x++)for(let y=2;y<MAP_SIZE-2;y++){
-        if(this.regionIssue(x,y)||terrainAt(x,y)!=='land'||districtAt(x,y)!==district||occupied.has(`${x},${y}`)||this.roadAt(x,y))continue;
+        // A building needs its whole yard free, in the right district and off the streets.
+        const tiles=footprintTiles(x,y,building.footprint??1);
+        if(tiles.some(t=>this.regionIssue(t.x,t.y)||terrainAt(t.x,t.y)!=='land'||districtAt(t.x,t.y)!==district||occupied.has(`${t.x},${t.y}`)||this.roadAt(t.x,t.y)))continue;
         choices.push({x,y,distance:Math.hypot(x-center.x,y-center.y)+(x%2===0&&y%2===0?0:4)});
       }
       choices.sort((a,b)=>a.distance-b.distance||a.y-b.y||a.x-b.x);
       const tile=choices[0];if(!tile)return this.fail('对应分区没有足够空地。','NO_SPACE');
-      occupied.add(`${tile.x},${tile.y}`);changes.push({building,x:tile.x,y:tile.y});
+      for(const t of footprintTiles(tile.x,tile.y,building.footprint??1))occupied.add(`${t.x},${t.y}`);
+      changes.push({building,x:tile.x,y:tile.y});
     }
     if(!changes.length)return this.fail('暂时没有需要整理的生产建筑。','NO_CHANGE');
     this.state.layoutUndo=this.state.buildings.map(({id,x,y})=>({id,x,y}));
@@ -956,7 +983,8 @@ export class SimWorld {
     const previous=this.state.layoutUndo;
     if(!previous?.length)return this.fail('没有待还原的分区整理。','NO_LAYOUT_BACKUP');
     const targets=new Map(previous.map(t=>[t.id,t]));const occupied=new Set<string>();
-    for(const b of this.state.buildings){const t=targets.get(b.id)||b,key=`${t.x},${t.y}`;if(occupied.has(key)||terrainAt(t.x,t.y)!=='land'||this.roadAt(t.x,t.y))return this.fail('原位置已有建筑或道路，请先移开后再还原。','TILE_OCCUPIED');occupied.add(key);}
+    for(const b of this.state.buildings){const t=targets.get(b.id)||b;
+      for(const tile of footprintTiles(t.x,t.y,b.footprint??1)){const key=`${tile.x},${tile.y}`;if(occupied.has(key)||terrainAt(tile.x,tile.y)!=='land'||this.roadAt(tile.x,tile.y))return this.fail('原位置已有建筑或道路，请先移开后再还原。','TILE_OCCUPIED');occupied.add(key);}}
     for(const b of this.state.buildings){const t=targets.get(b.id);if(t){b.x=t.x;b.y=t.y;}}
     delete this.state.layoutUndo;this.updateNeeds();return this.success('已还原整理前的建筑位置，经营进度保持不变。');
   }
@@ -969,7 +997,7 @@ export class SimWorld {
       const locked=this.regionIssue(t.x,t.y);if(locked&&kind!=='remove')return this.fail(locked,'REGION_LOCKED');
       if(terrainAt(t.x,t.y)==='bridge')continue;
       if(terrainReason(t.x,t.y))return this.fail('路线经过河道或山峰，请沿河岸或已有桥梁规划。','INVALID_TERRAIN');
-      if(this.state.buildings.some(v=>v.x===t.x&&v.y===t.y))return this.fail('路线经过建筑，请绕开建筑再铺设。','TILE_OCCUPIED');
+      if(this.state.buildings.some(v=>this.covers(v,t.x,t.y)))return this.fail('路线经过建筑，请绕开建筑再铺设。','TILE_OCCUPIED');
     }
     const land=tiles.filter(t=>terrainAt(t.x,t.y)==='land');
     const roads=this.state.roads??[],quote=roadQuote(roads,land,kind);

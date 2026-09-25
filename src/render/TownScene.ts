@@ -21,7 +21,7 @@ import { BUILDINGS, EXPANSION_SPRITES, EXPANSION_FRAMES, INDUSTRY_KINDS, INDUSTR
 import { GENERATED_ATLASES, atlasFrames, generatedSprite, housingLevelFrame } from '../sim/atlases';
 import { drawFrameWidth, drawFrameScale } from './atlasSprite';
 import { wallKeys, wallMask, wallPiece, gatePiece, wallConnections } from '../sim/walls';
-import { MAP_SIZE, TILE_W, TILE_H, iso, terrainAt, terrainReason, DISTRICTS, type District } from '../sim/terrain';
+import { MAP_SIZE, TILE_W, TILE_H, iso, terrainAt, terrainReason, DISTRICTS, type District, buildingIso, footprintCenter} from '../sim/terrain';
 import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
@@ -216,11 +216,18 @@ export class TownScene extends Phaser.Scene {
     return{texture:'buildings'};
   }
   private spriteWidth(kind:BuildingKind):number {
-    if(EXPANSION_SPRITES.some(k=>k===kind))return kind==='watertower'?124:kind==='apartment'?156:160;
-    if(DECORATION_SPRITES.some(k=>k===kind))return kind==='bench'?108:kind==='fountain'?108:kind==='gazebo'?126:kind==='flowerarch'?120:170;
-    if(generatedSprite(kind))return kind==='willow'?150:kind==='parasol'?120:kind==='railing'?150:kind==='chapel'?150:kind==='citygate'?WALL_WIDTH:130;
-    if(housingLevelFrame(kind,1))return 150;
-    return kind==='townhall'?177:kind==='well'?100:kind==='garden'?139:151;
+    const measured=EXPANSION_SPRITES.some(k=>k===kind)?kind==='watertower'?124:kind==='apartment'?156:160
+      :DECORATION_SPRITES.some(k=>k===kind)?kind==='bench'?108:kind==='fountain'?108:kind==='gazebo'?126:kind==='flowerarch'?120:170
+      :generatedSprite(kind)?kind==='willow'?150:kind==='parasol'?120:kind==='railing'?150:kind==='chapel'?150:kind==='citygate'?WALL_WIDTH:130
+      :housingLevelFrame(kind,1)?150
+      :kind==='well'?100:kind==='garden'?139:151;
+    const footprint=BUILDINGS[kind].footprint;
+    // The landmarks grow into the yard they claim: a nine-tile claim with one-tile art would
+    // read as a mistake, and the hall is what the town is read by. Everything else keeps the
+    // width its art was measured at, clamped only so a small prop never spills onto the tiles
+    // beside it — the claim, not the sprite, is what keeps neighbours apart.
+    if(footprint===3)return Math.round(footprint*TILE_W*.82);
+    return Math.min(measured,Math.round(footprint*TILE_W*1.15));
   }
   private syncBuildings(){
     this.regionLayer??=new RegionLayer(this,()=>this.onOpenMap());
@@ -232,7 +239,7 @@ export class TownScene extends Phaser.Scene {
     for(const b of this.world.state.buildings){
       if(!b.paused&&!b.ready&&!b.damaged&&b.progress!==(this.progressSnapshot.get(b.id)??b.progress))this.running.add(b.id);
       this.progressSnapshot.set(b.id,b.progress);
-      let v=this.visuals.get(b.id);const p=iso(b.x,b.y);
+      let v=this.visuals.get(b.id);const p=buildingIso(b);
       if(!v){
         const source=this.spriteSource(b.kind,b.level);
         const sprite=b.kind==='farm'?this.add.image(p.x,p.y,'farm0').setOrigin(.5,.65):this.add.image(p.x,p.y,source.texture,source.frame??b.kind).setOrigin(.5,.86);
@@ -341,20 +348,23 @@ export class TownScene extends Phaser.Scene {
   }
   private drawSelection(){
     if(this.roadMode)return;this.highlight.clear();const b=this.world.state.buildings.find(b=>b.id===this.selectedId);if(!b||this.buildKind)return;
-    const p=iso(b.x,b.y);this.diamond(this.highlight,p.x,p.y,0xf3edb3,.22,0xfffbd9,1,1.05);
+    const p=buildingIso(b);this.diamond(this.highlight,p.x,p.y,0xf3edb3,.22,0xfffbd9,1,(b.footprint??1)*1.05);
     const def=BUILDINGS[b.kind],radius=def.waterRadius??def.fireRadius;
     if(radius&&!b.damaged){const diameter=Math.SQRT2*(radius+b.level-1);this.highlight.lineStyle(2,def.waterRadius?0xb4e9f5:0xffc49a,.6).strokeEllipse(p.x,p.y,TILE_W*diameter,TILE_H*diameter);}
   }
   private updateGhost(p:Phaser.Input.Pointer){
-    if(!this.buildKind||!this.ghost)return;const pt=this.cameras.main.getWorldPoint(p.x,p.y),t=deiso(pt.x,pt.y),a=iso(t.x,t.y);
-    const issue=this.world.placementIssue(t.x,t.y,this.moveId??undefined),valid=!issue;
+    if(!this.buildKind||!this.ghost)return;const pt=this.cameras.main.getWorldPoint(p.x,p.y),t=deiso(pt.x,pt.y);
+    const moving=this.moveId?this.world.state.buildings.find(b=>b.id===this.moveId):undefined;
+    const footprint=moving?.footprint??(this.buildKind?BUILDINGS[this.buildKind].footprint:1);
+    const issue=this.world.placementIssue(t.x,t.y,footprint,this.moveId??undefined),valid=!issue;
     this.onPlacementHint(issue?.message??`可放置 · 地块 ${t.x}, ${t.y} · 点击确认${this.moveId?'搬迁':'建造'}`);
-    this.ghost.setPosition(a.x,a.y).setTint(valid?0xc2e6a0:0xe88768).setDepth(a.y+300);this.highlight.clear();this.diamond(this.highlight,a.x,a.y,valid?0xeff6b5:0xff9775,.4,0xffffff,1);
+    const c=footprintCenter(t.x,t.y,footprint),a2=iso(c.x,c.y);
+    this.ghost.setPosition(a2.x,a2.y).setTint(valid?0xc2e6a0:0xe88768).setDepth(a2.y+300);this.highlight.clear();this.diamond(this.highlight,a2.x,a2.y,valid?0xeff6b5:0xff9775,.4,0xffffff,1,footprint);
   }
   private paintPlacementGrid(){
     this.grid.clear();
     for(let x=1;x<MAP_SIZE-1;x++)for(let y=1;y<MAP_SIZE-1;y++){
-      const p=iso(x,y),blocked=!!this.world.placementIssue(x,y,this.moveId??undefined);
+      const p=iso(x,y),blocked=!!this.world.placementIssue(x,y,1,this.moveId??undefined);
       this.diamond(this.grid,p.x,p.y,blocked?0xc9765c:0xffffff,blocked?.15:.025,blocked?0xe0a08c:0xf7f0c9,blocked?.38:.22);
     }
   }
@@ -379,19 +389,19 @@ export class TownScene extends Phaser.Scene {
     const d=key in REGIONS?REGIONS[key as RegionId]:DISTRICTS[key as District],p=iso(d.x,d.y);this.cameras.main.setZoom(this.scale.width<650?.66:.85);if(this.reducedMotion())this.cameras.main.centerOn(p.x,p.y-45);else this.cameras.main.pan(p.x,p.y-45,650,'Sine.easeInOut');
   }
   select(id:string|null){this.selectedId=id;if(this.ready)this.drawSelection();}
-  focusBuilding(id:string){const b=this.world.state.buildings.find(b=>b.id===id);if(b&&this.ready){const p=iso(b.x,b.y);if(this.reducedMotion())this.cameras.main.centerOn(p.x+80,p.y-10);else this.cameras.main.pan(p.x+80,p.y-10,600,'Sine.easeInOut');this.select(id);}}
+  focusBuilding(id:string){const b=this.world.state.buildings.find(b=>b.id===id);if(b&&this.ready){const p=buildingIso(b);if(this.reducedMotion())this.cameras.main.centerOn(p.x+80,p.y-10);else this.cameras.main.pan(p.x+80,p.y-10,600,'Sine.easeInOut');this.select(id);}}
   private minimumZoom(){return Math.min(.22,Math.max(.06,Math.min(this.scale.width/(MAP_SIZE*TILE_W+132),(this.scale.height-160)/(MAP_SIZE*TILE_H+116))));}
   zoomBy(delta:number){if(this.ready)this.cameras.main.setZoom(Phaser.Math.Clamp(this.cameras.main.zoom+delta,this.minimumZoom(),1.8));}
   resetCamera(){const w=this.scale.width;this.cameras.main.setZoom(w<650?.62:Math.min(.85,w/1550));const p=iso(12,12);this.cameras.main.centerOn(p.x,p.y-70);}
   reducedMotion(){return this.world.state.settings.reducedMotion??window.matchMedia('(prefers-reduced-motion: reduce)').matches;}
   screenPoint(id?:string){
     if(!this.ready)return undefined;const b=this.world.state.buildings.find(b=>b.id===id);if(!b)return undefined;
-    const p=iso(b.x,b.y),c=this.cameras.main;
+    const p=buildingIso(b),c=this.cameras.main;
     return {x:c.width/2+(p.x-c.midPoint.x)*c.zoom,y:c.height/2+(p.y-65-c.midPoint.y)*c.zoom};
   }
   feedback(id:string|undefined,message:string,good=true,effect=''){
     if(!this.ready)return;this.syncBuildings();
-    const b=this.world.state.buildings.find(b=>b.id===id);const p=b?iso(b.x,b.y):{x:this.cameras.main.midPoint.x,y:this.cameras.main.midPoint.y};
+    const b=this.world.state.buildings.find(b=>b.id===id);const p=b?buildingIso(b):{x:this.cameras.main.midPoint.x,y:this.cameras.main.midPoint.y};
     const reduced=this.reducedMotion();
     // Long results are already readable in the HUD toast.
     if(b&&message.length<45){
@@ -433,7 +443,7 @@ export class TownScene extends Phaser.Scene {
     this.disasterLayer.syncPlague(Boolean(this.world.state.plague),this.world.state.buildings.find(b=>b.kind==='townhall'),time,reduced);
     this.disasterLayer.syncDefence(this.world.state.raidRepelled,time,reduced);
     this.weatherLayer.sync(this.world.weather(),this.world.state.buildings.find(b=>b.kind==='townhall'),time,reduced);
-    if(!reduced&&this.simulationSpeed>0)this.visuals.forEach((v,id)=>{if(v.ready){const b=this.world.state.buildings.find(b=>b.id===id)!;const p=iso(b.x,b.y);v.badge.y=p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)+Math.sin(time/430)*3;}});
+    if(!reduced&&this.simulationSpeed>0)this.visuals.forEach((v,id)=>{if(v.ready){const b=this.world.state.buildings.find(b=>b.id===id)!;const p=buildingIso(b);v.badge.y=p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)+Math.sin(time/430)*3;}});
     for(const b of this.world.state.buildings){
       const companion=this.visuals.get(b.id)?.companion;
       if(!companion)continue;

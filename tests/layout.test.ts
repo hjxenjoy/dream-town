@@ -33,7 +33,7 @@ function at(w: SimWorld, kind: BuildingKind, x: number, y: number): Building {
 function pair(gap: number, extra: (w: SimWorld) => void = () => {}) {
   const w = roomy();
   const supplier = at(w, 'lumber', 6, 10);           // makes wood
-  const consumer = at(w, 'sawmill', 6 + gap + 1, 10); // eats wood
+  const consumer = at(w, 'sawmill', 6 + 2 + gap, 10); // eats wood: supplier's two-tile yard, then `gap` empty tiles
   extra(w);
   const hauls = supplyHauls(w.state.buildings, w.state.roads ?? []);
   return { w, supplier, consumer, haul: hauls.get(consumer.id) };
@@ -60,10 +60,10 @@ test('a haul is measured in tiles walked, and closer is worth more', () => {
 
 test('a wall of buildings lengthens the haul, because the carrier walks around it', () => {
   // The straight line is identical in both towns; only the walls differ.
-  const open = pair(1);
-  const walled = pair(1, w => {
-    // A solid column of cottages through the gap between the two, forcing the walk to go round.
-    for (let y = 3; y <= 17; y++) at(w, 'cottage', 7, y);
+  const open = pair(2);
+  const walled = pair(2, w => {
+    // A solid column of cottages through the two-tile gap between the two, forcing the walk to go round.
+    for (let y = 3; y <= 17; y += 2) at(w, 'cottage', 8, y);
   });
   assert.equal(walled.consumer.x - walled.supplier.x, open.consumer.x - open.supplier.x, 'the straight line is unchanged');
   // A wall of that length severs the link outright, which is the extreme of "longer": either
@@ -71,22 +71,23 @@ test('a wall of buildings lengthens the haul, because the carrier walks around i
   assert.ok(walled.haul === undefined || walled.haul! > open.haul!,
     `a wall makes the real haul longer or ends it: ${open.haul} -> ${walled.haul}`);
   // A shorter wall can be walked around, and that detour is measurable.
-  const detour = pair(1, w => { for (let y = 9; y <= 11; y++) at(w, 'cottage', 7, y); });
+  const detour = pair(2, w => { for (let y = 9; y <= 11; y += 2) at(w, 'cottage', 8, y); });
   assert.ok(Number.isFinite(detour.haul!) && detour.haul! > open.haul!,
     `walking around a short wall costs more than crossing the gap: ${open.haul} -> ${detour.haul}`);
 });
 
 test('a workshop with no way in falls back to how close its supplier stands', () => {
-  // Boxed in on all four sides: the supplier occupies one, cottages the other three, so there
-  // is no walkable ground touching the workshop at all.
+  // Boxed in on all four sides: the supplier's yard occupies one edge, cottages the rest, so
+  // there is no walkable ground touching the workshop at all.
   const w = roomy();
   const supplier = at(w, 'lumber', 6, 10);
-  const consumer = at(w, 'sawmill', 7, 10);
-  at(w, 'cottage', 8, 10); at(w, 'cottage', 7, 9); at(w, 'cottage', 7, 11);
+  const consumer = at(w, 'sawmill', 8, 10);
+  at(w, 'cottage', 7, 8); at(w, 'cottage', 9, 8); at(w, 'cottage', 10, 10);
+  at(w, 'cottage', 7, 12); at(w, 'cottage', 9, 12);
   const hauls = supplyHauls(w.state.buildings, w.state.roads ?? []);
   const haul = hauls.get(consumer.id);
   assert.ok(Number.isFinite(haul), 'a boxed-in workshop is still measured, not silently dropped');
-  assert.equal(haul, 1, 'and falls back to the straight line to its supplier');
+  assert.equal(haul, 2, 'and falls back to the straight line between the two yards');
   assert.ok(supplyFactor(haul!) <= 1);
   void supplier;
 });
@@ -95,7 +96,7 @@ test('only a real input counts, and a workshop never supplies itself', () => {
   // A tailor makes clothing, not wood: standing next to a sawmill does not feed it.
   const wrong = roomy();
   at(wrong, 'tailor', 6, 6);
-  const mill = at(wrong, 'sawmill', 7, 6);
+  const mill = at(wrong, 'sawmill', 8, 6);
   const wrongHauls = supplyHauls(wrong.state.buildings, wrong.state.roads ?? []);
   assert.equal(wrongHauls.get(mill.id), undefined, 'a neighbour making something else is not a supplier');
 
@@ -104,7 +105,7 @@ test('only a real input counts, and a workshop never supplies itself', () => {
   const mill2 = at(lone, 'windmill', 6, 12);
   assert.equal(supplyHauls(lone.state.buildings, lone.state.roads ?? []).get(mill2.id), undefined);
   // Nor does a gatherer: a quarry consumes nothing.
-  const quarry = at(lone, 'quarry', 7, 12);
+  const quarry = at(lone, 'quarry', 8, 12);
   assert.equal(supplyHauls(lone.state.buildings, lone.state.roads ?? []).get(quarry.id), undefined);
 });
 
@@ -194,8 +195,10 @@ test('two workshops sharing one patch of open ground are not given a carrier', (
   // place. The fix is to send no load; this asserts the degenerate case is filtered out.
   const w = roomy();
   at(w, 'lumber', 30, 20);
-  at(w, 'sawmill', 32, 20);
-  for (const [x, y] of [[29, 20], [30, 19], [30, 21], [33, 20], [32, 19], [32, 21]] as [number, number][]) at(w, 'cottage', x, y);
+  at(w, 'sawmill', 33, 20);
+  // Four cottages seal everything around the lumber's yard except the one shared tile at32,20 —
+  // the spiral nearest() walks from each anchor finds that same tile for both workshops.
+  for (const [x, y] of [[28, 19], [30, 18], [28, 21], [30, 22]] as [number, number][]) at(w, 'cottage', x, y);
 
   // The two do count as locally supplied: they are one tile of walking apart.
   const standing = w.state.buildings.filter(b => !b.damaged);

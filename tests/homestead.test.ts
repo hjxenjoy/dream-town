@@ -11,7 +11,7 @@ function town(){
   const w=new SimWorld();w.state.coins=100000;w.state.capacity=10000;
   populate(w, 60);w.state.settings.disasters=false;
   w.state.resources={...emptyResources(),wood:300,stone:300,feed:100,bread:500,fish:500};
-  kinds.forEach((kind,i)=>assert.equal(w.build(kind,40,i+22).ok,true,kind));
+  kinds.forEach((kind,i)=>assert.equal(w.build(kind,40,22+2*i).ok,true,kind));
   return w;
 }
 test('all six new buildings have real art and survive a save round trip',()=>{

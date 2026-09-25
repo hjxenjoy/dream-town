@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { iso } from '../sim/terrain';
+import { buildingIso, iso } from '../sim/terrain';
 import { ALERT_FRAME_MS, ALERT_FRAMES, HAZARD_FRAME_MS, duelFrame, hazardOverlay, loopFrame } from '../sim/disasters';
 import type { Building } from '../sim/world';
 import { drawFrameWidth } from './atlasSprite';
@@ -39,7 +39,7 @@ export class DisasterLayer {
       this.plague = undefined;
       return;
     }
-    const point = iso(townhall.x, townhall.y);
+    const point = buildingIso(townhall);
     this.plague ??= this.scene.add.image(point.x, point.y, 'plague-animation').setOrigin(.5, .5);
     // Reduced motion holds one frame, exactly like the other hazard effects.
     const frame = PLAGUE_FRAMES[reduced ? 0 : Math.floor(time / HAZARD_FRAME_MS) % PLAGUE_FRAMES.length]!;
@@ -76,7 +76,7 @@ export class DisasterLayer {
     for (const building of buildings) {
       const overlay = hazardOverlay(building, time, reduced);
       if (!overlay) continue;
-      const point = iso(building.x, building.y);
+      const point = buildingIso(building);
       if (!Phaser.Geom.Rectangle.Contains(view, point.x, point.y)) continue;
       if (drawn++ >= MAX_EFFECTS) break;
       active.add(building.id);

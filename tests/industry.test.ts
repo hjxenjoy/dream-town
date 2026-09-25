@@ -15,7 +15,9 @@ function prepared() {
 }
 function research(world: SimWorld, ...ids: TechnologyId[]) { for (const id of ids) assert.equal(world.research(id).ok, true, id); }
 function construct(world: SimWorld, kind: BuildingKind, x: number) {
-  const result = world.build(kind, x, 2); assert.equal(result.ok, true, result.message);
+  // `x` is a slot number, not a tile: each workshop now stands on a two-tile yard, so slot n
+  // lands on tile 1 + (n-1)*2 with every yard clear of its neighbour.
+  const result = world.build(kind, 1 + (x - 1) * 2, 2); assert.equal(result.ok, true, result.message);
   return world.state.buildings.find(b => b.id === result.buildingId)!;
 }
 function legacySave() {

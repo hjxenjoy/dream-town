@@ -133,7 +133,7 @@ test('the new goods are sellable at the prices they declare',()=>{
 
 test('offline settlement runs the new chains in source-to-product order',()=>{
   const w=prepared();
-  add(w,'cowbarn',34);add(w,'dairy',38);add(w,'vineyard',42);add(w,'winery',46);
+  add(w,'cowbarn',34);add(w,'dairy',38);add(w,'vineyard',42);add(w,'winery',44);
   const feed=w.state.resources.feed;
   const before=RESOURCE_KEYS.map(key=>w.state.resources[key]);
   const report=w.offline(600);

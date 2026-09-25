@@ -29,7 +29,9 @@ export class SeasonalProps {
     const hall = world.state.buildings.find(building => building.kind === 'townhall');
     if (!hall) { this.sprite?.setVisible(false); this.shown = null; return; }
     const asset = SEASONAL_ACTIVITIES[active.season];
-    const point = iso(hall.x + 2, hall.y + 1);
+    // Beside the hall's yard rather than on it: a hall that claims more ground pushes the
+    // stalls the same distance out, and a one-tile hall keeps the spot it always had.
+    const point = iso(hall.x + (hall.footprint ?? 1) + 1, hall.y + 1);
     if (!this.sprite) {
       this.sprite = this.scene.add.image(point.x, point.y, 'season-props').setOrigin(.5, .88);
     }

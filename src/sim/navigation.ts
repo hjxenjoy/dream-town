@@ -1,4 +1,4 @@
-import { terrainAt, PLAYABLE_SIZE } from './terrain.ts';
+import { terrainAt, footprintTiles, PLAYABLE_SIZE } from './terrain.ts';
 import { tileKey, type Tile, type Road } from './roads.ts';
 const neighbors=(p:Tile):Tile[]=>[{x:p.x+1,y:p.y},{x:p.x-1,y:p.y},{x:p.x,y:p.y+1},{x:p.x,y:p.y-1}];
 /**
@@ -10,9 +10,19 @@ const neighbors=(p:Tile):Tile[]=>[{x:p.x+1,y:p.y},{x:p.x-1,y:p.y},{x:p.x,y:p.y+1
 /** Four-neighbor paths never cut diagonally across building corners. */
 export class TownNavigation {
   blocked:Set<string>; streets:Set<string>;
-  constructor(buildings:readonly (Tile&{kind?:string})[],roads:Road[]=[]){this.blocked=new Set(buildings.filter(b=>b.kind!=='citygate').map(tileKey));this.streets=new Set(roads.map(tileKey));}
+  constructor(buildings:readonly (Tile&{kind?:string;footprint?:number})[],roads:Road[]=[]){
+    // A building blocks every tile it stands on, not just its anchor: a four-tile yard is
+    // four tiles nobody may walk through. Gates stay walkable, as they always have.
+    this.blocked=new Set(buildings.filter(b=>b.kind!=='citygate').flatMap(b=>footprintTiles(b.x,b.y,b.footprint??1)).map(tileKey));
+    this.streets=new Set(roads.map(tileKey));
+  }
   canWalk(p:Tile){const t=terrainAt(p.x,p.y);return (t==='land'||t==='bridge')&&!this.blocked.has(tileKey(p));}
-  entrances(p:Tile){return neighbors(p).filter(n=>this.canWalk(n));}
+  /** The tiles people actually step out onto: walkable ground beside the whole footprint. */
+  entrances(p:Tile&{footprint?:number}){
+    const tiles=footprintTiles(p.x,p.y,p.footprint??1),covered=new Set(tiles.map(tileKey)),doors:Tile[]=[];
+    for(const t of tiles)for(const n of neighbors(t))if(!covered.has(tileKey(n))&&this.canWalk(n)&&!doors.some(d=>d.x===n.x&&d.y===n.y))doors.push(n);
+    return doors;
+  }
   nearest(p:Tile):Tile|null{
     const origin={x:Math.max(1,Math.min(PLAYABLE_SIZE,Math.round(p.x))),y:Math.max(1,Math.min(PLAYABLE_SIZE,Math.round(p.y)))};
     if(this.canWalk(origin))return origin;

@@ -208,8 +208,15 @@ test('a neighbour says what actually went up nearby, and mentions nothing else',
   assert.ok(home);
   const before=neighbourNews(home,w.state.buildings,w.state.population);
   assert.ok(before.length>0);
-  // Put a new building next to that home and the line must change to name it.
-  const spot=w.placementIssue(home.x+1,home.y+1)===null?{x:home.x+1,y:home.y+1}:{x:home.x+2,y:home.y+2};
+  // Put a new building next to that home and the line must change to name it. The home's own
+  // yard is two tiles wide now, so the bakery needs a free2×2 plot beside it — the first the
+  // rules accept, close enough (within the neighbour's eight-tile view) to be the news.
+  let spot:{x:number;y:number}|null=null;
+  for(let r=1;r<=5&&!spot;r++)for(let dx=-r;dx<=r&&!spot;dx++)for(let dy=-r;dy<=r&&!spot;dy++){
+    const candidate={x:home.x+dx,y:home.y+dy};
+    if(w.placementIssue(candidate.x,candidate.y,BUILDINGS.bakery.footprint)===null)spot=candidate;
+  }
+  assert.ok(spot,'there is a buildable plot beside the home');
   const added=w.build('bakery',spot.x,spot.y);
   assert.equal(added.ok,true,added.message);
   const after=neighbourNews(home,w.state.buildings,w.state.population);

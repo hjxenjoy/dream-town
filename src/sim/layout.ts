@@ -1,6 +1,7 @@
 import { BUILDINGS, type BuildingKind, type Resource } from './data.ts';
 import { TownNavigation } from './navigation.ts';
 import { tileKey, type Road, type Tile } from './roads.ts';
+import { footprintTiles } from './terrain.ts';
 
 /**
  * How far a load may be carried before a workshop stops counting as locally supplied.
@@ -28,6 +29,8 @@ export interface Placed {
   kind: BuildingKind;
   x: number;
   y: number;
+  /** The ground it stands on; a save from before footprints has none and stands on one tile. */
+  footprint?: number;
   /** A damaged building still stands in the way, but neither supplies nor consumes. */
   damaged?: boolean;
   /** A farm's crop decides what it actually makes; anything but wheat yields nothing storable. */
@@ -139,7 +142,7 @@ export function commuteDistances(buildings: readonly Placed[], roads: readonly R
   // Every workplace's own tile and doors, worked out once rather than per step.
   const workplaces = buildings
     .filter(building => BUILDINGS[building.kind].workers)
-    .map(building => ({ id: building.id, tiles: [tileKey(building), ...navigation.entrances(building).map(tileKey)] }));
+    .map(building => ({ id: building.id, tiles: [...footprintTiles(building.x, building.y, building.footprint ?? 1).map(tileKey), ...navigation.entrances(building).map(tileKey)] }));
 
   const seen = new Set<string>();
   let frontier: Tile[] = [];
@@ -244,7 +247,9 @@ export function supplyHauls(
  * the whole reason for measuring the walk rather than the straight line.
  */
 function haulFrom(navigation: TownNavigation, sources: readonly Placed[], target: Placed, reach: number): number {
-  const goal = tileKey(target);
+  // The load is delivered to whichever tile of the target's ground it can reach, so a building
+  // with a yard is reached from any side of that yard rather than from its one anchor tile.
+  const goal = new Set(footprintTiles(target.x, target.y, target.footprint ?? 1).map(tileKey));
   const seen = new Set<string>();
   let frontier: Tile[] = [];
   for (const source of sources) {
@@ -256,10 +261,10 @@ function haulFrom(navigation: TownNavigation, sources: readonly Placed[], target
       frontier.push(door);
     }
   }
-  const touches = (tile: Tile) => tileKey({ x: tile.x + 1, y: tile.y }) === goal
-    || tileKey({ x: tile.x - 1, y: tile.y }) === goal
-    || tileKey({ x: tile.x, y: tile.y + 1 }) === goal
-    || tileKey({ x: tile.x, y: tile.y - 1 }) === goal;
+  const touches = (tile: Tile) => goal.has(tileKey({ x: tile.x + 1, y: tile.y }))
+    || goal.has(tileKey({ x: tile.x - 1, y: tile.y }))
+    || goal.has(tileKey({ x: tile.x, y: tile.y + 1 }))
+    || goal.has(tileKey({ x: tile.x, y: tile.y - 1 }));
   for (let walked = 1; walked <= reach + 1 && frontier.length; walked++) {
     const next: Tile[] = [];
     for (const tile of frontier) {
@@ -292,7 +297,7 @@ export function commuteByHome(buildings: readonly Placed[], roads: readonly Road
   const homes = buildings.filter(building => BUILDINGS[building.kind].housing);
   const workplaces = buildings
     .filter(building => BUILDINGS[building.kind].workers)
-    .map(building => ({ id: building.id, tiles: [tileKey(building), ...navigation.entrances(building).map(tileKey)] }));
+    .map(building => ({ id: building.id, tiles: [...footprintTiles(building.x, building.y, building.footprint ?? 1).map(tileKey), ...navigation.entrances(building).map(tileKey)] }));
   const byHome = new Map<string, Map<string, number>>();
   if (!homes.length) return byHome;
 

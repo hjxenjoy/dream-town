@@ -245,8 +245,8 @@ test('worker assignment can stop a workshop but cannot allocate more residents t
 test('new workshops only take available residents and an unstaffed workshop does not produce', () => {
   const world = new SimWorld();
   const first = world.build('lumber', 6, 3);
-  const second = world.build('lumber', 7, 3);
-  const third = world.build('fishery', 8, 3);
+  const second = world.build('lumber', 10, 3);
+  const third = world.build('fishery', 12, 3);
   assert.equal(first.ok, true); assert.equal(second.ok, true); assert.equal(third.ok, true);
   const workers = (id: string | undefined) => world.state.buildings.find(building => building.id === id)!.workers;
   assert.equal(workers(first.buildingId), 2);

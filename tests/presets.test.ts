@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MAP_PRESETS, MAP_PRESET_IDS, DEFAULT_MAP_PRESET, presetCensus, presetRoads, type MapPresetId } from '../src/sim/presets.ts';
 import { BUILDINGS, TECHNOLOGIES } from '../src/sim/data.ts';
-import { terrainAt, DISTRICT_KEYS, districtAt } from '../src/sim/terrain.ts';
+import { terrainAt, footprintTiles, DISTRICT_KEYS, districtAt } from '../src/sim/terrain.ts';
 import { REGIONS, REGION_IDS } from '../src/sim/regions.ts';
 import { gardenLevel, CROPS } from '../src/sim/farming.ts';
 import { createInitialState, validateSave, SimWorld, type Building } from '../src/sim/world.ts';
@@ -23,19 +23,24 @@ test('every map blueprint is a valid save and a town that runs', () => {
   }
 });
 
-test('every building stands on land, off the streets, and on a tile of its own', () => {
+test('every building stands on land, off the streets, and on ground of its own', () => {
+  // The ground a building claims is its whole footprint, not its one anchor tile: a four-tile
+  // yard is four tiles nobody else may stand on and no street may cross.
   for (const id of MAP_PRESET_IDS) {
     const map = MAP_PRESETS[id];
     const roads = new Set(presetRoads(map).map(tile => `${tile.x},${tile.y}`));
     const seen = new Set<string>();
     for (const placement of map.placements) {
-      const tile = `${placement.x},${placement.y}`;
-      assert.equal(terrainAt(placement.x, placement.y), 'land', `${id}: ${placement.kind}@${tile} is on land`);
-      assert.equal(roads.has(tile), false, `${id}: ${placement.kind}@${tile} is off the streets`);
-      assert.equal(seen.has(tile), false, `${id}: ${tile} holds one building only`);
-      seen.add(tile);
+      const footprint = map.compact ? 1 : BUILDINGS[placement.kind].footprint;
+      for (const tile of footprintTiles(placement.x, placement.y, footprint)) {
+        const key = `${tile.x},${tile.y}`;
+        assert.equal(terrainAt(tile.x, tile.y), 'land', `${id}: ${placement.kind}@${key} is on land`);
+        assert.equal(roads.has(key), false, `${id}: ${placement.kind}@${key} is off the streets`);
+        assert.equal(seen.has(key), false, `${id}: ${key} is claimed by one building only`);
+        seen.add(key);
+      }
     }
-    // Streets are tiles too: unique, on land, and never shared with a building.
+    // Streets are tiles too: unique, on land, and never shared with a building's yard.
     assert.equal(roads.size, presetRoads(map).length, `${id}: no street tile is paved twice`);
   }
 });
@@ -65,8 +70,9 @@ test('every workplace is reached by a street', () => {
     const roads = presetRoads(map);
     for (const placement of map.placements) {
       if (BUILDINGS[placement.kind].category === 'decoration') continue;
-      const near = roads.some(road => Math.abs(road.x - placement.x) + Math.abs(road.y - placement.y) <= 4);
-      assert.equal(near, true, `${id}: ${placement.kind}@${placement.x},${placement.y} is within four tiles of a street`);
+      const footprint = map.compact ? 1 : BUILDINGS[placement.kind].footprint;
+      const near = footprintTiles(placement.x, placement.y, footprint).some(tile => roads.some(road => Math.abs(road.x - tile.x) + Math.abs(road.y - tile.y) <= 3));
+      assert.equal(near, true, `${id}: ${placement.kind}@${placement.x},${placement.y} is within three tiles of a street`);
     }
   }
 });

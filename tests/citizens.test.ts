@@ -134,7 +134,7 @@ test('a house that is torn down re-houses its residents, and a shortage leaves t
   assert.ok(world.state.citizens!.every(citizen => citizen.homeId === null), 'everyone is homeless');
   assert.equal(validCitizens(world.state.citizens, world.state.buildings), true, 'and the save is still well formed');
   // Put one house back and the town fills it, up to its beds and no further.
-  assert.equal(world.build('cottage', 20, 20).ok, true);
+  assert.equal(world.build('cottage', 18, 20).ok, true);
   world.tick(0.1);
   const rebuilt = world.state.buildings.find(building => building.kind === 'cottage')!;
   const housed = world.state.citizens!.filter(citizen => citizen.homeId === rebuilt.id).length;

@@ -64,10 +64,12 @@ test('only guards standing over the market protect the trade route', () => {
 test('the guard line adds up, and stops at the cap', () => {
   const world = prepared();
   const market = world.state.buildings.find(building => building.kind === 'market')!;
-  let y = market.y;
+  // Each guard stands on its own yard now — a castle takes three tiles, the rest two — so the
+  // line is stacked one yard per step, close enough to the market for every radius to reach it.
+  let y = 3;
   for (const kind of ['castle', 'barracks', 'guardpost'] as const) {
-    world.build(kind, market.x + 2, y);
-    y += 2;
+    world.build(kind, market.x + 5, y);
+    y += 3;
   }
   const expected = Math.min(MAX_GUARD_COVER, GUARD_SHARES.castle + GUARD_SHARES.barracks + GUARD_SHARES.guardpost);
   assert.equal(Math.round(world.caravanGuardCover() * 100) / 100, Math.round(expected * 100) / 100, 'all three count');
