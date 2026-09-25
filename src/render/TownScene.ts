@@ -206,6 +206,10 @@ export class TownScene extends Phaser.Scene {
     if(kind==='school'||kind==='firestation')return{texture:`expansion-${kind}`};
     const housing=housingLevelFrame(kind,level);if(housing)return{texture:housing.atlas,frame:housing.frame};
     const generated=generatedSprite(kind);if(generated)return{texture:generated.atlas,frame:generated.frame};
+    // A wall draws as one of the junction pieces in its own atlas. The piece that matches its
+    // neighbours is applied right after creation; this is a real frame to create the sprite
+    // with, so the texture manager is never asked for a frame that does not exist.
+    if(kind==='wall'||kind==='citygate'){const piece=wallPiece(0);return{texture:piece.atlas,frame:piece.frame};}
     if(EXPANSION_SPRITES.some(k=>k===kind))return{texture:'expansion'};
     if(DECORATION_SPRITES.some(k=>k===kind))return{texture:'decorations'};
     if(INDUSTRY_KINDS.includes(kind))return{texture:'industry'};
