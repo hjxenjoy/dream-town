@@ -1,6 +1,7 @@
 import { CROPS, CROP_IDS, gardenLevel } from './sim/farming';
 import Phaser from 'phaser';
-import { SimWorld, type ActionResult, type GameState, type OfflineReport } from './sim/world';
+import { SimWorld, createInitialState, type ActionResult, type GameState, type OfflineReport } from './sim/world';
+import { DEFAULT_MAP_PRESET, MAP_PRESETS, type MapPresetId } from './sim/presets';
 import { RESOURCE_KEYS, RESOURCES } from './sim/data';
 import { GAME_TOOLS, executeGameTool } from './sim/tools';
 import { TownScene } from './render/TownScene';
@@ -24,7 +25,8 @@ let loaded:GameState|null=null;
 let loadError='';
 let autosaveAllowed=true;
 try{loaded=await loadGame();}catch(e){loadError=errorMessage(e);autosaveAllowed=false;}
-const world=new SimWorld(loaded??undefined);
+// No save yet: the town is founded on a planned map, so the valley is alive from the first frame.
+const world=new SimWorld(loaded ?? createInitialState(Date.now(), DEFAULT_MAP_PRESET));
 let welcome:OfflineReport|undefined;
 if(loaded){const elapsed=Math.max(0,(Date.now()-loaded.savedAt)/1000);if(elapsed>=30)welcome=world.offlineUntil();}
 let speed=1;
@@ -96,6 +98,16 @@ ui=new GameUI(world,{
   load:async slot=>{if(loading)return;loading=true;try{const state=await loadGame(slot);if(!state){ui.toast('这个位置还没有存档，先保存一次吧。',false);return;}if(!window.confirm('读取存档会替换当前小镇。继续吗？'))return;await replaceWorld(state,'已回到保存时的小镇。');}catch(e){ui.toast(errorMessage(e),false);}finally{loading=false;}},
   export:()=>{try{exportSave(world.state);ui.toast('存档备份已准备好。');}catch(e){ui.toast(errorMessage(e),false);}},
   import:async file=>{if(loading)return;loading=true;try{const state=await importSave(file);if(!window.confirm('导入这份存档并替换当前小镇？'))return;await replaceWorld(state,'存档已导入，欢迎回家。');}catch(e){ui.toast(errorMessage(e),false);}finally{loading=false;}},
+  newGame:async id=>{
+    if(loading)return;
+    const map:MapPresetId=id;const preset=MAP_PRESETS[map];
+    if(!preset){ui.toast('没有这张预制地图。',false);return;}
+    if(!window.confirm(`用「${preset.name}」重新开局？当前小镇会被替换，可以先在设置里存档或导出备份。`))return;
+    loading=true;
+    try{await replaceWorld(createInitialState(Date.now(),map),`已按「${preset.name}」重新开局，新的小镇已经安排好了。`);}
+    catch(e){ui.toast(errorMessage(e),false);}
+    finally{loading=false;}
+  },
   fullscreen:()=>{if(document.fullscreenElement)void document.exitFullscreen();else document.documentElement.requestFullscreen?.().catch(()=>ui.toast('这个浏览器暂不支持全屏。',false));}
 });
 
@@ -147,7 +159,7 @@ Object.assign(window,{gameTools:{definitions:GAME_TOOLS,observe:()=>world.observ
 if(import.meta.env.DEV)Object.assign(window,{__town:{world,scene,ui,game,save:()=>persist('autosave',true)}});
 
 if(loadError){ui.open('settings');ui.setSaveStatus('自动存档已保护');ui.toast(loadError,false);}
-else{if(welcome)ui.showOffline(welcome);else if(!loaded)window.setTimeout(()=>ui.toast('欢迎回家。点一点麦田上的 ✓，收下第一份丰收。'),1200);void persist();}
+else{if(welcome)ui.showOffline(welcome);else if(!loaded)window.setTimeout(()=>ui.toast(`已按预制地图「${MAP_PRESETS[DEFAULT_MAP_PRESET].name}」开局，街区、道路与工坊都安排好了。想换一张规划图，打开设置 → 预制地图。`),1200);void persist();}
 
 if(import.meta.env.PROD){
   if(!('serviceWorker' in navigator))ui.setOfflineStatus('当前浏览器不支持；请用 Chrome 或 Safari 打开');

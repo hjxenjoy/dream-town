@@ -1,6 +1,7 @@
 import { RARE_REWARDS, rareCount, rareOrnamentUnlocked, rareStyleRequirement } from './rareRewards.ts';
 import { allowedTasks, boardComplete, validWeekly, weekBaseline, weekRemaining, weekOf, weeklyBoard, weeklyProgress, type WeeklyTaskName, type WeeklyTaskProgress } from './weekly.ts';
 import { raiseChicks, livestockSpec } from './livestock.ts';
+import { MAP_PRESETS, presetRoads, type MapPresetId } from './presets.ts';
 import { growOrchards, recordOrchard } from './orchard.ts';
 import { growHomes, HOME_STYLES, type HomeStyle } from './homeGrowth.ts';
 import { REGIONS, REGION_IDS, regionAt, validRegions, type RegionId } from './regions.ts';
@@ -241,25 +242,42 @@ const INITIAL_ORDERS: Order[] = [
   { id: 'order-6', npc: '诺亚 · 渔夫', title: '欢迎新邻居的晚餐', items: { fish: 8, bread: 2 }, rewardCoins: 210, rewardXp: 40 },
 ];
 
-export function createInitialState(now = Date.now()): SimState {
-  const layout: [BuildingKind, number, number][] = [
-    ['townhall', 8, 7], ['cottage', 6, 6], ['cottage', 10, 6], ['cottage', 11, 8],
-    ['windmill', 5, 10], ['bakery', 7, 11], ['warehouse', 10, 10], ['market', 8, 9],
-    ['well', 9, 6], ['lumber', 4, 6], ['fishery', 12, 12], ['quarry', 4, 4],
-    // Bread needs sugar, so the opening town must be able to make it: without these two the
-    // bakery in the starting layout could never bake again.
-    ['canefield', 2, 10], ['sugarmill', 2, 12],
-    ['garden', 11, 5], ['farm', 4, 9], ['farm', 4, 10], ['farm', 4, 11],
-    ['farm', 3, 9], ['farm', 3, 10], ['farm', 3, 11],
-  ];
-  const buildings = layout.map(([kind, x, y], index): Building => {
-    const ready = ['fishery', 'lumber'].includes(kind) || (kind === 'farm' && y === 9);
-    return { id: `building-${index + 1}`, kind, x, y, level: 1, progress: ready ? 1 : ((index * 17) % 70) / 100, ready, paused: false, stock: ready ? { ...BUILDINGS[kind].output } : {}, workers: BUILDINGS[kind].workers ?? 0 };
+/**
+ * A fresh town, laid out from one of the map blueprints in `presets.ts`.
+ *
+ * `frontier` is the smallest paper the game writes on — a hamlet and the dirt roads that
+ * connect it — and it is what `new SimWorld()` builds, so the simulation keeps the baseline
+ * its tests were written against. The planned maps carry their own streets, blocks and
+ * census, and are handed over as a finished save shape: every one of them passes the same
+ * `validateSave` an imported save does.
+ */
+export function createInitialState(now = Date.now(), mapId: MapPresetId = 'frontier'): SimState {
+  const map = MAP_PRESETS[mapId];
+  const buildings = map.placements.map((placement, index): Building => {
+    const definition = BUILDINGS[placement.kind];
+    const ready = placement.ready ?? false;
+    const grown = placement.grown ? livestockSpec(placement.kind) : undefined;
+    return {
+      id: `building-${index + 1}`, kind: placement.kind, x: placement.x, y: placement.y,
+      level: placement.level ?? 1,
+      progress: ready ? 1 : placement.progress ?? ((index * 17) % 70) / 100,
+      ready, paused: false,
+      stock: ready ? { ...definition.output } : {},
+      workers: definition.workers ?? 0,
+      ...(placement.crop ? { crop: placement.crop } : {}),
+      ...(placement.focus ? { productionFocus: placement.focus } : {}),
+      ...(grown ? { animalAge: grown.seconds } : {}),
+    };
   });
+  // Warehouse space follows the warehouses that actually stand, exactly as building or
+  // demolishing one does at runtime: a map cannot claim storage it does not have.
+  const warehouseLevels = map.placements.reduce((total, placement) => total + (placement.kind === 'warehouse' ? (placement.level ?? 1) : 0), 0);
   return {
-    version: 2, researched: [], createdAt: now, savedAt: now, gameTime: gameTimeAtHour(DAY_START_HOUR), coins: 2800, xp: 80, level: 3, prestige: 6,
-    taxRate: 1, population: 13, happiness: 86, capacity: 240,
-    resources: { ...emptyResources(), wood: 42, stone: 25, wheat: 24, flour: 12, bread: 10, fish: 20, plank: 12, materials: 10 },
+    version: 2, researched: [...map.researched], createdAt: now, savedAt: now, gameTime: gameTimeAtHour(DAY_START_HOUR),
+    coins: map.coins, xp: map.xp, level: map.level, prestige: map.prestige,
+    taxRate: map.taxRate, population: map.population, happiness: 86,
+    capacity: 160 + (map.researched.includes('logistics') ? 96 : 80) * warehouseLevels,
+    resources: { ...emptyResources(), ...map.resources },
     buildings, orders: clone(INITIAL_ORDERS),
     caravans: [newCaravan(0)],
     quests: [
@@ -271,13 +289,17 @@ export function createInitialState(now = Date.now()): SimState {
       { id: 'festival', title: '今夜有好心情', description: '举办 1 场邻里庆典', target: 1, progress: 0, rewardCoins: 120, rewardXp: 40, rewardPrestige: 2, claimed: false },
       ...expansionQuests(),
     ],
-    season: 'spring', needs: { food: 100, water: 100, services: 90, environment: 75, comfort: 0, leisure: 0, faith: 0, health: 0 },
+    season: map.season, needs: { food: 100, water: 100, services: 90, environment: 75, comfort: 0, leisure: 0, faith: 0, health: 0 },
     settings: { sound: true, disasters: false, autoMayor: false },
     stats: { collected: 0, ordersCompleted: 0, buildingsBuilt: 0, caravansCompleted: 0, coinsEarned: 0, festivals: 0, repairs: 0, toolsProduced: 0, clothingProduced: 0 },
-    logs: [{ id: 'log-1', time: 0, message: '欢迎来到青岚小镇。麦田已经成熟，新的故事正等你开始。', type: 'info' }],
-    nextId: 100, festivalUntil: 0, lastMayorAt: 0, lastDisasterAt: 0, lastPlagueAt: 0,
+    logs: [{ id: 'log-1', time: 0, message: map.welcome, type: 'info' }],
+    nextId: Math.max(100, map.placements.length + 1), festivalUntil: 0, lastMayorAt: 0, lastDisasterAt: 0, lastPlagueAt: 0,
     // The first commission is due once the town reaches the unlock level, not before.
     nextBulkOrderAt: BULK_ORDER_UNLOCK_LEVEL * 140,
+    // Only what a map actually needs, so `frontier` stays the baseline save it has always been.
+    ...(map.farmingXp ? { farming: { ...freshFarming(), xp: map.farmingXp } } : {}),
+    ...(map.regions.length ? { regions: [...map.regions] } : {}),
+    ...(map.streets.length ? { roads: presetRoads(map) } : {}),
   };
 }
 
