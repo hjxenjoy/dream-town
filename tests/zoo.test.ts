@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, FOCUS_RECIPES, RESOURCES, SOUVENIR_SHOP_MULTIPLIER, TERMINAL_GOODS, ZOO_SPECIES, ZOO_SPECIES_NAMES, emptyResources } from '../src/sim/data.ts';
 import { GENERATED_ATLASES, generatedSprite } from '../src/sim/atlases.ts';
+import { ZOO_FEED_FRAME, ZOO_KEEPER_FRAME, ZOO_WALK_STEPS, zooStill, zooWalk } from '../src/sim/zoo.ts';
+import { executeGameTool } from '../src/sim/tools.ts';
 import { cycleOf } from './support.ts';
 
 /** A town with money, materials and husbandry, but nothing built yet. */
@@ -150,9 +152,22 @@ test('every zoo sprite is registered against an atlas the scene loads', () => {
     assert.ok(GENERATED_ATLASES[sprite.atlas], `${kind}'s atlas is registered`);
     assert.match(scene, new RegExp(`'${sprite.atlas}'`), `${kind}'s atlas ${sprite.atlas} is loaded by the scene`);
   }
-  // The zoo's own pack also holds the animals, which are not buildings yet; that is recorded
-  // rather than quietly left as a mystery.
-  for (const animal of ['elephant', 'giraffe', 'zebra', 'lion', 'zoo-keeper', 'zoo-feed']) {
-    assert.ok(GENERATED_ATLASES['zoo-expansion'].frames[animal], `${animal} art exists for later use`);
+});
+
+test('the pen draws the animal it houses, standing or mid-stride', () => {
+  const scene = readFileSync(new URL('../src/render/TownScene.ts', import.meta.url), 'utf8');
+  for (const species of ZOO_SPECIES) {
+    const still = zooStill(species)!;
+    assert.ok(GENERATED_ATLASES[still.atlas].frames[still.frame], `${species}'s portrait is real art`);
+    for (let step = -1; step <= ZOO_WALK_STEPS; step++) {
+      const walk = zooWalk(species, step)!;
+      assert.ok(GENERATED_ATLASES[walk.atlas].frames[walk.frame], `${species} step ${step} is a real frame`);
+      assert.equal(walk.width, still.width, 'a walking animal is drawn as wide as a standing one');
+      assert.match(scene, new RegExp(`'${walk.atlas}'`), `${walk.atlas} is loaded by the scene`);
+    }
   }
+  // The keeper and the feed cart come from the same pack and are drawn by the same scene.
+  assert.ok(GENERATED_ATLASES['zoo-expansion'].frames[ZOO_KEEPER_FRAME], 'the keeper is real art');
+  assert.ok(GENERATED_ATLASES['zoo-expansion'].frames[ZOO_FEED_FRAME], 'so is the feed cart');
+  assert.equal(zooStill('dragon'), null, 'an animal the pack never shipped draws nothing');
 });

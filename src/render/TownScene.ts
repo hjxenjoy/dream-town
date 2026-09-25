@@ -1,5 +1,6 @@
 import { RegionLayer } from './RegionLayer';
 import { livestockFrame, livestockWalk } from '../sim/livestock';
+import { zooStill, zooWalk, ZOO_FEED_FRAME, ZOO_FEED_WIDTH, ZOO_KEEPER_FRAME, ZOO_KEEPER_WIDTH, ZOO_STILL_ATLAS } from '../sim/zoo';
 import { drawSoilDetails, drawHomeDetails } from './SoilDetails';
 import { REGIONS, type RegionId } from '../sim/regions';
 import { soilLevel, cropGrowthStage, cropStageFrame } from '../sim/farming';
@@ -25,7 +26,7 @@ import { drawValley } from './ValleyTerrain';
 
 export { TILE_W, TILE_H, iso } from '../sim/terrain';
 /** Generated atlases the scene draws. Preloading and frame registration both read this. */
-const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel','defense-expansion','wall-junctions','duel-actions','production-expansion','plague-animation','weather-expansion','animal-walk-3','animal-walk-4','zoo-expansion','small-accessories','transport-expansion'] as const;
+const SCENE_ATLASES = ['herd-growth','living-farm','homestead','crop-stages-1','crop-stages-2','crop-stages-3','disasters','street-decor','housing-levels','caravan','season-props','pets','machine-layers','industry2','citizens-actions','chapel','defense-expansion','wall-junctions','duel-actions','production-expansion','plague-animation','weather-expansion','animal-walk-1','animal-walk-2','animal-walk-3','animal-walk-4','zoo-expansion','small-accessories','transport-expansion'] as const;
 /** The seamless weather textures, loaded as images so a tile sprite can repeat them. */
 const WEATHER_TILES = ['weather-tile-rain','weather-tile-snow','weather-tile-fog'] as const;
 /** On-screen widths for the farm visuals, which are drawn from generated textures. */
@@ -41,9 +42,11 @@ const FARM_PLOT_WIDTH = 104;
 const FARM_SOIL_DROP = 21;
 /** A wall tile is drawn one tile wide, so a run meets its neighbours edge to edge. */
 const WALL_WIDTH = 116;
+/** A guard standing beside a post is drawn this wide. */
+const GUARD_WIDTH = 34;
 
 const deiso = (x: number, y: number) => ({ x: Math.round(x / TILE_W + y / TILE_H), y: Math.round(y / TILE_H - x / TILE_W) });
-type BuildingVisual = { sprite: Phaser.GameObjects.Image; badge: Phaser.GameObjects.Container; progress: Phaser.GameObjects.Graphics; ready: boolean; soil: Phaser.GameObjects.Graphics; soilLevel: number; homeStyle?: string; companion?: Phaser.GameObjects.Image };
+type BuildingVisual = { sprite: Phaser.GameObjects.Image; badge: Phaser.GameObjects.Container; progress: Phaser.GameObjects.Graphics; ready: boolean; soil: Phaser.GameObjects.Graphics; soilLevel: number; homeStyle?: string; companion?: Phaser.GameObjects.Image; prop?: Phaser.GameObjects.Image };
 export class TownScene extends Phaser.Scene {
   world: SimWorld;
   onChoose: (id: string) => void;
@@ -219,7 +222,7 @@ export class TownScene extends Phaser.Scene {
     this.regionLayer??=new RegionLayer(this,()=>this.onOpenMap());
     this.regionLayer.sync(this.world.state.regions??[],this.world.state.level);
     const current=new Set(this.world.state.buildings.map(b=>b.id));
-    this.visuals.forEach((v,id)=>{if(!current.has(id)){v.sprite.destroy();v.badge.destroy();v.progress.destroy();v.soil.destroy();v.companion?.destroy();this.visuals.delete(id);}});
+    this.visuals.forEach((v,id)=>{if(!current.has(id)){v.sprite.destroy();v.badge.destroy();v.progress.destroy();v.soil.destroy();v.companion?.destroy();v.prop?.destroy();this.visuals.delete(id);}});
     this.running.clear();
     for(const id of this.progressSnapshot.keys())if(!current.has(id))this.progressSnapshot.delete(id);
     for(const b of this.world.state.buildings){
@@ -295,6 +298,32 @@ export class TownScene extends Phaser.Scene {
         if(walking)drawFrameScale(v.companion,gait!.atlas,gait!.frame,gait!.scale);
         else drawFrameWidth(v.companion,atlas,frame,herd?atlasFrames('herd-growth')[frame].w*.12:orchard?78:48);
         v.companion.setPosition(p.x+(orchard?30:16),p.y+17).setDepth(p.y+7).setVisible(!b.damaged).setAlpha(b.id===this.moveId?.28:b.paused?.65:1);
+      }
+      // A pen shows the animal it actually houses, and a working pen has it pacing in place,
+      // so species and state are readable without opening the panel.
+      const animal=b.kind==='zooenclosure'?zooStill(b.productionFocus??''):null;
+      if(animal){
+        const stride=!this.reducedMotion()&&this.running.has(b.id)?zooWalk(animal.frame,Math.floor(this.game.loop.time/220)):null;
+        const art=stride??animal;
+        if(!v.companion)v.companion=this.add.image(p.x,p.y,art.atlas,art.frame).setOrigin(.5,.93);
+        drawFrameWidth(v.companion,art.atlas,art.frame,art.width);
+        v.companion.setPosition(p.x+22,p.y+10).setDepth(p.y+7).setVisible(!b.damaged).setAlpha(b.id===this.moveId?.28:b.paused?.65:1);
+        // The feed cart is out while somebody is tending the pen, and put away when not.
+        const tended=!b.paused&&!b.damaged&&(b.workers??0)>0;
+        if(tended&&!v.prop)v.prop=this.add.image(p.x,p.y,ZOO_STILL_ATLAS,ZOO_FEED_FRAME).setOrigin(.5,.93);
+        if(v.prop){
+          drawFrameWidth(v.prop,ZOO_STILL_ATLAS,ZOO_FEED_FRAME,ZOO_FEED_WIDTH);
+          v.prop.setPosition(p.x-40,p.y+12).setDepth(p.y+7).setAlpha(b.id===this.moveId?.28:1).setVisible(tended&&!b.damaged);
+        }
+      }
+      // The keeper stands at the zoo gate, and a guard at every post on the defence line, so
+      // the zoo reads as staffed and the protection is visible long before a raid tests it.
+      const staffed=b.kind==='zoogate'?'zoo-expansion':BUILDINGS[b.kind].guardRadius?'defense-expansion':null;
+      if(staffed){
+        const frame=b.kind==='zoogate'?ZOO_KEEPER_FRAME:'guard',width=b.kind==='zoogate'?ZOO_KEEPER_WIDTH:GUARD_WIDTH;
+        if(!v.companion)v.companion=this.add.image(p.x,p.y,staffed,frame).setOrigin(.5,.93);
+        drawFrameWidth(v.companion,staffed,frame,width);
+        v.companion.setPosition(p.x+(b.kind==='zoogate'?24:30),p.y+14).setDepth(p.y+7).setVisible(!b.damaged).setAlpha(b.id===this.moveId?.28:1);
       }
       v.badge.setVisible(b.ready||!!b.damaged);const text=v.badge.list[1] as Phaser.GameObjects.Text;
       text.setText(b.damaged?'!':'✓').setColor(b.damaged?'#bc6643':'#658844');
@@ -408,7 +437,7 @@ export class TownScene extends Phaser.Scene {
       // Subtle foliage sway and a slow peck, always reset when motion is disabled.
       // A herd that is walking does not also sway: the gait is the motion, and adding the sway
       // on top of it would rock the whole animal as it steps.
-      const striding=active&&Boolean(livestockWalk(b,0))&&this.running.has(b.id);
+      const striding=active&&(Boolean(livestockWalk(b,0))||b.kind==='zooenclosure')&&this.running.has(b.id);
       companion.setAngle(striding?0:active?Math.sin(time/(b.kind==='orchardhouse'?1400:650)+b.x)*.9:0);
     }
     if(this.lastSeason!==this.world.state.season){this.lastSeason=this.world.state.season;this.ground.setAlpha(this.lastSeason==='winter'?.78:1);}
