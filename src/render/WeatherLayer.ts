@@ -30,15 +30,18 @@ export class WeatherLayer {
 
     if (this.overlay) {
       const camera = this.scene.cameras.main;
-      // The overlay follows the camera rather than the world: rain falls everywhere the player
-      // can see, and a tile anchored in the world would leave the viewport bare when panning.
-      this.overlay.setPosition(camera.scrollX, camera.scrollY);
-      this.overlay.setSize(camera.width, camera.height);
+      // The overlay covers the viewport at whatever zoom: `worldView` is the world rectangle
+      // the camera actually shows. Sizing it in screen pixels instead left a screen-sized
+      // patch in world space — at zoom 0.85 the veil covered 85% of the view, a bright
+      // rectangle in the middle that grew and shrank as the player zoomed.
+      const view = camera.worldView;
+      this.overlay.setPosition(view.x, view.y);
+      this.overlay.setSize(view.width, view.height);
       this.overlay.setOrigin(0, 0);
       const scale = WEATHER[kind].tileScale ?? 1;
       // Tile positions are in texture pixels, so the scroll has to be scaled to match or the
       // pattern would drift out of step with the ground it is falling on.
-      this.overlay.setTilePosition(camera.scrollX / scale, (camera.scrollY + (reduced ? 0 : time / 22)) / scale);
+      this.overlay.setTilePosition(view.x / scale, (view.y + (reduced ? 0 : time / 22)) / scale);
     }
   }
 
@@ -57,8 +60,8 @@ export class WeatherLayer {
     this.sigil = fresh;
 
     if (definition.tile) {
-      const camera = this.scene.cameras.main;
-      this.overlay = this.scene.add.tileSprite(0, 0, camera.width, camera.height, definition.tile)
+      const view = this.scene.cameras.main.worldView;
+      this.overlay = this.scene.add.tileSprite(0, 0, view.width, view.height, definition.tile)
         .setOrigin(0, 0)
         .setDepth(8990)
         .setAlpha(definition.tileAlpha ?? 0.5);
