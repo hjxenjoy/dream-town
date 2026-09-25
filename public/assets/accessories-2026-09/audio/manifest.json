@@ -1805,9 +1805,15 @@
       "source": "new",
       "profile": "field",
       "runtimeIntegrated": false
+    },
+    "citygate": {
+      "url": "/assets/accessories-2026-09/audio/wall.wav",
+      "source": "existing",
+      "profile": "cloth",
+      "runtimeIntegrated": false
     }
   },
-  "buildingCount": 85,
+  "buildingCount": 86,
   "existingReused": 5,
   "newTracks": 76
 }

@@ -86,11 +86,28 @@ export function wallPiece(mask: number): WallPiece {
 /** A tile key, shared with the mask lookup so positions can never disagree. */
 export function wallKey(x: number, y: number): string { return `${x},${y}`; }
 
-/** Just the walls, keyed so a neighbour test is one lookup. */
+/**
+ * Just the walls, keyed so a neighbour test is one lookup. A gate joins the run: it is a wall
+ * piece with an opening in it, so the tiles on either side must still read as one line.
+ */
 export function wallKeys(buildings: readonly Building[]): Set<string> {
   const keys = new Set<string>();
-  for (const building of buildings) if (building.kind === 'wall') keys.add(wallKey(building.x, building.y));
+  // A gate is a wall piece with an opening in it, so it joins the run and the tiles on
+  // either side still read as one line.
+  for (const building of buildings) if (building.kind === 'wall' || building.kind === 'citygate') keys.add(wallKey(building.x, building.y));
   return keys;
+}
+
+/**
+ * The gate piece for a tile. It keeps the straight runs' mirroring convention — a run along
+ * `±x` draws as shipped, a run along `±y` draws the same frame flipped — and any other
+ * placement (a gate at a corner or a lone gate) draws unflipped, which is the frame as drawn.
+ */
+export function gatePiece(connections: readonly WallDirection[]): WallPiece {
+  const alongY = isStraightThrough(connections) && (connections[0] === '+y' || connections[0] === '-y');
+  return alongY
+    ? { atlas: 'defense-expansion', frame: 'city-gate', flipX: true }
+    : { atlas: 'defense-expansion', frame: 'city-gate' };
 }
 
 /** The directions in which a wall stands next to this tile. */

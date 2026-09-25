@@ -1,10 +1,16 @@
 import { terrainAt, PLAYABLE_SIZE } from './terrain.ts';
 import { tileKey, type Tile, type Road } from './roads.ts';
 const neighbors=(p:Tile):Tile[]=>[{x:p.x+1,y:p.y},{x:p.x-1,y:p.y},{x:p.x,y:p.y+1},{x:p.x,y:p.y-1}];
+/**
+ * Gates are openings in a wall line, so unlike every other building people walk through them.
+ * Without this a walled block is a trap: the walls block like any building, and the residents
+ * inside could never reach a workshop outside.
+ */
+
 /** Four-neighbor paths never cut diagonally across building corners. */
 export class TownNavigation {
   blocked:Set<string>; streets:Set<string>;
-  constructor(buildings:Tile[],roads:Road[]=[]){this.blocked=new Set(buildings.map(tileKey));this.streets=new Set(roads.map(tileKey));}
+  constructor(buildings:readonly (Tile&{kind?:string})[],roads:Road[]=[]){this.blocked=new Set(buildings.filter(b=>b.kind!=='citygate').map(tileKey));this.streets=new Set(roads.map(tileKey));}
   canWalk(p:Tile){const t=terrainAt(p.x,p.y);return (t==='land'||t==='bridge')&&!this.blocked.has(tileKey(p));}
   entrances(p:Tile){return neighbors(p).filter(n=>this.canWalk(n));}
   nearest(p:Tile):Tile|null{

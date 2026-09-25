@@ -19,7 +19,7 @@ import { SimWorld, type Building, type BuildingKind } from '../sim/world';
 import { BUILDINGS, EXPANSION_SPRITES, EXPANSION_FRAMES, INDUSTRY_KINDS, INDUSTRY_FRAMES, DECORATION_SPRITES, DECORATION_FRAMES } from '../sim/data';
 import { GENERATED_ATLASES, atlasFrames, generatedSprite, housingLevelFrame } from '../sim/atlases';
 import { drawFrameWidth, drawFrameScale } from './atlasSprite';
-import { wallKeys, wallMask, wallPiece } from '../sim/walls';
+import { wallKeys, wallMask, wallPiece, gatePiece, wallConnections } from '../sim/walls';
 import { MAP_SIZE, TILE_W, TILE_H, iso, terrainAt, terrainReason, DISTRICTS, type District } from '../sim/terrain';
 import { drawValley } from './ValleyTerrain';
 
@@ -211,7 +211,7 @@ export class TownScene extends Phaser.Scene {
   private spriteWidth(kind:BuildingKind):number {
     if(EXPANSION_SPRITES.some(k=>k===kind))return kind==='watertower'?124:kind==='apartment'?156:160;
     if(DECORATION_SPRITES.some(k=>k===kind))return kind==='bench'?108:kind==='fountain'?108:kind==='gazebo'?126:kind==='flowerarch'?120:170;
-    if(generatedSprite(kind))return kind==='willow'?150:kind==='parasol'?120:kind==='railing'?150:kind==='chapel'?150:130;
+    if(generatedSprite(kind))return kind==='willow'?150:kind==='parasol'?120:kind==='railing'?150:kind==='chapel'?150:kind==='citygate'?WALL_WIDTH:130;
     if(housingLevelFrame(kind,1))return 150;
     return kind==='townhall'?177:kind==='well'?100:kind==='garden'?139:151;
   }
@@ -242,9 +242,11 @@ export class TownScene extends Phaser.Scene {
         this.tweens.add({targets:sprite,alpha:{from:0,to:1},duration:300});
       }
       // A wall tile draws whichever piece its neighbours call for, so the frame depends on
-      // the town's layout rather than on the building alone.
-      if(b.kind==='wall'){
-        const piece=wallPiece(wallMask(b,wallKeys(this.world.state.buildings)));
+      // the town's layout rather than on the building alone. A gate is the same structure
+      // with an opening in it: it joins the run and keeps its neighbours' masks unchanged.
+      if(b.kind==='wall'||b.kind==='citygate'){
+        const keys=wallKeys(this.world.state.buildings);
+        const piece=b.kind==='citygate'?gatePiece(wallConnections(b,keys)):wallPiece(wallMask(b,keys));
         drawFrameWidth(v.sprite,piece.atlas,piece.frame,WALL_WIDTH);
         v.sprite.setFlipX(piece.flipX===true);
       }
