@@ -89,6 +89,17 @@ test('an enclosure opens with a resident and can be changed to another species',
   assert.equal(world.setProductionFocus(enclosure.id, 'dragon').ok, false);
 });
 
+test('the deputy tool can change what a pen houses, exactly as the panel does', () => {
+  const world = prepared(20);
+  world.build('zoogate', 4, 24);
+  const built = world.build('zooenclosure', 8, 24);
+  // The tool schema is a deputy's only vocabulary: a species missing there would mean the
+  // zoo exists in the rules but no agent driving these tools could ever manage it.
+  const result = executeGameTool(world, 'set_production_focus', { buildingId: built.buildingId, recipeId: 'lion' });
+  assert.equal(result.ok, true, 'the tool accepts a species');
+  assert.equal(world.state.buildings.find(building => building.id === built.buildingId)!.productionFocus, 'lion');
+});
+
 test('a fed enclosure makes souvenirs and an unfed one waits', () => {
   const world = prepared(20);
   world.build('zoogate', 4, 24);

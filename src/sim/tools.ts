@@ -2,7 +2,7 @@ import { PLAYABLE_SIZE } from './terrain.ts';
 import { CROP_IDS, type CropId } from './farming.ts';
 import { PROJECT_IDS, type ProjectId } from './projects.ts';
 import type { RoadKind } from './roads.ts';
-import { BUILDING_KEYS, MARKET_GOODS, TECHNOLOGY_KEYS, RESOURCE_KEYS, type Resource, type TechnologyId, type BuildingKind } from './data.ts';
+import { BUILDING_KEYS, FOCUS_RECIPES, MARKET_GOODS, TECHNOLOGY_KEYS, RESOURCE_KEYS, type Resource, type TechnologyId, type BuildingKind } from './data.ts';
 import { SimWorld, type ActionResult } from './world.ts';
 
 type Parameters = Record<string, unknown>;
@@ -12,6 +12,12 @@ interface ToolDefinition {
 }
 const coordinate = { type: 'integer', minimum: 1, maximum: PLAYABLE_SIZE };
 const string = { type: 'string' };
+/**
+ * Every focus id a building accepts, derived from the recipe registry rather than listed:
+ * workshop priorities, wine or beer, an ore vein, a smithy tool, the species in a pen. A
+ * value missing here would make a feature unreachable for any caller of these tools.
+ */
+const FOCUS_IDS = ['default', ...new Set(Object.values(FOCUS_RECIPES).flatMap(recipes => recipes ? Object.keys(recipes) : []))];
 function tool(name: string, description: string, properties: Parameters = {}, required: string[] = []): ToolDefinition {
   return { type: 'function', function: { name, description, parameters: { type: 'object', properties, required, additionalProperties: false } } };
 }
@@ -39,7 +45,7 @@ export const GAME_TOOLS: ToolDefinition[] = [
   tool('dispatch_caravan', '派出补给商队前往已选定的目的地；返回后同一工具领取货物。', { caravan: { type: 'string' } }),
   tool('choose_caravan_route', '为某支商队选择下一趟目的地。不同路线货物、时长与回报不同，并走不同的桥。', { destination: { type: 'string', enum: ['valley', 'hilltown', 'rivermouth'] }, caravan: { type: 'string' } }, ['destination']),
   tool('collect_production', '收取成熟农田或已完工工坊的产物。', { buildingId: string }, ['buildingId']),
-  tool('set_production_focus', '木工坊可选择 balanced 均衡、wood 木材优先、plank 木板优先；其他工坊恢复默认配方。', { buildingId: string, recipeId: { type: 'string', enum: ['default', 'balanced', 'wood', 'plank', ...BUILDING_KEYS] } }, ['buildingId', 'recipeId']),
+  tool('set_production_focus', '为有多种做法的建筑换焦点：木工坊 balanced/wood/plank、酿酒坊 wine/beer、矿场矿脉、铁匠铺工具、动物园展区的动物；传 default 恢复默认配方。', { buildingId: string, recipeId: { type: 'string', enum: FOCUS_IDS } }, ['buildingId', 'recipeId']),
   tool('adjust_workforce', '在现有居民范围内安排工坊工人。', { buildingId: string, workerCount: { type: 'integer', minimum: 0, maximum: 2 } }, ['buildingId', 'workerCount']),
   tool('emergency_repair', '修复发生小火情的建筑，需要金币和材料。', { x: coordinate, y: coordinate }, ['x', 'y']),
   tool('host_festival', '花费180金币举办庆典，提高幸福度；庆典期间不能重复举办。', {}),
