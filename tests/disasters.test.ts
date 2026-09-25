@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SimWorld, validateSave } from '../src/sim/world.ts';
 import { BUILDINGS, emptyResources, TECHNOLOGY_KEYS, type BuildingKind } from '../src/sim/data.ts';
-import { ALERT_FRAME_MS, ALERT_FRAMES, DISASTER_INTERVAL, DISASTER_KINDS, DISASTERS, HAZARD_FRAME_MS, REPAIR_FRAMES, REPAIR_SECONDS, canStrike, hazardOverlay, loopFrame, type SeasonKey } from '../src/sim/disasters.ts';
+import { ALERT_FRAME_MS, ALERT_FRAMES, DISASTER_INTERVAL, DISASTER_KINDS, DISASTERS, DUEL_FRAMES, DUEL_FRAME_MS, HAZARD_FRAME_MS, REPAIR_FRAMES, REPAIR_SECONDS, canStrike, hazardOverlay, loopFrame, type SeasonKey } from '../src/sim/disasters.ts';
 import { readFileSync } from 'node:fs';
 import { GENERATED_ATLASES } from '../src/sim/atlases.ts';
 
@@ -268,5 +268,44 @@ test('every hazard repairs with the materials it charges and names itself in the
     assert.ok(DISASTERS[kind].advice.length>0,`${kind} advice`);
     assert.equal(DISASTERS[kind].frames.length,2,`${kind} animation frames`);
     assert.ok(DISASTERS[kind].log.includes('%s'),`${kind} log names the building`);
+  }
+});
+
+test('a raid the guards turn away is announced, staged at the post, and costs nothing',()=>{
+  const w=prepared();w.state.buildings=[];
+  const house=add(w,'cottage',38,42);
+  add(w,'guardpost',38,40); // radius 5 covers the house two tiles away, and the post itself
+  strike(w,'bandits','winter');
+  assert.equal(house.damaged,undefined,'the house is untouched');
+  assert.equal(w.state.raidRepelled?.x,38,'the stand-off is on the map');
+  assert.equal(w.state.raidRepelled?.y,40,'staged at the post that turned them back');
+  assert.ok((w.state.raidRepelled?.until??0)>w.state.gameTime,'and lasts a visible moment');
+  assert.ok(w.state.logs.some(entry=>entry.message.includes('拦了回去')),'the log names the guards, not chance');
+  w.tick(w.state.raidRepelled!.until-w.state.gameTime+1);
+  assert.equal(w.state.raidRepelled,undefined,'the stand-off clears itself');
+});
+
+test('without a guard in reach, the raid lands exactly as it always has',()=>{
+  const w=prepared();w.state.buildings=[];
+  const house=add(w,'cottage',38,42);
+  strike(w,'bandits','winter');
+  assert.equal(house.damaged,true);
+  assert.equal(house.damageKind,'bandits');
+  assert.equal(w.state.raidRepelled,undefined,'no guard, no stand-off');
+  assert.equal(validateSave(w.state),true);
+  const broken=JSON.parse(JSON.stringify(w.state));
+  broken.raidRepelled={x:'the door',y:2,until:5};
+  assert.equal(validateSave(broken),false,'a mangled marker is refused like any other bad save');
+});
+
+test('the stand-off sequences are the ones the art pack shipped, at the rate it shipped',()=>{
+  const scene=readFileSync(new URL('../src/render/TownScene.ts',import.meta.url),'utf8');
+  assert.match(scene,/'duel-actions'/,'the scene loads the atlas the stand-off draws from');
+  const pack=JSON.parse(readFileSync(new URL('../public/assets/accessories-2026-09/duel-actions-frames.json',import.meta.url),'utf8'));
+  assert.deepEqual([...DUEL_FRAMES.guard],pack.sequences['guard-duel'].frames,'the guard plays the shipped guard sequence');
+  assert.deepEqual([...DUEL_FRAMES.bandit],pack.sequences['bandit-duel'].frames,'and the bandit the bandit one');
+  assert.equal(DUEL_FRAME_MS,1000/pack.sequences['guard-duel'].frameRate,'played at 4 fps like the pack declares');
+  for(const frame of [...DUEL_FRAMES.guard,...DUEL_FRAMES.bandit]){
+    assert.ok(GENERATED_ATLASES['duel-actions'].frames[frame],`${frame} is a real frame`);
   }
 });

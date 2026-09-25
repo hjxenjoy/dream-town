@@ -398,6 +398,7 @@ export class TownScene extends Phaser.Scene {
     this.atmosphere.update(this.game.loop.delta*(this.simulationSpeed>0?1:0),this.world.state.buildings,this.running,this.world.state.festivalUntil>this.world.state.gameTime,reduced);
     this.ambience.sync(this.world.state.buildings,this.running,this.cameras.main.midPoint,time);
     this.disasterLayer.syncPlague(Boolean(this.world.state.plague),this.world.state.buildings.find(b=>b.kind==='townhall'),time,reduced);
+    this.disasterLayer.syncDefence(this.world.state.raidRepelled,time,reduced);
     this.weatherLayer.sync(this.world.weather(),this.world.state.buildings.find(b=>b.kind==='townhall'),time,reduced);
     if(!reduced&&this.simulationSpeed>0)this.visuals.forEach((v,id)=>{if(v.ready){const b=this.world.state.buildings.find(b=>b.id===id)!;const p=iso(b.x,b.y);v.badge.y=p.y-(b.kind==='farm'?v.sprite.displayHeight*.65:v.sprite.displayHeight*.7)+Math.sin(time/430)*3;}});
     for(const b of this.world.state.buildings){

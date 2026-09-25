@@ -198,6 +198,28 @@ export function hazardOverlay(
 export const HAZARD_FRAME_MS = 380;
 export const ALERT_FRAME_MS = 520;
 
+/**
+ * The stand-off the defence art shipped as two four-frame sequences, played at the 4 fps the
+ * pack declared. A guard and a bandit face off at the post that just turned a raid away, so
+ * the defence line has a visible moment instead of only a lower probability nobody can see.
+ */
+export const DUEL_FRAMES = {
+  guard: ['guard-ready', 'guard-thrust', 'guard-block', 'guard-recover'],
+  bandit: ['bandit-ready', 'bandit-lunge', 'bandit-recoil', 'bandit-retreat'],
+} as const;
+
+/** Four frames a second, as the `duel-actions` pack ships them. */
+export const DUEL_FRAME_MS = 250;
+
+/** The current frame of a duel sequence; reduced motion holds the ready stance. */
+export function duelFrame(side: keyof typeof DUEL_FRAMES, time: number, reduced: boolean): string {
+  const frames = DUEL_FRAMES[side];
+  return frames[reduced ? 0 : Math.floor(time / DUEL_FRAME_MS) % frames.length];
+}
+
+/** How long the stand-off stays on the map after the guards shout the all-clear. */
+export const REPELLED_SHOW_SECONDS = 20;
+
 /** Picks a frame from a two-frame loop; reduced motion holds the first frame. */
 export function loopFrame(frames: readonly [string, string], time: number, ms: number, reduced: boolean): string {
   return frames[reduced ? 0 : Math.floor(time / ms) % frames.length];

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { iso } from '../sim/terrain';
-import { ALERT_FRAME_MS, ALERT_FRAMES, HAZARD_FRAME_MS, hazardOverlay, loopFrame } from '../sim/disasters';
+import { ALERT_FRAME_MS, ALERT_FRAMES, HAZARD_FRAME_MS, duelFrame, hazardOverlay, loopFrame } from '../sim/disasters';
 import type { Building } from '../sim/world';
 import { drawFrameWidth } from './atlasSprite';
 
@@ -13,6 +13,8 @@ const PLAGUE_FRAMES = ['plague-cloud-1', 'plague-cloud-2'] as const;
 const EFFECT_WIDTH = 112;
 /** The warning bell is a marker, not an effect, so it stays small. */
 const BELL_WIDTH = 60;
+/** A guard and a bandit stand off at this width, big enough to read as a fight. */
+const DUEL_WIDTH = 56;
 
 /**
  * Hazard and repair overlays. Keeps one pooled image per affected building instead
@@ -22,6 +24,8 @@ export class DisasterLayer {
   private effects = new Map<string, Phaser.GameObjects.Image>();
   private alerts = new Map<string, Phaser.GameObjects.Image>();
   private plague?: Phaser.GameObjects.Image;
+  private duelGuard?: Phaser.GameObjects.Image;
+  private duelBandit?: Phaser.GameObjects.Image;
 
   constructor(private scene: Phaser.Scene) {}
 
@@ -41,6 +45,28 @@ export class DisasterLayer {
     const frame = PLAGUE_FRAMES[reduced ? 0 : Math.floor(time / HAZARD_FRAME_MS) % PLAGUE_FRAMES.length]!;
     drawFrameWidth(this.plague, 'plague-animation', frame, PLAGUE_WIDTH);
     this.plague.setPosition(point.x, point.y - 40).setDepth(point.y + 260).setAlpha(.72);
+  }
+
+  /**
+   * A raid turned away at a post: a guard and a bandit stand off there through the pack's two
+   * four-frame sequences, then the marker expires and they are gone. Two single sprites like
+   * the plague cloud — at most one raid is turned away at a time, so there is nothing to pool.
+   */
+  syncDefence(raid: { x: number; y: number } | undefined, time: number, reduced: boolean): void {
+    if (!raid) {
+      this.duelGuard?.destroy(); this.duelGuard = undefined;
+      this.duelBandit?.destroy(); this.duelBandit = undefined;
+      return;
+    }
+    const point = iso(raid.x, raid.y);
+    this.duelGuard ??= this.scene.add.image(point.x, point.y, 'duel-actions').setOrigin(.5, .92);
+    this.duelBandit ??= this.scene.add.image(point.x, point.y, 'duel-actions').setOrigin(.5, .92);
+    drawFrameWidth(this.duelGuard, 'duel-actions', duelFrame('guard', time, reduced), DUEL_WIDTH);
+    drawFrameWidth(this.duelBandit, 'duel-actions', duelFrame('bandit', time, reduced), DUEL_WIDTH);
+    // Both figures were drawn facing right, so the bandit is mirrored and they face each
+    // other across the post's front step.
+    this.duelGuard.setPosition(point.x - 34, point.y - 4).setDepth(point.y + 12).setFlipX(false);
+    this.duelBandit.setPosition(point.x + 34, point.y - 4).setDepth(point.y + 12).setFlipX(true);
   }
 
   sync(buildings: Building[], time: number, reduced: boolean): void {

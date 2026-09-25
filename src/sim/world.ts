@@ -12,7 +12,7 @@ import { initialRoads, roadLine, roadQuote, ROAD_TYPES, tileKey, type Road, type
 import { TownNavigation } from './navigation.ts';
 import { terrainAt, terrainReason, districtAt, DISTRICTS, preferredDistrict, type District } from './terrain.ts';
 import { BUILDINGS, BUILDING_KEYS, BULK_ORDER_INTERVAL, BULK_ORDER_MIN, BULK_ORDER_PATIENCE, BULK_ORDER_RATIO, BULK_ORDER_UNLOCK_LEVEL, CARAVAN_CARGO, HEALTH_REPAIR_RELIEF, HEALTH_TAX_RELIEF, CARAVAN_DURATION, CARE_BONUS, FOCUS_RECIPES, GAME_DAY_SECONDS, HERB_BOOST, MINE_GRADES, MINE_GRADE_NAMES, MINING_TOOLS, MINING_TOOL_NAMES, MINING_TOOL_CHEST, MINING_TOOL_ANTIQUE_CHANCE, ORE_GRADES, type MiningTool, type ProductionFocus, SOUVENIR_SHOP_MULTIPLIER, ZOO_DEFAULT_SPECIES, ZOO_SPECIES, ZOO_SPECIES_NAMES, LEISURE_GOODS, MAP_SIZE, TAVERN_GOODS, effectiveRecipe, herbCoverage, herbsPerDay, MARKET_GOODS, MARKET_MARKUP, MAX_OFFLINE_SECONDS, PRODUCTION_SEQUENCE, RESOURCES, RESOURCE_KEYS, RESOURCE_LABELS, SEASON_SECONDS, TAX_NAMES, TAX_RATES, TECHNOLOGIES, TERMINAL_GOODS, TECHNOLOGY_KEYS, careNeeds, dailyGoods, emptyResources, type BuildingKind, type Resource, type ResourceMap, type MineGrade, type TechnologyId, type ZooSpecies } from './data.ts';
-import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, canStrike, damageCeiling, disasterOf, raidLoss, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
+import { BUY_IN_PRICE, DISASTERS, DISASTER_INTERVAL, DISASTER_KINDS, MIN_DISASTER_POPULATION, REPAIR_SECONDS, REPELLED_SHOW_SECONDS, canStrike, damageCeiling, disasterOf, raidLoss, strikeInterval, type DisasterKind, type SeasonKey } from './disasters.ts';
 import { ACTIVITY_HAPPINESS, SEASONAL_ACTIVITIES, activityOf, type ActivityState } from './seasonal.ts';
 import { WEATHER, weatherAt, weatherGrowthFactor, weatherRemaining, type WeatherKind } from './weather.ts';
 import { plagueDue, plagueDuration, plagueHappinessCost, plagueSpoilage, type PlagueState } from './plague.ts';
@@ -185,6 +185,11 @@ export interface SimState {
   nextBulkOrderAt?: number;
   /** A plague running over the whole town, if one is. Absent otherwise. */
   plague?: PlagueState;
+  /**
+   * A raid just turned away by the guards, standing off at the post that did it. Cosmetic:
+   * it exists so the defence has a moment on the map, and it expires on its own.
+   */
+  raidRepelled?: { x: number; y: number; until: number };
   /** When the last plague began, so the next one can wait its turn. */
   lastPlagueAt?: number;
 }
@@ -432,6 +437,7 @@ export function validateSave(value: unknown): value is SimState {
   // game could never finish, so its shape is checked rather than defaulted.
   if (value.lastPlagueAt !== undefined && !nonnegative(value.lastPlagueAt)) return false;
   if (value.plague !== undefined && (!isRecord(value.plague) || !nonnegative(value.plague.until))) return false;
+  if (value.raidRepelled !== undefined && (!isRecord(value.raidRepelled) || !finite(value.raidRepelled.x) || !finite(value.raidRepelled.y) || !nonnegative(value.raidRepelled.until))) return false;
   for (const quest of value.quests) if (!isRecord(quest) || typeof quest.id !== 'string' || typeof quest.title !== 'string' || typeof quest.description !== 'string' || !whole(quest.target) || !whole(quest.progress) || !whole(quest.rewardCoins) || !whole(quest.rewardXp) || !whole(quest.rewardPrestige) || typeof quest.claimed !== 'boolean') return false;
   if (!Array.isArray(value.caravans) || value.caravans.length < 1) return false;
   const caravanIds = new Set<string>();
@@ -2064,6 +2070,7 @@ export class SimWorld {
     for (let day = 0; day < newDays; day++) this.settleDay();
     if (this.disasterDue()) this.triggerDisaster();
     this.updatePlague();
+    if (this.state.raidRepelled && this.state.raidRepelled.until <= this.state.gameTime) this.state.raidRepelled = undefined;
     this.maybeOfferBulkOrder();
     this.completeRepairs();this.completeActivities();
     if (this.state.settings.autoMayor && this.state.gameTime - this.state.lastMayorAt >= 5) this.runMayor();
@@ -2171,12 +2178,23 @@ export class SimWorld {
     // Guardposts and barracks answer bandits, not fires: the same shape of check, a different
     // set of buildings, so a defence you build is a defence that works.
     const watch = this.state.buildings.filter(building => !building.damaged && BUILDINGS[building.kind].guardRadius);
-    const watched = (building: Building): boolean => watch.some(post =>
+    const coveringPost = (building: Building) => watch.find(post =>
       Math.hypot(building.x - post.x, building.y - post.y) <= BUILDINGS[post.kind].guardRadius! + post.level - 1);
 
     const kind = DISASTER_KINDS[Math.floor(this.state.gameTime / DISASTER_INTERVAL) % DISASTER_KINDS.length];
-    const candidates = this.state.buildings.filter(building => canStrike(kind, building, season, guarded(building), watched(building)));
+    const reachable = this.state.buildings.filter(building => canStrike(kind, building, season, guarded(building), false));
+    const candidates = kind === 'bandits' ? reachable.filter(building => !coveringPost(building)) : reachable;
     if (candidates.length === 0) {
+      // A raid that found a target everywhere, only to find a guard standing at it, was turned
+      // away. That is the defence line's one visible moment, so it gets its own words and a
+      // stand-off staged at the post that did it, rather than the quiet "all clear" below.
+      const turnedAway = kind === 'bandits' ? reachable.find(building => coveringPost(building)) : undefined;
+      const post = turnedAway && coveringPost(turnedAway);
+      if (post) {
+        this.state.raidRepelled = { x: post.x, y: post.y, until: this.state.gameTime + REPELLED_SHOW_SECONDS };
+        this.log('一伙强盗在镇外窥探，被巡夜的守卫拦了回去，镇上一点没少。', 'success');
+        return;
+      }
       this.log(`巡查结束：${disasterOf(kind).name}没有威胁到小镇，一切平安。`, 'info');
       return;
     }
@@ -2231,6 +2249,9 @@ export class SimWorld {
   }
 
   offline(seconds: number): OfflineReport {
+    // A stand-off left on the map is stale the moment the player leaves; it is a moment, not
+    // a state to be resumed.
+    this.state.raidRepelled = undefined;
     const elapsed = finite(seconds) ? clamp(seconds, 0, MAX_OFFLINE_SECONDS) : 0;
     const report: OfflineReport = { seconds: elapsed, elapsed, capped: finite(seconds) && seconds > MAX_OFFLINE_SECONDS, produced: emptyResources(), consumed: emptyResources(), coins: 0, tax: 0, caravanReturned: false, happinessChange: 0, farmCoins:0, cropQuantity:0 };
     if (!elapsed) return report;
